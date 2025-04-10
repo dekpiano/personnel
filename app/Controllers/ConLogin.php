@@ -17,8 +17,8 @@ class ConLogin extends BaseController
         $redirect_uri = base_url('LoginOfficerPersonnel');
         
         $this->googleClient = new \Google_Client();
-        $this->googleClient->setClientId('110650460520-35k7ea69727vjqv11jise3ihm7g3vrah.apps.googleusercontent.com');
-		$this->googleClient->setClientSecret('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');
+        //$this->googleClient->setClientId('110650460520-35k7ea69727vjqv11jise3ihm7g3vrah.apps.googleusercontent.com');
+		//$this->googleClient->setClientSecret('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');
         $this->googleClient->setRedirectUri($redirect_uri);
         $this->googleClient->addScope('email');
         $this->googleClient->addScope('profile');
