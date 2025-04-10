@@ -4,8 +4,8 @@ namespace App\Controllers;
 
 class ConLogin extends BaseController
 {
-    //$path = dirname(dirname(dirname(dirname((dirname(__FILE__))))));
-	//require $path . '/skj.ac.th/public_html/librarie_skj/google_sheet/vendor/autoload.php';
+        //$path = dirname(dirname(dirname(dirname((dirname(__FILE__))))));
+	    //require $path . '/skj.ac.th/public_html/librarie_skj/google_sheet/vendor/autoload.php';
 
     private $googleClient = null;
     private $GoogleButton = "";
