@@ -29,7 +29,7 @@ class Database extends Config
         'hostname' => 'localhost',
         'username' => 'root',
         'password' => '',
-        'database' => 'skjacth_general',
+        'database' => 'skjacth_personnel',
         'DBDriver' => 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,

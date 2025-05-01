@@ -44,10 +44,11 @@ class ConLogin extends BaseController
         
 
         $session = session();
-        $DB_General = \Config\Database::connect();
-        $DBrloes = $DB_General->table('tb_admin_rloes');
-        $DB_Personnel = \Config\Database::connect('personnel');
+        $DB_Personnel = \Config\Database::connect();
+        $DBrloes = $DB_Personnel->table('tb_admin_rloes');
         $DBPers = $DB_Personnel->table('tb_personnel');     
+
+        //print_r($this->request->getVar("code"));exit();
         
         if($this->request->getVar("return_to") == ""){
 
@@ -57,6 +58,7 @@ class ConLogin extends BaseController
         
         
             if($this->request->getVar("code")){
+
             $token = $this->googleClient->fetchAccessTokenWithAuthCode($this->request->getVar("code"));
             
                 if(!isset($token['error'])){
@@ -66,10 +68,12 @@ class ConLogin extends BaseController
                 
 
                     $googleService = new \Google_Service_Oauth2($this->googleClient);  
-                    //echo '<pre>';print_r($googleService); exit();          
                     $data = $googleService->userinfo->get();            
-                                
+                             
+                   
+
                 $CheckEmail = $DBPers->where('pers_username', $data['email'])->get()->getRowArray()>0?true:false;
+                //echo '<pre>';print_r($CheckEmail); exit();  
                 if($CheckEmail){
                         $UserData = array('login_oauth_uid' => $data['id'],
                                             'updated_at' => date('Y-m-d H:i:s'));
@@ -111,7 +115,7 @@ class ConLogin extends BaseController
           
     }
 
-    public function LogoutOfficerGeneral(){
+    public function LogoutOfficerPersonnel(){
         $session = session();
         $session->destroy();
         return redirect()->to(base_url());

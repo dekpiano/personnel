@@ -25,8 +25,7 @@ class ConAdminHome extends BaseController
         $data = $this->DataMain();
         $data['title']="หน้าแรก";
         $database = \Config\Database::connect();
-        $builder = $database->table('tb_location');
-        $data['LocationRoomAll'] = $builder->countAll();
+      
         return view('Admin/AdminLeyout/AdminHeader',$data)
                 .view('Admin/AdminLeyout/AdminMenuLeft')
                 .view('Admin/AdminHome/AdminPageHome')

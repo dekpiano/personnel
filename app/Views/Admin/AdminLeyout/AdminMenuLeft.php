@@ -24,7 +24,7 @@
                 <li class="menu-item <?php echo ($uri->getSegment(2) == "Home"?"active":"")?>">
                     <a href="<?=base_url('Admin/Home');?>" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                        <div data-i18n="Analytics">หน้าแรก</div>
+                        <div data-i18n="Analytics">หน้าแรก </div>
                     </a>
                 </li>
 
@@ -32,11 +32,11 @@
                 <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
 
                 
-                <?php if(in_array("งานบุคคล",$SubRloes)) :?>
+                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "WorkPerson"?"active open":""?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-layout"></i>
-                        <div data-i18n="Layouts">งานบุคคล</div>
+                        <div data-i18n="Layouts">งานบุคลากร</div>
                     </a>
 
                     <ul class="menu-sub">
@@ -57,7 +57,7 @@
                     <li class="menu-item <?php echo $uri->getSegment(2) == "Rloes"?"active":""?>">
                         <a href="<?=base_url('Admin/Rloes/Setting');?>" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
-                            <div data-i18n="Analytics">กำหนดสิทธิ์ใช้งาน</div>
+                            <div data-i18n="Analytics">กำหนดสิทธิ์ใช้งาน </div>
                         </a>
                     </li>
                 </ul>

@@ -1,3 +1,9 @@
+$('.select2Personnel').select2({
+    placeholder: "เลือกตัวเลือก",
+    allowClear: true,
+  });
+
+
 //ฟังก์ชันหาอายุ
 function calculateAge(birthdate) {
     const today = new Date();
@@ -51,11 +57,11 @@ $(document).on('submit', '#FormPersonnalAdd', function (e) {
     });
 });
 
-$(document).on('submit', '#FormPersonnalUpdateDataGeneral', function (e) {
+$(document).on('submit', '#FormPersonnalUpdateDataPersonnel', function (e) {
     e.preventDefault();
 
     $.ajax({
-        url: "../../../../Admin/WorkPerson/Personnel/DB/Update/DataGeneral",
+        url: "../../../../Admin/WorkPerson/Personnel/DB/Update/DataPersonnel",
         method: "POST",
         data: new FormData(this),
         processData: false,
@@ -259,6 +265,58 @@ $('#add-family-member').on('click', function () {
       </div>`;
     $('#family-section').append(familyTemplate);
      selectorEdit();
+});
+
+
+
+
+ // เมื่อมีการเปลี่ยนแปลงค่าของ select แรก
+ $('#pers_position').on('change', function() {
+    // ถ้าเลือก "แสดง Select ถัดไป"
+    var index = $(this).prop('selectedIndex'); // รับลำดับที่เลือก (0-based)
+   
+    if (index > 0 && index <= 6) {
+        // แสดง select ถัดไป
+        $('#show_learning').show();
+        $('#show_position').hide();
+    } else if (index >= 7) {
+        $('#show_position').show();
+        $('#show_learning').hide();
+
+        if (selectedPosition !== "") {
+            var selectedPosition = $(this).val();
+          // alert(selectedPosition);
+            $.ajax({
+                url: '../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData', // URL ที่จะส่งคำขอไปยัง controller
+                type: 'POST',
+                data: { position_id: selectedPosition },
+                success: function(response) {
+                   
+                    var data = (response);
+           
+                    var secondSelect = $('#pers_workother_id');
+                    secondSelect.empty(); // ล้างค่าเก่า
+
+                    if (data.length > 0) {
+                        // เพิ่มข้อมูลใน select
+                        secondSelect.append('<option value="">--เลือกข้อมูล--</option>');
+                        $.each(data, function(index, item) {
+                            secondSelect.append('<option value="' + item.work_id + '">' + item.work_name + '</option>');
+                        });
+                    } else {
+                        secondSelect.append('<option value="">ไม่มีข้อมูล</option>');
+                    }
+                }
+            });
+        } else {
+            $('#pers_workother_id').empty().append('<option value="">--กรุณาเลือกตำแหน่งก่อน--</option>');
+        }
+
+     } else {
+        // ซ่อน select ถัดไป
+        $('#show_learning').hide();
+        $('#show_position').hide();
+    }
 });
 
 

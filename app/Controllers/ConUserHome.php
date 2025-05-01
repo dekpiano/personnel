@@ -21,7 +21,7 @@ class ConUserHome extends BaseController
     {
         $session = session();
         $database = \Config\Database::connect();
-        $builder = $database->table('tb_location');
+        $builder = $database->table('tb_personnel');
 
         $data = $this->DataMain();
         $data['title']="หน้าแรก";
@@ -29,7 +29,7 @@ class ConUserHome extends BaseController
         $data['UrlMenuMain'] = '';
         $data['UrlMenuSub'] = '';
 
-        $data['DictationAll'] = $builder->countAll();
+        //$data['DictationAll'] = $builder->countAll();
        
        
 

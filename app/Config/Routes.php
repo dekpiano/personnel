@@ -54,11 +54,16 @@ $routes->get('Admin/WorkPerson/Personnel/Group/(:any)', 'ConAdminWorkPerson::Per
 $routes->get('Admin/WorkPerson/Personnel/Update/(:any)', 'ConAdminWorkPerson::FormPersonneUpdate/$1');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/SortableTeacher', 'ConAdminWorkPerson::SortableTeacher');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Insert', 'ConAdminWorkPerson::PersonnelInsert');
-$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/DataGeneral', 'ConAdminWorkPerson::PersonneUpdateDataGeneral');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/DataPersonnel', 'ConAdminWorkPerson::PersonneUpdateDataPersonnel');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/DataHistory', 'ConAdminWorkPerson::PersonneUpdateDataHistory');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Img', 'ConAdminWorkPerson::PersonnelUpdateImg');
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Get/(:any)', 'ConAdminWorkPerson::PersonnelGet/$1');
+
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Select/GetPositionData', 'ConAdminWorkPerson::GetPositionData');
+
+
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

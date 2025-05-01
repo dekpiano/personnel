@@ -36,10 +36,10 @@
 
 
             <div class="row mt-3">
-                <div class="col-lg-3">
+                <div class="col-lg-2">
                     <!-- Profile picture card-->
                     <div class="card mb-4 mb-xl-0">
-                        <div class="card-header">Profile Picture</div>
+                       
                         <div class="card-body text-center">
                             <!-- Profile picture image-->
                             <script>
@@ -66,7 +66,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-9">
+                <div class="col-lg-10">
 
                     <div class="nav-align-top mb-4">
                         <ul class="nav nav-pills mb-3 nav-fill" role="tablist">

@@ -30,7 +30,6 @@
     <script src="<?=base_url()?>/assets/vendor/libs/popper/popper.js"></script>
     <script src="<?=base_url()?>/assets/vendor/js/bootstrap.js"></script>
     <script src="<?=base_url()?>/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
     <script src="<?=base_url()?>/assets/vendor/js/menu.js"></script>
     <!-- endbuild -->
     <script src="<?=base_url()?>/assets/js/select2.js"></script>
@@ -63,10 +62,10 @@
     </html>
 
     <?php if($uri->getSegment(2) == 'WorkPerson') : ?>
-    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=9.4"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=10.3"></script>
     <?php endif;?>
     <?php if($uri->getSegment(2) == 'Rloes') : ?>
-    <script src="<?=base_url()?>/assets/js/Admin/AdminRoles/AdminRolesMain.js?v=2"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminRoles/AdminRolesMain.js?v=3"></script>
     <?php endif;?>
 
     <script>
@@ -93,10 +92,6 @@ $('.pers_phone').inputmask('99-9999-9999');
         })
 })()
 
-$(function() {
-    'use strict';
-
-});
 flatpickr.localize(flatpickr.l10ns.th);
 $(".selector").flatpickr({
     dateFormat: "Y-m-d",

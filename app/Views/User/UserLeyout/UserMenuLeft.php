@@ -48,7 +48,7 @@
                 
             </ul>
             <div>
-                <?php if(isset($_SESSION['username']) && @$_SESSION['status'] == "AdminGeneral" || @$_SESSION['status'] == 'ManagerGeneral'): ?>
+                <?php if(isset($_SESSION['username']) && @$_SESSION['status'] == "AdminPersonnel" || @$_SESSION['status'] == 'ManagerPersonnel'): ?>
                 <ul class="menu-inner py-1">
                     <li class="menu-item">
                         <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->

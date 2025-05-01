@@ -35,7 +35,7 @@
                 display: block;
             }
             </style>
-
+            <!--  -->
             <form class="needs-validation" novalidate="" id="FormPersonnalAdd">
                 <div class="row mt-3">
                     <div class="col-lg-3">
@@ -59,7 +59,8 @@
                                 <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
                                 <!-- Profile picture upload button-->
                                 <span class="btn btn-primary btn-file">
-                                    อัพโหลดรูปภาพ <input type="file" name="pers_img" id="pers_img" onchange="loadFile(event)">
+                                    อัพโหลดรูปภาพ <input type="file" name="pers_img" id="pers_img"
+                                        onchange="loadFile(event)">
                                 </span>
                             </div>
                         </div>
@@ -128,22 +129,12 @@
 
                                     <div class="col-md-4">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" id="pers_lastname" name="pers_lastname"
-                                                placeholder="" value="" required="">
+                                            <input type="text" class="form-control" id="pers_lastname"
+                                                name="pers_lastname" placeholder="" value="" required="">
                                             <label for="pers_lastname">นามสกุล</label>
                                         </div>
                                         <div class="invalid-feedback">
                                             กรุณากรอกนามสกุล...
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-floating">
-                                            <input type="text" class="form-control selector" id="pers_britday"
-                                                name="pers_britday" placeholder="" value="" autocomplete="off">
-                                            <label for="pers_britday">วันเกิด</label>
-                                        </div>
-                                        <div class="invalid-feedback">
-                                            กรุณาเลือกวันเกิด
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -161,7 +152,8 @@
                                         <div class="form-floating">
                                             <input type="email" class="form-control" id="pers_username"
                                                 placeholder="ให้ใช้อีเมลของโรงเรียน" name="pers_username">
-                                            <label for="pers_username">Email <span class="text-muted">(Optional)</span></label>
+                                            <label for="pers_username">Email <span
+                                                    class="text-muted">(Optional)</span></label>
                                         </div>
                                         <div class="invalid-feedback">
                                             กรุณากรอกอีเมล
@@ -169,10 +161,11 @@
                                     </div>
 
                                     <hr>
-
+                                
                                     <div class="col-md-4">
                                         <div class="form-floating">
-                                            <select class="form-select" id="pers_position" name="pers_position" required="">
+                                            <select class="form-select select2Personnel" id="pers_position"
+                                                name="pers_position" required="">
                                                 <option value="">เลือก...</option>
                                                 <?php foreach ($position as $key => $value) : ?>
                                                 <option value="<?=$value->posi_id;?>"><?=$value->posi_name;?></option>
@@ -185,12 +178,30 @@
                                         </div>
                                     </div>
 
+                                    <div class="col-md-4" style="display:none;" id="show_position">
+                                        <div class="form-floating">
+                                            <select class="form-select select2Personnel" id="pers_workother_id"
+                                                name="pers_workother_id" required>
+
+                                            </select>
+                                            <label for="pers_workother_id">ตำแหน่งหลัก</label>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            กรุณาเลือกกลุ่มสาระการเรียนรู้
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-2" style="display:none;" id="show_learning">
+                                    <p class="mt-2 mb-0">เฉพาะตำแหน่งครูผู้สอน</p>
                                     <div class="col-md-4">
                                         <div class="form-floating">
-                                            <select class="form-select" id="pers_learning" name="pers_learning">
-                                                <option value="">ไม่มีไม่ต้องเลือก...</option>
+                                            <select class="form-select select2Personnel" id="pers_learning"
+                                                name="pers_learning">
+                                                <option value="">เลือกกลุ่มสาระ...</option>
                                                 <?php foreach ($learning as $key => $value) : ?>
-                                                <option value="<?=$value->lear_id;?>"><?=$value->lear_namethai;?></option>
+                                                <option value="<?=$value->lear_id;?>"><?=$value->lear_namethai;?>
+                                                </option>
                                                 <?php endforeach; ?>
                                             </select>
                                             <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
@@ -202,7 +213,8 @@
                                     <div class="col-md-4">
                                         <?php $degee = array('ชำนาญการ','ชำนาญการพิเศษ','เชี่ยวชาญ','เชี่ยวชาญพิเศษ'); ?>
                                         <div class="form-floating">
-                                            <select class="form-select" id="pers_academic" name="pers_academic">
+                                            <select class="form-select select2Personnel" id="pers_academic"
+                                                name="pers_academic">
                                                 <option value="">ไม่มีไม่ต้องเลือก...</option>
                                                 <?php foreach ($degee as $key => $value) : ?>
                                                 <option value="<?=$value;?>"><?=$value;?></option>
@@ -216,7 +228,8 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-floating">
-                                            <select class="form-select" id="pers_groupleade" name="pers_groupleade">
+                                            <select class="form-select select2Personnel" id="pers_groupleade"
+                                                name="pers_groupleade">
                                                 <option value="">ไม่มีไม่ต้องเลือก...</option>
                                                 <option value="หัวหน้ากลุ่มสาระ">หัวหน้ากลุ่มสาระ</option>
                                                 <option value="รองหัวหน้ากลุ่มสาระ">รองหัวหน้ากลุ่มสาระ</option>
@@ -228,6 +241,7 @@
                                         </div>
                                     </div>
                                 </div>
+
 
                                 <hr class="my-4">
 

@@ -226,7 +226,7 @@ class ConAdminWorkPerson extends BaseController
                 .view('Admin/AdminLeyout/AdminFooter');
     }
 
-    public function PersonneUpdateDataGeneral(){
+    public function PersonneUpdateDataPersonnel(){
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
@@ -235,7 +235,7 @@ class ConAdminWorkPerson extends BaseController
             'pers_prefix' => $this->request->getVar('pers_prefix'),
             'pers_firstname' => $this->request->getVar('pers_firstname'),
             'pers_lastname' => $this->request->getVar('pers_lastname'),
-            'pers_britday' => $this->request->getVar('pers_britday'),
+            'pers_username' => $this->request->getVar('pers_username'),
             'pers_phone' => $this->request->getVar('pers_phone'),
             'pers_position' => $this->request->getVar('pers_position'),
             'pers_learning' => $this->request->getVar('pers_learning'),
@@ -301,6 +301,18 @@ class ConAdminWorkPerson extends BaseController
         }
      }
        
+     public function GetPositionData(){
+        $session = session();
+        $DB_SKJ = \Config\Database::connect('skj');
+        $DBPosi = $DB_SKJ->table('tb_position');
+
+        $positionId = $this->request->getPost('position_id');
+        $data = $DBPosi->select('work_id,work_name')
+        ->where('tb_position.posi_id',$positionId)
+        ->join('skjacth_skj.tb_position_main','skjacth_skj.tb_position_main.posi_id = skjacth_skj.tb_position.p_id')
+        ->get()->getResult();
+        return $this->response->setJSON($data);
+     }
      
     
 

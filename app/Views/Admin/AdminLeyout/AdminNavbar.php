@@ -23,7 +23,7 @@
                 <!-- Place this tag where you want the button to render. -->
                 <li class="nav-item lh-1 me-3">
                     <?=$_SESSION['username'];?> <br>
-                    <small class="text-muted">Admin</small>
+                    <small class="text-muted"><?=$_SESSION['status'];?></small>
                 </li>
 
                 <!-- User -->

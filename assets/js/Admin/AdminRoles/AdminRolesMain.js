@@ -1,4 +1,9 @@
-$(document).on("change", ".SettingGeneralRloes", function() {
+$('.select2Rloes').select2({
+    placeholder: "เลือกตัวเลือก",
+    allowClear: true
+  });
+
+$(document).on("change", ".SettingPersonnelRloes", function() {
 
     console.log($(this).val());
     console.log($(this).attr('rloes-id'));

@@ -23,20 +23,20 @@ class ConAdminRoles extends BaseController
     {
         $data = $this->DataMain();
         $data['title']="จัดการข้อมูลกำหนดสิทธิ์การใช้งาน";
-        $database = \Config\Database::connect();
-        $builder = $database->table('tb_location');
-        $tb_admin_rloes = $database->table('tb_admin_rloes');
-        $DB_Personnel = \Config\Database::connect('personnel');
+        $DB_Personnel = \Config\Database::connect();
+        $tb_admin_rloes = $DB_Personnel->table('tb_admin_rloes');
         $DBPers = $DB_Personnel->table('tb_personnel');
 
-        $data['Manager'] = $tb_admin_rloes->select('admin_rloes_userid,admin_rloes_id,admin_rloes_nanetype')->get()->getResult();
+        $data['Manager'] = $tb_admin_rloes->select('admin_rloes_userid,admin_rloes_id,admin_rloes_nanetype,admin_rloes_status,admin_rloes_level')       
+        ->orderBy('admin_rloes_level','ASC')
+        ->get()->getResult();
 
         $data['NameTeacher'] = $DBPers->select('pers_id,pers_prefix,pers_firstname,pers_lastname,pers_position,pers_learning')
         ->where('pers_status','กำลังใช้งาน')
         ->orderBy('pers_position','ASC')
         ->get()->getResult();
 
-        //echo '<pre>'; print_r($data['NameTeacher']); exit();
+        //echo '<pre>'; print_r($data['Manager']); exit();
 
         return view('Admin/AdminLeyout/AdminHeader',$data)
                 .view('Admin/AdminLeyout/AdminMenuLeft')
@@ -45,8 +45,8 @@ class ConAdminRoles extends BaseController
     }
 
     public function RloesSettingManager() {      
-        $database = \Config\Database::connect();
-        $DBrloes = $database->table('tb_admin_rloes');
+        $DB_Personnel = \Config\Database::connect();
+        $DBrloes = $DB_Personnel->table('tb_admin_rloes');
         $data = array('admin_rloes_userid' => $this->request->getVar('TeachID'),'admin_rloes_nanetype'=>$this->request->getVar('Keytype'));
 
         $DBrloes->where('admin_rloes_id',$this->request->getVar('RloesID'));

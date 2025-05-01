@@ -16,7 +16,7 @@
                                 <div class="content-left">
                                     <span>งานบุคคล</span>
                                     <div class="d-flex align-items-end mt-2">
-                                        <h4 class="mb-0 me-2"><?=$LocationRoomAll;?></h4>
+                                        <h4 class="mb-0 me-2">0</h4>
                                         <!-- <small class="text-success"></small> -->
                                     </div>
                                     <small>ทั้งหมด</small>
