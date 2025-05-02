@@ -218,7 +218,9 @@ class ConAdminWorkPerson extends BaseController
         $data['learning'] = $DBLear->get()->getResult();
 
         $data['Pers'] = $DBPers->where('pers_id',$IDPres)->get()->getRow();
-        //echo '<pre>'; print_r($data['Pers']); exit();
+
+        //$fieldList = $DB_Personnel->getFieldNames('tb_personnel');
+        //echo '<pre>'; print_r($fieldList); exit();
 
         return view('Admin/AdminLeyout/AdminHeader',$data)
                 .view('Admin/AdminLeyout/AdminMenuLeft')
@@ -292,7 +294,10 @@ class ConAdminWorkPerson extends BaseController
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
 
-        $data = $DBPers->where('pers_id',$id)->get()->getRow();
+        $data = $DBPers->select('*')       
+        ->join('tb_personnel_addresses','tb_personnel_addresses.pers_id = tb_personnel.pers_id','left')
+        ->where('tb_personnel.pers_id',$id)
+        ->get()->getResult();
 
         if ($data) {
             return $this->response->setJSON($data);
@@ -314,6 +319,74 @@ class ConAdminWorkPerson extends BaseController
         return $this->response->setJSON($data);
      }
      
-    
+     public function PersonnelUpdateAlone(){
+        $session = session();
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $DBPers = $DB_Personnel->table('tb_personnel');
+        $DBPersAddr = $DB_Personnel->table('tb_personnel_addresses');
+
+        $field = $this->request->getVar('field');
+        $value = $this->request->getVar('value');
+
+        $Ex = explode("_",$field);
+       
+        if($Ex[0] === "curr"){
+            $CheckPresID = $DBPersAddr->select('pers_id')
+            ->where('addr_type',"ปัจจุบัน")
+            ->where('pers_id',$this->request->getVar('PresID'))->get()->getRow();
+           
+            if (str_starts_with($field, 'curr_') && str_contains($field, 'addr_')) {
+                $fieldNew = str_replace('curr_', '', $field);
+            }
+            
+            if($CheckPresID){
+                //print_r(($fieldNew)); exit();
+                $DBPersAddr->where('pers_id', $this->request->getVar('PresID'));
+                $DBPersAddr->where('addr_type',"ปัจจุบัน");
+                $DBPersAddr->update([$fieldNew => $value]);
+                echo 1;
+                
+            }else{   
+                $data = [
+                    'pers_id' => $this->request->getVar('PresID'),
+                    'addr_type' => "ปัจจุบัน",
+                    $fieldNew => $value
+                ];
+                echo $DBPersAddr->insert($data);
+            }
+        }else if($Ex[0] === "addr"){
+            $CheckPresID = $DBPersAddr->select('pers_id')
+            ->where('addr_type',"ทะเบียนบ้าน")
+            ->where('pers_id',$this->request->getVar('PresID'))->get()->getRow();
+            if($CheckPresID){
+                $DBPersAddr->where('pers_id', $this->request->getVar('PresID'));
+                $DBPersAddr->where('addr_type',"ทะเบียนบ้าน");
+                $DBPersAddr->update([$field => $value]);
+                echo 1;
+               
+            }else{      
+                $data = [
+                    'pers_id' => $this->request->getVar('PresID'),
+                    'addr_type' => "ทะเบียนบ้าน",
+                    $field => $value
+                ];
+                echo $DBPersAddr->insert($data);
+                
+            }
+        }
+        
+
+
+        $fieldList = $DB_Personnel->getFieldNames('tb_personnel');
+        if (in_array($field, $fieldList)) {
+            $DBPers->where('pers_id', $this->request->getVar('PresID'));
+            echo $DBPers->update([$field => $value]);
+        }else{
+            echo 0;
+        }
+            
+       
+       
+     }
 
 }

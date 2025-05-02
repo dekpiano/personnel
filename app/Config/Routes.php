@@ -34,7 +34,7 @@ $routes->get('/', 'ConUserHome::index');
 
 $routes->get('/LoginOfficerPersonnel', 'ConLogin::LoginOfficerPersonnel');
 //$routes->get('/LoginEoffice', 'ConUserHome::LoginEoffice');
-$routes->get('/LogoutOfficerGeneral', 'ConLogin::LogoutOfficerGeneral');
+$routes->get('/LogoutOfficerPersonnel', 'ConLogin::LogoutOfficerPersonnel');
 
 //Admin
 $routes->get('Admin/Home', 'ConAdminHome::index');
@@ -59,6 +59,7 @@ $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/DataHistory
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Img', 'ConAdminWorkPerson::PersonnelUpdateImg');
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Get/(:any)', 'ConAdminWorkPerson::PersonnelGet/$1');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Alone', 'ConAdminWorkPerson::PersonnelUpdateAlone');
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Select/GetPositionData', 'ConAdminWorkPerson::GetPositionData');
 

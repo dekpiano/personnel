@@ -62,15 +62,22 @@
     </html>
 
     <?php if($uri->getSegment(2) == 'WorkPerson') : ?>
-    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=10.3"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=12.6"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1"></script>
+    
     <?php endif;?>
     <?php if($uri->getSegment(2) == 'Rloes') : ?>
     <script src="<?=base_url()?>/assets/js/Admin/AdminRoles/AdminRolesMain.js?v=3"></script>
     <?php endif;?>
 
+    
+
     <script>
 $('#pers_id_card').inputmask('9-9999-99999-99-9');
 $('.pers_phone').inputmask('99-9999-9999');
+
+
+
 // Example starter JavaScript for disabling form submissions if there are invalid fields
 (function() {
     'use strict'
@@ -85,6 +92,7 @@ $('.pers_phone').inputmask('99-9999-9999');
                 if (!form.checkValidity()) {
                     event.preventDefault()
                     event.stopPropagation()
+
                 }
 
                 form.classList.add('was-validated')
@@ -113,37 +121,36 @@ function setBuddhistYear(instance) {
 }
 
 
-    function selectorEdit(){
-        $('.selectorEdit').flatpickr({
-            locale: "th",
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "d/m/Y",
-            parseDate: function(dateStr, format) {
-                const parts = dateStr.split('/');
-                parts[2] = parseInt(parts[2]) - 543;
-                return new Date(parts[2], parts[1] - 1, parts[0]);
-            },
-            formatDate: function(date, format) {
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear() + 543;
-                return `${day}/${month}/${year}`;
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                setTimeout(() => setBuddhistYear(instance), 5);
-            },
-            onYearChange: function(selectedDates, dateStr, instance) {
-                setTimeout(() => setBuddhistYear(instance), 5);
-            },
-            onMonthChange: function(selectedDates, dateStr, instance) {
-                setTimeout(() => setBuddhistYear(instance), 5);
-            },
-            onOpen: function(selectedDates, dateStr, instance) {
-                setTimeout(() => setBuddhistYear(instance), 5);
-            }
-        });
-    }
-    selectorEdit();
-
+function selectorEdit() {
+    $('.selectorEdit').flatpickr({
+        locale: "th",
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y",
+        parseDate: function(dateStr, format) {
+            const parts = dateStr.split('/');
+            parts[2] = parseInt(parts[2]) - 543;
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        },
+        formatDate: function(date, format) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear() + 543;
+            return `${day}/${month}/${year}`;
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+            setTimeout(() => setBuddhistYear(instance), 5);
+        },
+        onYearChange: function(selectedDates, dateStr, instance) {
+            setTimeout(() => setBuddhistYear(instance), 5);
+        },
+        onMonthChange: function(selectedDates, dateStr, instance) {
+            setTimeout(() => setBuddhistYear(instance), 5);
+        },
+        onOpen: function(selectedDates, dateStr, instance) {
+            setTimeout(() => setBuddhistYear(instance), 5);
+        }
+    });
+}
+selectorEdit();
     </script>

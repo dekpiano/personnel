@@ -96,10 +96,7 @@ class ConLogin extends BaseController
                             // }else{
                                 return redirect()->to("https://".$_SESSION['Return']);
                             // }
-                           
-                        
-                        
-                        
+                          
                 }            
 
                 }else{

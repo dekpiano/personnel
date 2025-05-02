@@ -99,7 +99,7 @@
                 <h5>สายสนับสนุน</h5>
                 <?php foreach ($Support as $key => $v_Support) : ?>
 
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-6 col-xl-4">
                 <div class="card">
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">

@@ -4,20 +4,24 @@ $('.select2Personnel').select2({
   });
 
 
+
 //ฟังก์ชันหาอายุ
-function calculateAge(birthdate) {
-    const today = new Date();
-    const birthDate = new Date(birthdate);
+function calculateAge(thaiDate) {
+   // แปลงจาก "02/05/2568" → [02, 05, 2568]
+   const [day, month, year] = thaiDate.split('/').map(Number);
 
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
+   // แปลง พ.ศ. → ค.ศ. (ลบ 543)
+   const birthDate = new Date(year - 543, month - 1, day); // เดือนใน JS เริ่มจาก 0
 
-    // ถ้ายังไม่ถึงวันเกิดปีนี้ → ลบอายุลง 1
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
+   const today = new Date();
+   let age = today.getFullYear() - birthDate.getFullYear();
+   const m = today.getMonth() - birthDate.getMonth();
 
-    return age;
+   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+       age--;
+   }
+
+   return age;
 }
 
 $(document).on('submit', '#FormPersonnalAdd', function (e) {
@@ -154,42 +158,158 @@ function loadPersonnelData(id) {
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            //console.log(data);
+            console.log(data[0].pers_britday);
 
-            $('.pers_prefix').val(data.pers_prefix);
-            $('.pers_firstname').val(data.pers_firstname);
-            $('.pers_lastname').val(data.pers_lastname);
-            $('.pers_id_card').val(data.pers_id_card);
-            $('.pers_britday').val(data.pers_britday);
-            $('.pers_nationality').val(data.pers_nationality);
-            $('.pers_race').val(data.pers_race);
-            $('.pers_religion').val(data.pers_religion);
-            $('.pers_marital_status').val(data.pers_marital_status);
-            $('.pers_blood_type').val(data.pers_blood_type);
-            $('.pers_email').val(data.pers_username);
-            $('.pers_phone').val(data.pers_phone);
-            $('.pers_facebook').val(data.pers_facebook);
-            $('.pers_instagram').val(data.pers_instagram);
-            $('.pers_youtube').val(data.pers_youtube);
-            $('.pers_social_links').val(data.pers_social_links);
-            $('.pers_line').val(data.pers_line);
-            $('.pers_military_service').val(data.pers_military_service);
+            $('.pers_prefix').val(data[0].pers_prefix);
+            $('.pers_firstname').val(data[0].pers_firstname);
+            $('.pers_lastname').val(data[0].pers_lastname);
+            $('.pers_id_card').val(data[0].pers_id_card);
+            $('.pers_britday').val(data[0].pers_britday);
+            $('.pers_nationality').val(data[0].pers_nationality);
+            $('.pers_race').val(data[0].pers_race);
+            $('.pers_religion').val(data[0].pers_religion);
+            $('.pers_marital_status').val(data[0].pers_marital_status);
+            $('.pers_blood_type').val(data[0].pers_blood_type);
+            $('.pers_email').val(data[0].pers_username);
+            $('.pers_phone').val(data[0].pers_phone);
+            $('.pers_facebook').val(data[0].pers_facebook);
+            $('.pers_instagram').val(data[0].pers_instagram);
+            $('.pers_youtube').val(data[0].pers_youtube);
+            $('.pers_social_links').val(data[0].pers_social_links);
+            $('.pers_line').val(data[0].pers_line);
+            $('.pers_military_service').val(data[0].pers_military_service);
 
-            $('.pers_age').val(calculateAge(data.pers_britday));
+            $('#pers_age').val(calculateAge(data[0].pers_britday));
 
-            $('.pers_status').val(data.pers_status);
-            $('.pers_username').val(data.pers_username);
-            $('.pers_position').val(data.pers_position);
-            $('.pers_department').val(data.pers_department);
-            $('.pers_learning').val(data.pers_learning);
-            $('.pers_academic').val(data.pers_academic);
-            $('.pers_groupleade').val(data.pers_groupleade);
+            $('.pers_status').val(data[0].pers_status);
+            $('.pers_username').val(data[0].pers_username);
+            $('.pers_position').val(data[0].pers_position);
+            $('.pers_department').val(data[0].pers_department);
+            $('.pers_learning').val(data[0].pers_learning);
+            $('.pers_academic').val(data[0].pers_academic);
+            $('.pers_groupleade').val(data[0].pers_groupleade);
+
+            // ที่อยู่ตามทะเบียนบ้าน
+            $('#addr_house_no').val(data[0].addr_house_no);
+            $('#addr_moo').val(data[0].addr_moo); 
+            $('#addr_village').val(data[0].addr_village);
+            $('#addr_soi').val(data[0].addr_soi);
+            $('#addr_road').val(data[0].addr_road);            
+            $('#addr_postcode').val(data[0].addr_postcode);
+            $('.province').append(new Option(data[0].addr_province, data[0].addr_province, true, true)).trigger('change');
+            $('.district').append(new Option(data[0].addr_district, data[0].addr_district, true, true)).trigger('change');
+            $('.subdistrict').append(new Option(data[0].addr_subdistrict, data[0].addr_subdistrict, true, true)).trigger('change');
+
+            // ที่อยู่ปัจจุบัน
+            $('#curr_addr_house_no').val(data[1].addr_house_no);
+            $('#curr_addr_moo').val(data[1].addr_moo);
+            $('#curr_addr_village').val(data[1].addr_village);
+            $('#curr_addr_soi').val(data[1].addr_soi);
+            $('#curr_addr_road').val(data[1].addr_road);
+            $('#curr_addr_postcode').val(data[1].addr_postcode);
+            $('.curr_province').append(new Option(data[1].addr_province, data[1].addr_province, true, true)).trigger('change');
+            $('.curr_district').append(new Option(data[1].addr_district, data[0].addr_district, true, true)).trigger('change');
+            $('.curr_subdistrict').append(new Option(data[1].addr_subdistrict, data[1].addr_subdistrict, true, true)).trigger('change');
+         
+        
         },
         error: function () {
             alert('ไม่พบข้อมูลบุคลากร');
         }
     });
 }
+
+function showSaveStatus(message, color = '#333') {
+    const statusBox = document.getElementById('save-status');
+    statusBox.style.color = color;
+    statusBox.textContent = message;
+    statusBox.style.display = 'block';
+
+    // ซ่อนหลัง 2 วิ (ถ้าต้องการ)
+    if (message !== 'กำลังบันทึก...') {
+        setTimeout(() => statusBox.style.display = 'none', 2000);
+    }
+}
+
+$('#pers_id_card').on('input', function () {
+    const value = $(this).val();
+    const raw = value.replace(/-/g, '');
+
+    if (raw.length < 13) {
+        $('#cid-error')
+            .text('กรุณากรอกเลขบัตรให้ครบ 13 หลัก')
+            .css('color', 'orange')
+            .show();
+            return;
+    } else if (raw.length === 13) {
+        if (isValidThaiID(value)) {
+            $('#cid-error')
+                .text('✅ เลขบัตรประชาชนถูกต้อง')
+                .css('color', 'green')
+                .show();
+        } else {
+            $('#cid-error')
+                .text('❌ เลขบัตรประชาชนไม่ถูกต้อง')
+                .css('color', 'red')
+                .show();
+                return;
+        }
+    }
+
+});
+
+$('.auto-save').on('blur change', function () {
+    let PresID = $('#pers_id').val();
+    let field = $(this).attr('name');
+    let value = $(this).val();
+
+    if(field === 'pers_id_card'){
+        const raw = value.replace(/-/g, '');
+        if (raw.length < 13) {
+            $('#cid-error')
+                .text('กรุณากรอกเลขบัตรให้ครบ 13 หลัก')
+                .css('color', 'orange')
+                .show();
+                return;
+        } else if (raw.length === 13) {
+            if (isValidThaiID(value)) {
+                $('#cid-error')
+                    .text('✅ เลขบัตรประชาชนถูกต้อง')
+                    .css('color', 'green')
+                    .show();
+            } else {
+                $('#cid-error')
+                    .text('❌ เลขบัตรประชาชนไม่ถูกต้อง')
+                    .css('color', 'red')
+                    .show();
+                    return;
+            }
+        }
+    }
+
+    if("pers_britday" == $(this).attr('name')){
+        $('#pers_age').val(calculateAge(value));  
+    }
+    $.ajax({
+        url: '../../../../Admin/WorkPerson/Personnel/DB/Update/Alone',
+        type: 'POST',
+        data: {
+            PresID: PresID,
+            field: field,
+            value: value
+        },
+        success: function (data) {
+            
+            if(data > 0){
+                showSaveStatus('บันทึกแล้ว ✅', 'green')
+            }else{
+                showSaveStatus('❌ บันทึกล้มเหลว', 'red')
+            }
+            
+        }
+    });
+
+});
 
 const pathSegments = window.location.pathname.split('/');
 const lastSegment = pathSegments[pathSegments.length - 1];
@@ -205,24 +325,32 @@ if (matches) {
 $('#same_address').on('change', function () {
     const isChecked = $(this).is(':checked');
     const fields = [
-        'house_no', 'moo', 'village', 'soi', 'road', 'subdistrict', 'district', 'province', 'postcode'
+        'house_no', 'moo', 'village', 'soi', 'road',
+        'subdistrict', 'district', 'province', 'postcode'
     ];
+
     fields.forEach(f => {
-        const sourceVal = $('#addr_' + f).val();
+        const $source = $('#addr_' + f);
         const $target = $('#curr_addr_' + f);
+
         if (isChecked) {
-            $target.val(sourceVal);
+            const value = $source.is('select') ? $source.find(':selected').val() : $source.val();
+            $target.val(value).trigger('change'); // ให้ select2 แสดงผลด้วย
         }
     });
 });
-// ถ้ามีการแก้ไขที่อยู่ทะเบียนบ้าน และ checkbox ถูกติ๊ก -> sync อัตโนมัติ
+
+// sync แบบ realtime เมื่อบ้านถูกแก้ และ checkbox ถูกติ๊ก
 const addrFields = [
-    'house_no', 'moo', 'village', 'soi', 'road', 'subdistrict', 'district', 'province', 'postcode'
+    'house_no', 'moo', 'village', 'soi', 'road',
+    'subdistrict', 'district', 'province', 'postcode'
 ];
+
 addrFields.forEach(f => {
-    $('#addr_' + f).on('input', function () {
+    $('#addr_' + f).on('input change', function () {
         if ($('#same_address').is(':checked')) {
-            $('#curr_addr_' + f).val($(this).val());
+            const value = $(this).is('select') ? $(this).find(':selected').val() : $(this).val();
+            $('#curr_addr_' + f).val(value).trigger('change');
         }
     });
 });
