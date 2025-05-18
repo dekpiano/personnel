@@ -7,7 +7,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title><?=$title;?> | SKJ บริหารทั่วไป</title>
+    <title><?=$title;?> | SKJ บริหารงานบุคคล</title>
 
     <meta name="description" content="<?= $description ?>" />
     <meta

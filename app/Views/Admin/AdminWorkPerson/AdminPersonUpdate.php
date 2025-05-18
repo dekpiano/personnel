@@ -71,14 +71,14 @@
                     <div class="nav-align-top mb-4">
                         <ul class="nav nav-pills mb-3 nav-fill" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button type="button" class="nav-link " role="tab" data-bs-toggle="tab"
+                                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
                                     data-bs-target="#navs-pills-justified-home"
                                     aria-controls="navs-pills-justified-home" aria-selected="true"
                                     fdprocessedid="c2enjh"><i class="tf-icons bx bx-home me-1"></i> ข้อมูลทั่วไป
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                                <button type="button" class="nav-link " role="tab" data-bs-toggle="tab"
                                     data-bs-target="#navs-pills-justified-profile"
                                     aria-controls="navs-pills-justified-profile" aria-selected="false" tabindex="-1"><i
                                         class="tf-icons bx bx-user me-1"></i> ประวัติส่วนตัว</button>
@@ -92,11 +92,11 @@
                             </li>
                         </ul>
                         <div class="tab-content">
-                            <div class="tab-pane fade " id="navs-pills-justified-home" role="tabpanel">
+                            <div class="tab-pane fade  active show" id="navs-pills-justified-home" role="tabpanel">
 
                                 <?php echo $this->include('Admin/AdminWorkPerson/AdminPersonForm/FormGeneralInformation.php'); ?>
                             </div>
-                            <div class="tab-pane fade active show" id="navs-pills-justified-profile" role="tabpanel">
+                            <div class="tab-pane fade" id="navs-pills-justified-profile" role="tabpanel">
                                 <?php echo $this->include('Admin/AdminWorkPerson/AdminPersonForm/FormPresonHistory.php'); ?>
                             </div>
                             <div class="tab-pane fade" id="navs-pills-justified-messages" role="tabpanel">

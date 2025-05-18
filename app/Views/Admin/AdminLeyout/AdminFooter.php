@@ -39,7 +39,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Vendors JS -->
-    <script src="<?=base_url()?>/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
@@ -64,13 +64,17 @@
     <?php if($uri->getSegment(2) == 'WorkPerson') : ?>
     <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=12.6"></script>
     <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1"></script>
-    
     <?php endif;?>
+    <?php if($uri->getSegment(2) == 'SaveAttendance') : ?>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=1.5"></script>
+     <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminStaffLeaveReport.js?v=1"></script>
+    <?php endif;?>
+
     <?php if($uri->getSegment(2) == 'Rloes') : ?>
     <script src="<?=base_url()?>/assets/js/Admin/AdminRoles/AdminRolesMain.js?v=3"></script>
     <?php endif;?>
 
-    
+
 
     <script>
 $('#pers_id_card').inputmask('9-9999-99999-99-9');

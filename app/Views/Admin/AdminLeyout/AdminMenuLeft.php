@@ -9,7 +9,8 @@
                     <span class="app-brand-logo demo">
                         <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="" width="40">
                     </span>
-                    <span class="app-brand-text menu-text fw-bolder ms-2">สกจ.งานบุคลากร <small>(เจ้าหน้าที่)</small></span>
+                    <span class="app-brand-text menu-text fw-bolder ms-2">สกจ.งานบุคลากร
+                        <small>(เจ้าหน้าที่)</small></span>
                 </a>
 
                 <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -31,12 +32,12 @@
                 <!-- Layouts -->
                 <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
 
-                
+
                 <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "WorkPerson"?"active open":""?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-layout"></i>
-                        <div data-i18n="Layouts">งานบุคลากร</div>
+                        <div data-i18n="Layouts">จัดการบุคคลกร</div>
                     </a>
 
                     <ul class="menu-sub">
@@ -47,6 +48,15 @@
                         </li>
 
                     </ul>
+                </li>
+                <li class="menu-header small text-uppercase">
+                    <span class="menu-header-text">Apps &amp; Pages</span>
+                </li>
+                <li class="menu-item <?php echo $uri->getSegment(2) == "SaveAttendance"?"active":""?>">
+                    <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-layout"></i>
+                        <div data-i18n="Layouts">บันทึกการมาทำงาน</div>
+                    </a>
                 </li>
                 <?php endif; ?>
             </ul>

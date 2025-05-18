@@ -23,7 +23,7 @@ class ConAdminWorkPerson extends BaseController
     {
         $session = session();
         $data = $this->DataMain();
-        $data['title']="ทะเบียนครูและบุคลากรทางการศึกษา";
+        $data['title']="ทะเบียนครูและบุคคลทางการศึกษา";
         $DB_SKJ = \Config\Database::connect('skj');
         $DBLear = $DB_SKJ->table('tb_learning');
         $DBPosi = $DB_SKJ->table('tb_position');
@@ -78,7 +78,7 @@ class ConAdminWorkPerson extends BaseController
     public function FormAdd(){
         $session = session();
         $data = $this->DataMain();
-        $data['title']="เพิ่มข้อมูลครูและบุคลากรทางการศึกษา";
+        $data['title']="เพิ่มข้อมูลครูและบุคคลทางการศึกษา";
         $DB_SKJ = \Config\Database::connect('skj');
         $DBPosi = $DB_SKJ->table('tb_position');
         $DBLear = $DB_SKJ->table('tb_learning');
@@ -207,7 +207,7 @@ class ConAdminWorkPerson extends BaseController
     public function FormPersonneUpdate($IDPres){
         $session = session();
         $data = $this->DataMain();
-        $data['title']="อัพเดตข้อมูลครูและบุคลากรทางการศึกษา";    
+        $data['title']="อัพเดตข้อมูลครูและบุคคลทางการศึกษา";    
         $DB_SKJ = \Config\Database::connect('skj');
         $DBPosi = $DB_SKJ->table('tb_position');
         $DBLear = $DB_SKJ->table('tb_learning');

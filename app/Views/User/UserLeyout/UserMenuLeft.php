@@ -9,7 +9,7 @@
                     <span class="app-brand-logo demo">
                         <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="" width="40">
                     </span>
-                    <span class="app-brand-text menu-text fw-bolder ms-2">สกจ.งานบุคลากร</span>
+                    <span class="app-brand-text menu-text fw-bolder ms-2">สกจ.บริหารงานบุคคล</span>
                 </a>
 
                 <a href="<?=base_url()?>" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -21,14 +21,14 @@
 
             <ul class="menu-inner py-1">
                 <!-- Dashboard -->
-                <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
+                <li class="menu-item <?php echo $UrlMenuMain == "Main"?"active":""?>">
                     <a href="<?=base_url();?>" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-home-circle"></i>
                         <div data-i18n="Analytics">หน้าแรก</div>
                     </a>
                 </li>
                 <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">งานบุคลากร</span>
+                    <span class="menu-header-text">งานบุคคล</span>
                 </li>
                 <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
                     <a href="<?=base_url();?>" class="menu-link">
@@ -60,12 +60,12 @@
                 </ul>
                 <?php else: ?>
                 <ul class="menu-inner py-1">
-                    <li class="menu-item">
+                    <li class="menu-item <?php echo $UrlMenuMain == "LoginOfficerPersonnel"?"active":""?>">
                         <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->
                         <a href="<?=base_url('LoginOfficerPersonnel?return_to='.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);?>"
                             class="menu-link">
                             <i class="menu-icon tf-icons bx bxs-key"></i>
-                            <div data-i18n="Analytics">เข้าสู่ระบบ</div>
+                            <div data-i18n="Analytics">เข้าสู่ระบบ </div>
                         </a>
                     </li>
                 </ul>

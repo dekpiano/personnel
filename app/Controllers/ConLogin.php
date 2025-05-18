@@ -39,7 +39,7 @@ class ConLogin extends BaseController
         $data = $this->DataMain();
         $data['title']="หน้าแรก";
         $data['description']="เข้าสู่ระบบ";
-        $data['UrlMenuMain'] = '';
+        $data['UrlMenuMain'] = 'LoginOfficerPersonnel';
         $data['UrlMenuSub'] = '';
         
 
@@ -73,7 +73,7 @@ class ConLogin extends BaseController
                    
 
                 $CheckEmail = $DBPers->where('pers_username', $data['email'])->get()->getRowArray()>0?true:false;
-                //echo '<pre>';print_r($CheckEmail); exit();  
+                //echo '<pre>';print_r("555"); exit();  
                 if($CheckEmail){
                         $UserData = array('login_oauth_uid' => $data['id'],
                                             'updated_at' => date('Y-m-d H:i:s'));
@@ -97,10 +97,16 @@ class ConLogin extends BaseController
                                 return redirect()->to("https://".$_SESSION['Return']);
                             // }
                           
-                }            
+                } else{
+                    
+                  
+                    $session->setFlashdata('Error', 'Email นี้ไม่สามารถเข้าสู่ระบบได้ กรุณาติดต่อผู้ดูแลระบบ!');
+                    return redirect()->back();
+                }        
 
                 }else{
                     session()->set('Error', "Something went Wrong!");     
+                    
                 }
         
             }

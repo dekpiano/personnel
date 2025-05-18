@@ -101,49 +101,63 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4" style="display:none;" id="show_position">
             <div class="form-floating">
-                <select class="form-select pers_learning" id="pers_learning" name="pers_learning">
-                    <option value="">ไม่มีไม่ต้องเลือก...</option>
-                    <?php foreach ($learning as $key => $value) : ?>
-                    <option value="<?=$value->lear_id;?>">
-                        <?=$value->lear_namethai;?></option>
-                    <?php endforeach; ?>
+                <select class="form-select select2Personnel" id="pers_workother_id" name="pers_workother_id" required>
+                    <option value="0">เลือกตำแหน่งหลัก</option>
                 </select>
-                <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
+                <label for="pers_workother_id">ตำแหน่งหลัก</label>
             </div>
             <div class="invalid-feedback">
                 กรุณาเลือกกลุ่มสาระการเรียนรู้
             </div>
         </div>
-        <div class="col-md-4">
-            <?php $degee = array('ชำนาญการ','ชำนาญการพิเศษ','เชี่ยวชาญ','เชี่ยวชาญพิเศษ'); ?>
-            <div class="form-floating">
-                <select class="form-select pers_academic" id="pers_academic" name="pers_academic">
-                    <option value="">ไม่มีไม่ต้องเลือก...</option>
-                    <?php foreach ($degee as $key => $value) : ?>
-                    <option value="<?=$value;?>"><?=$value;?></option>
-                    <?php endforeach; ?>
-                </select>
-                <label for="pers_academic">วิทยฐานะ</label>
+
+        <div class="row g-3 mt-2" style="display:none;" id="show_learning">
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <select class="form-select pers_learning" id="pers_learning" name="pers_learning">
+                        <option value="">ไม่มีไม่ต้องเลือก...</option>
+                        <?php foreach ($learning as $key => $value) : ?>
+                        <option value="<?=$value->lear_id;?>">
+                            <?=$value->lear_namethai;?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
+                </div>
+                <div class="invalid-feedback">
+                    กรุณาเลือกกลุ่มสาระการเรียนรู้
+                </div>
             </div>
-            <div class="invalid-feedback">
-                Please provide a valid state.
+            <div class="col-md-4">
+                <?php $degee = array('ชำนาญการ','ชำนาญการพิเศษ','เชี่ยวชาญ','เชี่ยวชาญพิเศษ'); ?>
+                <div class="form-floating">
+                    <select class="form-select pers_academic" id="pers_academic" name="pers_academic">
+                        <option value="">ไม่มีไม่ต้องเลือก...</option>
+                        <?php foreach ($degee as $key => $value) : ?>
+                        <option value="<?=$value;?>"><?=$value;?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="pers_academic">วิทยฐานะ</label>
+                </div>
+                <div class="invalid-feedback">
+                    Please provide a valid state.
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <?php $grouplead = array('หัวหน้ากลุ่มสาระ','รองหัวหน้ากลุ่มสาระ');  ?>
-            <div class="form-floating">
-                <select class="form-select pers_groupleade" id="pers_groupleade" name="pers_groupleade">
-                    <option value="">ไม่มีไม่ต้องเลือก...</option>
-                    <?php foreach ($grouplead as $key => $value) :?>
-                    <option value="<?=$value;?>"><?=$value;?></option>
-                    <?php endforeach; ?>
-                </select>
-                <label for="pers_groupleade">หัวหน้าและรองหัวหน้ากลุ่มสาระ</label>
-            </div>
-            <div class="invalid-feedback">
-                Please provide a valid state.
+            <div class="col-md-4">
+                <?php $grouplead = array('หัวหน้ากลุ่มสาระ','รองหัวหน้ากลุ่มสาระ');  ?>
+                <div class="form-floating">
+                    <select class="form-select pers_groupleade" id="pers_groupleade" name="pers_groupleade">
+                        <option value="">ไม่มีไม่ต้องเลือก...</option>
+                        <?php foreach ($grouplead as $key => $value) :?>
+                        <option value="<?=$value;?>"><?=$value;?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="pers_groupleade">หัวหน้าและรองหัวหน้ากลุ่มสาระ</label>
+                </div>
+                <div class="invalid-feedback">
+                    Please provide a valid state.
+                </div>
             </div>
         </div>
     </div>

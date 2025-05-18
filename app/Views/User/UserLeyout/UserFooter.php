@@ -79,6 +79,20 @@
         <script src="<?=base_url()?>/assets/js/User/UserCarReservation/UserCarReservation.js?v=2"></script>
     <?php endif; ?>
 
+    
+    <?php if (session()->getFlashdata('Error')): ?>
+
+<?= session()->getFlashdata('Error') ?>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: '<?= session()->getFlashdata('Error') ?>',
+            showConfirmButton: false,
+            timer: 3000
+        })
+    </script>
+    <?php endif; ?>
+
     <script>
 // Example starter JavaScript for disabling form submissions if there are invalid fields
 (function() {

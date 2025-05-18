@@ -63,6 +63,13 @@ $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Alone', 'Co
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Select/GetPositionData', 'ConAdminWorkPerson::GetPositionData');
 
+$routes->get('Admin/SaveAttendance', 'ConAdminSaveAttendance::index');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetPersonnalData', 'ConAdminSaveAttendance::GetPersonnalData');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetAttendanceToDate', 'ConAdminSaveAttendance::GetAttendanceToDate');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/SaveAttendanceToDB', 'ConAdminSaveAttendance::SaveAttendanceToDB');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/DashboardAttendance', 'ConAdminSaveAttendance::DashboardAttendance');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/LeaveSummary', 'ConAdminSaveAttendance::GetLeaveSummary');
+
 
 
 /*
