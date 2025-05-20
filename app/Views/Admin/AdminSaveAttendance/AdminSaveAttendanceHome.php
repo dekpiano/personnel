@@ -111,8 +111,8 @@ td.td-name {
                             value="<?=date('Y-m-d')?>">
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle text-center">
-                            <thead class="table-light">
+                        <table class="table table-bordered align-middle text-center" id="TbSaveAttendance">
+                            <thead class="table-primary">
                                 <tr>
                                     <th>ชื่อ-สกุล</th>
                                     <th>ตำแหน่ง</th>

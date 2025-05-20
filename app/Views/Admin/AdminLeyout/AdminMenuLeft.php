@@ -34,6 +34,9 @@
 
 
                 <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
+                      <li class="menu-header small text-uppercase">
+                    <span class="menu-header-text">จัดการข้อมูลพื้นฐาน</span>
+                </li>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "WorkPerson"?"active open":""?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-layout"></i>
@@ -50,7 +53,7 @@
                     </ul>
                 </li>
                 <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">Apps &amp; Pages</span>
+                    <span class="menu-header-text">บันทึกงาน</span>
                 </li>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "SaveAttendance"?"active":""?>">
                     <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">

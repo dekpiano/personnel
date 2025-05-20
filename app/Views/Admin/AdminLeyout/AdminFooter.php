@@ -66,7 +66,7 @@
     <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1"></script>
     <?php endif;?>
     <?php if($uri->getSegment(2) == 'SaveAttendance') : ?>
-    <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=1.5"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=1.6"></script>
      <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminStaffLeaveReport.js?v=1"></script>
     <?php endif;?>
 

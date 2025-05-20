@@ -25,7 +25,11 @@ class ConAdminHome extends BaseController
         $data = $this->DataMain();
         $data['title']="หน้าแรก";
         $database = \Config\Database::connect();
+        $DBPers = $database->table('tb_personnel');
       
+        $data['countAllPersonnel'] = $DBPers->where("pers_status","กำลังใช้งาน")->countAllResults();
+       // print_r($data['personnel']); exit();
+
         return view('Admin/AdminLeyout/AdminHeader',$data)
                 .view('Admin/AdminLeyout/AdminMenuLeft')
                 .view('Admin/AdminHome/AdminPageHome')
@@ -37,6 +41,8 @@ class ConAdminHome extends BaseController
         $session = session();
         $data = $this->DataMain();
         $data['title']="หน้าแรก";
+
+        
 
         return view('User/UserLeyout/UserHeader',$data)
                 .view('User/UserLeyout/UserMenuLeft')

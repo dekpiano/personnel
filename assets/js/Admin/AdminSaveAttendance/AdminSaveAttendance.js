@@ -1,6 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     // โหลดรายชื่อเมื่อเปิด modal
+    let TbSaveAttendance = null;
     function loadAttendanceTable() {
         const tbody = document.getElementById('personnel-tbody');
         const date = document.getElementById('att_date').value;
@@ -11,6 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fetch('../Admin/SaveAttendance/DB/Select/GetAttendanceToDate?date=' + date)
                     .then(res => res.json())
                     .then(attendance => {
+                        if (TbSaveAttendance) {
+                            TbSaveAttendance.destroy();
+                            $('#TbSaveAttendance tbody').empty();
+                        }
+
                         let html = '';
                         personnel.forEach(function (p, idx) {
                             const att = attendance.find(a => a.person_id == p.pers_id) || {};
@@ -30,12 +36,20 @@ document.addEventListener("DOMContentLoaded", function () {
           </tr>`;
                         });
                         tbody.innerHTML = html;
+                        TbSaveAttendance = $('#TbSaveAttendance').DataTable({
+                            ordering: false,
+                            fixedHeader: true, // เปิดหัวตารางลอย!
+                        });
+
                     })
                     .catch(err => {
                         console.log(`เกิดข้อผิดพลาด: ${err.message}`);
                     });
             });
     }
+
+
+
 
     // โหลดเมื่อ modal เปิด
     document.getElementById('attendanceModal').addEventListener('show.bs.modal', loadAttendanceTable);
@@ -46,8 +60,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('attendance-form').addEventListener('submit', function (e) {
         e.preventDefault();
+         let table = $('#TbSaveAttendance').DataTable();
         const form = e.target;
+        let allRows = table.rows().nodes().toArray();
         const formData = new FormData(form);
+
+         allRows.forEach(function(row) {
+        // สมมติ input radio ชื่อ status[xxx], input remark[xxx]
+        let radios = row.querySelectorAll('input[type="radio"]:checked');
+        radios.forEach(function(input) {
+            formData.append(input.name, input.value);
+        });
+        let remark = row.querySelector('input[name^="remark"]');
+        if (remark) {
+            formData.append(remark.name, remark.value);
+        }
+    });
 
         const btn = form.querySelector('button[type=submit]');
         if (btn) btn.disabled = true;
@@ -71,6 +99,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         showConfirmButton: false,
                         timer: 1500
                     });
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 1500);
 
                 } else {
                     Swal.fire({
@@ -206,15 +237,15 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       `;
 
-                if (datatable) {                    
-                   datatable.destroy();
-                   datatable = null; // สำคัญ!
+                if (datatable) {
+                    datatable.destroy();
+                    datatable = null; // สำคัญ!
                 }
                 $('#TbDashboradAttendance tbody').empty();
                 // ตาราง
-                  let rows = '';
+                let rows = '';
                 if (data.table && data.table.length) {
-                  
+
                     data.table.forEach(row => {
                         let badge = 'bg-secondary';
                         if (row.status === 'มา') badge = 'bg-success';
@@ -233,14 +264,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             `;
                     });
                     $('#TbDashboradAttendance tbody').html(rows);
-                    
+
                 } else {
                     $('#TbDashboradAttendance tbody').html(`<tr><td class="text-center">รอ...</td>
                         <td class="text-center">รอ...</td>
                         <td class="text-center">รอ...</td>
                         <td class="text-center">รอ...</td>
                         </tr>`);
-                    
+
                 }
                 datatable = $('#TbDashboradAttendance').DataTable();
                 // เปลี่ยน title
@@ -260,7 +291,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // initial
     document.getElementById('dateInput').addEventListener('change', updateDashboard);
     updateDashboard();
-    //$('#TbDashboradAttendance').DataTable();
 });
 
 

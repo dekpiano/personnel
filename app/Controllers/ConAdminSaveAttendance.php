@@ -70,6 +70,7 @@ class ConAdminSaveAttendance extends BaseController
         $status = $this->request->getPost('status');
         $remark = $this->request->getPost('remark');
 
+
         foreach ($status as $person_id => $val) {
             $data = [
                 'att_person_id' => $person_id,
