@@ -76,7 +76,8 @@ class ConAdminSaveAttendance extends BaseController
                 'att_person_id' => $person_id,
                 'att_date' => $date,
                 'att_status' => $val,
-                'att_reason' => $remark[$person_id] ?? null
+                'att_reason' => $remark[$person_id] ?? null,
+                'att_adminid' => session()->get('id')
             ];
             // REPLACE หรือ UPSERT (ถ้ามี UNIQUE KEY att_person_id, att_date)
             $DBPers->replace($data);
@@ -135,7 +136,8 @@ class ConAdminSaveAttendance extends BaseController
             'sick' => 0,
             'official' => 0,
             'personal' => 0, // ลากิจ
-            'other' => 0,    // ลาอื่น ๆ
+            'other' => 0, 
+            'late' => 0,   // ลาอื่น ๆ
             'total' => 0
         ];
         foreach ($rows as $r) {
@@ -144,7 +146,8 @@ class ConAdminSaveAttendance extends BaseController
             else if ($r['att_status'] == 'ลาป่วย') $statCount['sick']++;
             else if ($r['att_status'] == 'ไปราชการ') $statCount['official']++;
             else if ($r['att_status'] == 'ลากิจ') $statCount['personal']++;
-            else $statCount['other']++; // เช่น "ลาอื่น ๆ" หรือกรณี status ที่ไม่ได้ระบุข้างบน
+            else if ($r['att_status'] == 'อื่นๆ') $statCount['other']++;
+           else if ($r['att_status'] == 'สาย') $statCount['late']++;
             $statCount['total']++;
         }
         // คิด % (กันหาร 0)
@@ -155,12 +158,14 @@ class ConAdminSaveAttendance extends BaseController
             'official' => $statCount['official'],
             'personal' => $statCount['personal'],
             'other' => $statCount['other'],
+            'late' => $statCount['late'],
             'present_percent' => $statCount['total'] ? round($statCount['present']*100/$statCount['total'], 1) : 0,
             'absent_percent' => $statCount['total'] ? round($statCount['absent']*100/$statCount['total'], 1) : 0,
             'sick_percent' => $statCount['total'] ? round($statCount['sick']*100/$statCount['total'], 1) : 0,
             'official_percent' => $statCount['total'] ? round($statCount['official']*100/$statCount['total'], 1) : 0,
             'personal_percent' => $statCount['total'] ? round($statCount['personal']*100/$statCount['total'], 1) : 0,
             'other_percent' => $statCount['total'] ? round($statCount['other']*100/$statCount['total'], 1) : 0,
+            'late_percent' => $statCount['total'] ? round($statCount['late']*100/$statCount['total'], 1) : 0,
         ];
 
         // 4. คืนค่า JSON

@@ -185,10 +185,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     data.stats.sick,       // ลาป่วย
                     data.stats.official,    // ไปราชการ
                     data.stats.personal,    // ลากิจ
-                    data.stats.other        // ลาอื่น ๆ
+                    data.stats.other,
+                    data.stats.late       // ลาอื่น ๆ
                 ];
-                const labels = ['มาทำงาน', 'ขาดงาน', 'ลาป่วย', 'ไปราชการ', 'ลากิจ', 'ลาอื่น ๆ'];
-                const colors = ['#198754', '#dc3545', '#ffc107', '#0d6efd', '#fd7e14', '#adb5bd'];
+                const labels = ['มาทำงาน', 'ขาดงาน', 'ลาป่วย', 'ไปราชการ', 'ลากิจ', 'ลาอื่น ๆ','มาสาย'];
+                const colors = ['#198754', '#dc3545', '#ffc107', '#0d6efd', '#fd7e14', '#adb5bd', '#6c757d'];
                 if (chart) { chart.destroy(); }
                 chart = new ApexCharts(document.querySelector("#chart"), {
                     chart: { type: 'donut' },
@@ -235,6 +236,12 @@ document.addEventListener("DOMContentLoaded", function () {
             <div>ลาอื่น ๆ</div>
             </div>
         </div>
+        <div class="col-4">
+            <div class="bg-info text-white rounded p-3 text-center">
+            <div class="fs-2 fw-bold">${data.stats.late_percent}%</div>
+            <div>มาสาย</div>
+            </div>
+        </div>
       `;
 
                 if (datatable) {
@@ -254,6 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         else if (row.status === 'ไปราชการ') badge = 'bg-primary';
                         else if (row.status === 'ลากิจ') badge = 'bg-secondary';
                         else if (row.status === 'อื่นๆ') badge = 'bg-secondary';
+                        else if (row.status === 'สาย') badge = 'bg-danger';
                         rows += `
                                 <tr>
                                 <td>${row.date}</td>
