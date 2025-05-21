@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers;
 
 class ConAdminWorkPerson extends BaseController
@@ -263,14 +262,17 @@ class ConAdminWorkPerson extends BaseController
     }
 
     public function PersonnelUpdateImg(){ 
+    
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
 
         $image = $this->request->getFile('file');
-        //print_r($image);
+       
         $delFile = $DBPers->select('pers_img')->where('pers_id',$this->request->getPost('KeyPresID'))->get()->getRow();
+         
         $filePath = ROOTPATH . 'uploads/admin/Personnal/'.@$delFile->pers_img;
+        //print_r(file_exists($filePath)); exit();
             if (file_exists($filePath)) {
                 @unlink($filePath);
             }
@@ -286,7 +288,19 @@ class ConAdminWorkPerson extends BaseController
             ];
             $DBPers->where('pers_id',$this->request->getPost('KeyPresID'));
             echo $DBPers->update($data);
-        }
+        } else {
+                // เกิดข้อผิดพลาด!
+                $errorMsg = '';
+                if (empty($image)) {
+                    $errorMsg = 'ไม่ได้เลือกไฟล์';
+                } elseif (!$image->isValid()) {
+                    $errorMsg = $image->getErrorString();
+                } elseif ($image->hasMoved()) {
+                    $errorMsg = 'ไฟล์นี้ถูกอัปโหลดไปแล้ว';
+                }
+                // แสดง error ตามต้องการ
+                echo '<div class="alert alert-danger">'.$errorMsg.'</div>';
+            }
     }
 
     public function PersonnelGet($id){ 

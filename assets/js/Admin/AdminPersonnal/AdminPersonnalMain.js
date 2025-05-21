@@ -130,9 +130,12 @@ $(document).on('submit', '#FormPersonnalHistory', function (e) {
 $(document).on('change', '#pers_img', function () {
 
     var fileInput = $('#pers_img')[0].files[0];
+    console.log(fileInput);
+    
     var formData = new FormData();
     formData.append('file', fileInput);
     formData.append('KeyPresID', $(this).attr('key-persid'));
+    //console.log(formData)
     $.ajax({
         url: "../../../../Admin/WorkPerson/Personnel/DB/Update/Img",
         method: "POST",
@@ -141,6 +144,8 @@ $(document).on('change', '#pers_img', function () {
         contentType: false,
         cache: false,
         success: function (res) {
+            console.log(res);
+            
             if (res == 1) {
                 Swal.fire(
                     'แจ้งเตือน!', "เปลี่ยนรูปภาพสำเร็จ",
@@ -158,7 +163,7 @@ function loadPersonnelData(id) {
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            console.log(data[0].pers_britday);
+            //console.log(data);
 
             $('.pers_prefix').val(data[0].pers_prefix);
             $('.pers_firstname').val(data[0].pers_firstname);
@@ -201,6 +206,7 @@ function loadPersonnelData(id) {
             $('.subdistrict').append(new Option(data[0].addr_subdistrict, data[0].addr_subdistrict, true, true)).trigger('change');
 
             // ที่อยู่ปัจจุบัน
+            if(data[1]){
             $('#curr_addr_house_no').val(data[1].addr_house_no);
             $('#curr_addr_moo').val(data[1].addr_moo);
             $('#curr_addr_village').val(data[1].addr_village);
@@ -210,7 +216,7 @@ function loadPersonnelData(id) {
             $('.curr_province').append(new Option(data[1].addr_province, data[1].addr_province, true, true)).trigger('change');
             $('.curr_district').append(new Option(data[1].addr_district, data[0].addr_district, true, true)).trigger('change');
             $('.curr_subdistrict').append(new Option(data[1].addr_subdistrict, data[1].addr_subdistrict, true, true)).trigger('change');
-         
+            }
         
         },
         error: function () {
