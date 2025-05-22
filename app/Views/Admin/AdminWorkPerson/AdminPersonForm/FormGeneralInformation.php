@@ -1,4 +1,5 @@
 <form class="needs-validation" novalidate="" id="FormPersonnalUpdateDataPersonnel" enctype="multipart/form-data">
+    <input type="hidden" name="key_update" id="key_update" value="<?=$uri->getSegment(4)?>">
     <div class="row g-3">
         <div class="col-md-9">
             <?php $status = array('กำลังใช้งาน','ย้ายสถานศึกษา','ลาออก','เกษียรอายุ'); ?>
@@ -105,11 +106,15 @@
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_workother_id" name="pers_workother_id" required>
                     <option value="0">เลือกตำแหน่งหลัก</option>
+                    <?php foreach ($PosiMain as $key => $value) : ?>
+                    <option value="<?=$value->work_id;?>"><?=$value->work_name;?>
+                    </option>
+                    <?php endforeach; ?>
                 </select>
                 <label for="pers_workother_id">ตำแหน่งหลัก</label>
             </div>
             <div class="invalid-feedback">
-                กรุณาเลือกกลุ่มสาระการเรียนรู้
+                กรุณาเลือกตำแหน่งหลัก
             </div>
         </div>
 

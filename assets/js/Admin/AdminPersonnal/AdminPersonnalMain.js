@@ -90,6 +90,9 @@ $(document).on('submit', '#FormPersonnalUpdateDataPersonnel', function (e) {
                     'error'
                 )
             }
+        },
+        error: function () {
+            alert('ไม่พบข้อมูลบุคลากร');
         }
     });
 });
@@ -193,7 +196,11 @@ function loadPersonnelData(id) {
             $('.pers_learning').val(data[0].pers_learning);
             $('.pers_academic').val(data[0].pers_academic);
             $('.pers_groupleade').val(data[0].pers_groupleade);
+            $('#pers_workother_id').val(data[0].work_id).trigger('change');
 
+             //$('#pers_workother_id').append(new Option(data[0].work_name, data[0].work_name, true, true)).trigger('change');
+            //console.log(data[0].pers_workother_id);
+            
             // ที่อยู่ตามทะเบียนบ้าน
             $('#addr_house_no').val(data[0].addr_house_no);
             $('#addr_moo').val(data[0].addr_moo); 
@@ -216,6 +223,10 @@ function loadPersonnelData(id) {
             $('.curr_province').append(new Option(data[1].addr_province, data[1].addr_province, true, true)).trigger('change');
             $('.curr_district').append(new Option(data[1].addr_district, data[0].addr_district, true, true)).trigger('change');
             $('.curr_subdistrict').append(new Option(data[1].addr_subdistrict, data[1].addr_subdistrict, true, true)).trigger('change');
+            }
+
+             if($('#key_update').val() === 'Update'){
+                $('#show_position').show();
             }
         
         },
@@ -408,20 +419,31 @@ $('#add-family-member').on('click', function () {
  $('#pers_position').on('change', function() {
     // ถ้าเลือก "แสดง Select ถัดไป"
     var index = $(this).prop('selectedIndex'); // รับลำดับที่เลือก (0-based)
+ 
    
+    if($('#key_update').val() === 'Update'){
+        var urlUpdate = '../../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData';
+       
+    }else{
+        var urlUpdate = '../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData';
+    }
+
     if (index > 0 && index <= 6) {
         // แสดง select ถัดไป
         $('#show_learning').show();
         $('#show_position').hide();
+        $('#pers_workother_id').removeAttr('required');
+        $('#pers_workother_id').val("");
     } else if (index >= 7) {
         $('#show_position').show();
         $('#show_learning').hide();
+        $('#pers_learning').val("");
 
         if (selectedPosition !== "") {
             var selectedPosition = $(this).val();
           // alert(selectedPosition);
             $.ajax({
-                url: '../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData', // URL ที่จะส่งคำขอไปยัง controller
+                url: urlUpdate, // URL ที่จะส่งคำขอไปยัง controller
                 type: 'POST',
                 data: { position_id: selectedPosition },
                 success: function(response) {

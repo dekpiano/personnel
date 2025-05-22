@@ -210,16 +210,23 @@ class ConAdminWorkPerson extends BaseController
         $DB_SKJ = \Config\Database::connect('skj');
         $DBPosi = $DB_SKJ->table('tb_position');
         $DBLear = $DB_SKJ->table('tb_learning');
+        $DBPosiMain = $DB_SKJ->table('tb_position_main');
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
 
         $data['position'] = $DBPosi->get()->getResult();
         $data['learning'] = $DBLear->get()->getResult();
+       
 
         $data['Pers'] = $DBPers->where('pers_id',$IDPres)->get()->getRow();
 
+         $PosiMain = $DBPosiMain->where('work_id',$data['Pers']->pers_workother_id)
+         ->get()->getRow();
+         $data['PosiMain'] = $DBPosiMain->where('posi_id',$PosiMain->posi_id ?? "")
+         ->get()->getResult();
+
         //$fieldList = $DB_Personnel->getFieldNames('tb_personnel');
-        //echo '<pre>'; print_r($fieldList); exit();
+        //echo '<pre>'; print_r($data['PosiMain']); exit();
 
         return view('Admin/AdminLeyout/AdminHeader',$data)
                 .view('Admin/AdminLeyout/AdminMenuLeft')
@@ -241,7 +248,8 @@ class ConAdminWorkPerson extends BaseController
             'pers_position' => $this->request->getVar('pers_position'),
             'pers_learning' => $this->request->getVar('pers_learning'),
             'pers_academic' => $this->request->getVar('pers_academic'),
-            'pers_groupleade' => $this->request->getVar('pers_groupleade')
+            'pers_groupleade' => $this->request->getVar('pers_groupleade'),
+            'pers_workother_id' => $this->request->getVar('pers_workother_id') ?? "",
         ];
         $DBPers->where('pers_id', $this->request->getVar('pers_id'));
         echo $DBPers->update($data);
@@ -310,6 +318,8 @@ class ConAdminWorkPerson extends BaseController
 
         $data = $DBPers->select('*')       
         ->join('tb_personnel_addresses','tb_personnel_addresses.pers_id = tb_personnel.pers_id','left')
+        //->join('tb_position','tb_position.posi_id = tb_personnel.pers_position','left')
+        ->join('skjacth_skj.tb_position_main','tb_position_main.work_id = tb_personnel.pers_workother_id','left')
         ->where('tb_personnel.pers_id',$id)
         ->get()->getResult();
 
