@@ -225,9 +225,25 @@ function loadPersonnelData(id) {
             $('.curr_subdistrict').append(new Option(data[1].addr_subdistrict, data[1].addr_subdistrict, true, true)).trigger('change');
             }
 
+             var index = $('#pers_position').prop('selectedIndex'); // รับลำดับที่เลือก (0-based)
+            console.log(index);
              if($('#key_update').val() === 'Update'){
-                $('#show_position').show();
+
+                if (index > 0 && index <= 6) {
+                    // แสดง select ถัดไป
+                    $('#show_learning').show();
+                    $('#show_position').hide();
+                    $('#pers_workother_id').removeAttr('required');
+                    $('#pers_workother_id').val("");
+                } else if (index >= 7) {
+                    $('#show_position').show();
+                    $('#show_learning').hide();
+                    $('#pers_learning').val("");
+                }
+                
             }
+
+                
         
         },
         error: function () {

@@ -62,7 +62,7 @@
     </html>
 
     <?php if($uri->getSegment(2) == 'WorkPerson') : ?>
-    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=14.2"></script>
+    <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=14.3"></script>
     <script src="<?=base_url()?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1"></script>
     <?php endif;?>
     <?php if($uri->getSegment(2) == 'SaveAttendance') : ?>
