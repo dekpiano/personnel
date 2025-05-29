@@ -68,7 +68,7 @@
     <?php if($uri->getSegment(2) == 'SaveAttendance') : ?>
     <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=1.7"></script>
      <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminStaffLeaveReport.js?v=1"></script>
-     <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminReportPositionLeave.js?v=1"></script>
+     <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminReportPositionLeave.js?v=1.1"></script>
     <?php endif;?>
 
     <?php if($uri->getSegment(2) == 'Rloes') : ?>

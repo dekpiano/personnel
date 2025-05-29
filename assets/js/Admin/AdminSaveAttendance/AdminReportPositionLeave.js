@@ -39,7 +39,7 @@ function loadLeaveSummaryByDay() {
 
             leaveByPositionTable = $('#LeaveSummaryByPositionTable').DataTable({
                 ordering: false,
-                paging: false, // ถ้าอยากให้เห็นทุกตำแหน่งใน modal เดียว
+               
 
             });
             calcTableSummary();
