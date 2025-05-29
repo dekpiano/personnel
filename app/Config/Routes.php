@@ -69,6 +69,7 @@ $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetAttendanceToDa
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/SaveAttendanceToDB', 'ConAdminSaveAttendance::SaveAttendanceToDB');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/DashboardAttendance', 'ConAdminSaveAttendance::DashboardAttendance');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/LeaveSummary', 'ConAdminSaveAttendance::GetLeaveSummary');
+$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/leaveSummaryByPositionDay', 'ConAdminSaveAttendance::leaveSummaryByPositionDay');
 
 
 

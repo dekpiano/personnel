@@ -43,11 +43,18 @@
                             <div class="card-body">
                                 <button class="btn btn-info w-100" data-bs-toggle="modal"
                                     data-bs-target="#leaveSummaryModal">
-                                    รายงานสรุปวันลาบุคลากร
+                                    รายงานสรุปวันลารายคน
                                 </button>
                             </div>
                         </div>
-
+                        <div class="card shadow-sm mt-3">
+                            <div class="card-body">
+                                <button class="btn btn-info w-100" data-bs-toggle="modal"
+                                    data-bs-target="#leaveByPositionModal">
+                                    รายงานสรุปวันลาตามตำแหน่ง
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-8">
                         <!-- ตัวเลขสรุป -->
@@ -141,52 +148,98 @@ td.td-name {
     </div>
 </div>
 
-<div class="modal fade" id="leaveSummaryModal" tabindex="-1" aria-labelledby="leaveSummaryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="leaveSummaryModalLabel">สรุปวันลา</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <label for="leaveDateStart" class="form-label">ตั้งแต่วันที่</label>
-            <input type="date" id="leaveDateStart" class="form-control" value="<?=date('Y-m-d')?>">
-          </div>
-          <div class="col-md-4">
-            <label for="leaveDateEnd" class="form-label">ถึงวันที่</label>
-            <input type="date" id="leaveDateEnd" class="form-control" value="<?=date('Y-m-d')?>">
-          </div>
-          <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-primary w-100" id="btnSearchLeave">ค้นหา</button>
-          </div>
+<div class="modal fade" id="leaveSummaryModal" tabindex="-1" aria-labelledby="leaveSummaryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leaveSummaryModalLabel">สรุปวันลา</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="leaveDateStart" class="form-label">ตั้งแต่วันที่</label>
+                        <input type="date" id="leaveDateStart" class="form-control" value="<?=date('Y-m-d')?>">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="leaveDateEnd" class="form-label">ถึงวันที่</label>
+                        <input type="date" id="leaveDateEnd" class="form-control" value="<?=date('Y-m-d')?>">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="btnSearchLeave">ค้นหา</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="LeaveSummaryTable">
+                        <thead>
+                            <tr>
+                                <th>ชื่อ-สกุล</th>
+                                <th>ตำแหน่ง</th>
+                                <th>จำนวนวันทั้งหมด</th>
+                                <th>มา</th>
+                                <th>สาย</th>
+                                <th>ขาด</th>
+                                <th>ลากิจ</th>
+                                <th>ลาป่วย</th>
+                                <th>ไปราชการ</th>
+                                <th>อื่นๆ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+            </div>
         </div>
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle" id="LeaveSummaryTable">
-            <thead>
-              <tr>
-                <th>ชื่อ-สกุล</th>
-                <th>ตำแหน่ง</th>
-                <th>จำนวนวันทั้งหมด</th>
-                <th>มา</th>
-                <th>สาย</th>
-                <th>ขาด</th>
-                <th>ลากิจ</th>
-                <th>ลาป่วย</th>
-                <th>ไปราชการ</th>
-                <th>อื่นๆ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Data will be loaded by JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-      </div>
     </div>
-  </div>
+</div>
+
+
+<div class="modal fade" id="leaveByPositionModal" tabindex="-1" aria-labelledby="leaveByPositionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leaveByPositionModalLabel">สรุปวันลาตามตำแหน่ง</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="leaveSummaryDate" class="form-label">เลือกวันที่</label>
+                        <input type="date" id="leaveSummaryDate" class="form-control" value="<?=date('Y-m-d')?>">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="btnSearchLeaveByDay">ค้นหา</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="LeaveSummaryByPositionTable">
+                        <thead>
+                            <tr>
+                                <th class="text-center">ตำแหน่ง</th>
+                                <th class="text-center">จำนวนทั้งหมด (คน)</th>
+                                <th class="text-center">มาปฏิบัติหน้าที่</th>
+                                <th class="text-center">ลาป่วย</th>
+                                <th class="text-center">ลากิจ</th>
+                                <th class="text-center">ไปราชการ</th>
+                                <th class="text-center">อื่นๆ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS เติมข้อมูล -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
+    </div>
 </div>

@@ -203,4 +203,41 @@ class ConAdminSaveAttendance extends BaseController
         return $this->response->setJSON($data);
     }
 
+
+    public function leaveSummaryByPositionDay(){
+        $data = $this->DataMain();    
+        $DBPers = $data['database']->table('tb_personnel p');
+        $DBLeave = $data['database']->table('tb_personnel_attendance');
+        $DBPosi = $data['databaseSKJ']->table('tb_position');
+
+        // รับค่าวันที่จาก query string
+         $date = $this->request->getGet('date') ?: date('Y-m-d');
+  
+
+        $builder = $DBPers
+            ->select(
+                'pos.posi_name,
+             COUNT(DISTINCT p.pers_id) AS total_person,
+             COUNT(DISTINCT CASE WHEN a.att_status IN ("มา", "สาย") AND a.att_date = "'.$date.'" THEN p.pers_id END) AS attend_person,
+             SUM(CASE WHEN a.att_status = "ลากิจ" AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS personal_leave,
+             SUM(CASE WHEN a.att_status = "ลาป่วย" AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS sick_leave,
+             SUM(CASE WHEN a.att_status = "ไปราชการ" AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS official_leave,
+             SUM(CASE WHEN a.att_status IN ("อื่นๆ", "ขาด") AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS other_leave'
+            )
+            ->join('skjacth_skj.tb_position pos', 'p.pers_position = pos.posi_id', 'left')
+            ->join('skjacth_personnel.tb_personnel_attendance a', "p.pers_id = a.att_person_id", 'left')
+            ->where('p.pers_status', 'กำลังใช้งาน')
+            ->groupBy('pos.posi_name')
+            ->orderBy('p.pers_position', 'asc')
+            ->orderBy('p.pers_learning', 'asc')    
+            ->orderBy('pos.posi_name');
+
+        $query = $builder->get();
+        $result = $query->getResultArray();
+
+        // ส่ง JSON
+        return $this->response->setJSON($result);
+
+    }
+
 }
