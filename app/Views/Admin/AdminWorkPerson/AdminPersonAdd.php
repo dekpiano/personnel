@@ -187,7 +187,7 @@
                                             <label for="pers_workother_id">ตำแหน่งหลัก</label>
                                         </div>
                                         <div class="invalid-feedback">
-                                            กรุณาเลือกกลุ่มสาระการเรียนรู้
+                                            กรุณาเลือกตำแหน่งหลัก
                                         </div>
                                     </div>
                                 </div>
@@ -197,8 +197,8 @@
                                     <div class="col-md-4">
                                         <div class="form-floating">
                                             <select class="form-select select2Personnel" id="pers_learning"
-                                                name="pers_learning" required>
-                                                <option value="0">เลือกกลุ่มสาระ...</option>
+                                                name="pers_learning">
+                                                <option value="">เลือกกลุ่มสาระ...</option>
                                                 <?php foreach ($learning as $key => $value) : ?>
                                                 <option value="<?=$value->lear_id;?>"><?=$value->lear_namethai;?>
                                                 </option>

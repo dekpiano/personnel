@@ -1,6 +1,6 @@
 
 
-const apiUrl = "../../../../assets/js/api_province_with_amphure_tambon.json";
+const apiUrl = "../../../assets/js/api_province_with_amphure_tambon.json";
 let data = {};
 
 $(document).ready(function() {

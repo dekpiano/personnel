@@ -100,7 +100,7 @@ class ConAdminWorkPerson extends BaseController
     }
    
     public function PersonnelInsert(){
-        //print_r($this->request->getVar());
+        //print_r($this->request->getVar()); exit();
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
@@ -122,6 +122,7 @@ class ConAdminWorkPerson extends BaseController
                 'pers_phone' => $this->request->getPost('pers_phone'),
                 'pers_username' => $this->request->getPost('pers_username'),
                 'pers_position' => $this->request->getPost('pers_position'),
+                'pers_workother_id' => $this->request->getPost('pers_workother_id') ?? "",
                 'pers_learning' => $this->request->getPost('pers_learning'),
                 'pers_academic' => $this->request->getPost('pers_academic'),
                 'pers_groupleade' => $this->request->getPost('pers_groupleade'),
@@ -139,6 +140,7 @@ class ConAdminWorkPerson extends BaseController
                 'pers_phone' => $this->request->getPost('pers_phone'),
                 'pers_username' => $this->request->getPost('pers_username'),
                 'pers_position' => $this->request->getPost('pers_position'),
+                'pers_workother_id' => $this->request->getPost('pers_workother_id') ?? "",
                 'pers_learning' => $this->request->getPost('pers_learning'),
                 'pers_academic' => $this->request->getPost('pers_academic'),
                 'pers_groupleade' => $this->request->getPost('pers_groupleade'),
@@ -146,7 +148,8 @@ class ConAdminWorkPerson extends BaseController
                 'pers_userEdit' => $session->get('id')
             ];
         }
-
+        //print_r($data); exit();
+       
         echo $DBPers->insert($data);
 
     }

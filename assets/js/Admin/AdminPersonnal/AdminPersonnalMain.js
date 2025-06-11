@@ -61,9 +61,10 @@ $(document).on('submit', '#FormPersonnalAdd', function (e) {
     });
 });
 
+
 $(document).on('submit', '#FormPersonnalUpdateDataPersonnel', function (e) {
     e.preventDefault();
-
+    console.log('555');
     $.ajax({
         url: "../../../../Admin/WorkPerson/Personnel/DB/Update/DataPersonnel",
         method: "POST",
@@ -166,7 +167,25 @@ function loadPersonnelData(id) {
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            //console.log(data);
+            $('#pers_position').val(data[0].pers_position); // ทำให้ "ผู้จัดการ" ถูกเลือก
+          
+             var index = $('#pers_position').prop('selectedIndex'); // รับลำดับที่เลือก (0-based)
+   
+             if($('#key_update').val() === 'Update'){
+
+                if (index > 0 && index <= 6) {
+                    // แสดง select ถัดไป
+                    $('#show_learning').show();
+                    $('#show_position').hide();
+                    $('#pers_workother_id').removeAttr('required');
+                    $('#pers_workother_id').val("");
+                } else if (index >= 7) {
+                    $('#show_position').show();
+                    $('#show_learning').hide();
+                    $('#pers_learning').val("");
+                }
+                
+            }
 
             $('.pers_prefix').val(data[0].pers_prefix);
             $('.pers_firstname').val(data[0].pers_firstname);
@@ -200,7 +219,7 @@ function loadPersonnelData(id) {
 
              //$('#pers_workother_id').append(new Option(data[0].work_name, data[0].work_name, true, true)).trigger('change');
             //console.log(data[0].pers_workother_id);
-            
+           
             // ที่อยู่ตามทะเบียนบ้าน
             $('#addr_house_no').val(data[0].addr_house_no);
             $('#addr_moo').val(data[0].addr_moo); 
@@ -211,7 +230,7 @@ function loadPersonnelData(id) {
             $('.province').append(new Option(data[0].addr_province, data[0].addr_province, true, true)).trigger('change');
             $('.district').append(new Option(data[0].addr_district, data[0].addr_district, true, true)).trigger('change');
             $('.subdistrict').append(new Option(data[0].addr_subdistrict, data[0].addr_subdistrict, true, true)).trigger('change');
-
+ 
             // ที่อยู่ปัจจุบัน
             if(data[1]){
             $('#curr_addr_house_no').val(data[1].addr_house_no);
@@ -225,23 +244,7 @@ function loadPersonnelData(id) {
             $('.curr_subdistrict').append(new Option(data[1].addr_subdistrict, data[1].addr_subdistrict, true, true)).trigger('change');
             }
 
-             var index = $('#pers_position').prop('selectedIndex'); // รับลำดับที่เลือก (0-based)
-            console.log(index);
-             if($('#key_update').val() === 'Update'){
-
-                if (index > 0 && index <= 6) {
-                    // แสดง select ถัดไป
-                    $('#show_learning').show();
-                    $('#show_position').hide();
-                    $('#pers_workother_id').removeAttr('required');
-                    $('#pers_workother_id').val("");
-                } else if (index >= 7) {
-                    $('#show_position').show();
-                    $('#show_learning').hide();
-                    $('#pers_learning').val("");
-                }
-                
-            }
+            
 
                 
         
@@ -343,11 +346,10 @@ $('.auto-save').on('blur change', function () {
     });
 
 });
-
 const pathSegments = window.location.pathname.split('/');
 const lastSegment = pathSegments[pathSegments.length - 1];
 const matches = lastSegment.match(/^pers_(\d+)$/);
-//console.log(matches);
+//console.log(matches[0]);
 if (matches) {
     const id = matches[0];
     loadPersonnelData(id);
