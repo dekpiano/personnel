@@ -68,13 +68,217 @@ class ConAdminPaConfig extends BaseController
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
         }
 
+        $db_default = \Config\Database::connect(); // Default connection
+        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+        $db_skj = \Config\Database::connect('skj');
+
+        // Get current fiscal year
+        $current_month = date('m');
+        $current_year_ad = date('Y');
+        $fiscal_year = ($current_month >= 10) ? $current_year_ad + 1 : $current_year_ad;
+        $fiscal_year_be = $fiscal_year + 543;
+
+        // 1. Fetch all necessary lookup tables at once
+        $assessor_scopes = $db_pa_evaluation->table('tb_assessor_scope')->get()->getResultArray();
+        $all_evaluators = $db_pa_evaluation->table('tb_evaluators')->get()->getResultArray();
+        $evaluators_map = array_column($all_evaluators, null, 'e_id');
+        $learning_groups_raw = $db_skj->table('tb_learning')->get()->getResultArray();
+        $learning_groups = array_column($learning_groups_raw, 'lear_namethai', 'lear_id');
+        $positions_raw = $db_skj->table('tb_position')->get()->getResultArray();
+        $positions = array_column($positions_raw, 'posi_name', 'posi_id');
+
+        // 2. Get the list of teachers (personnel)
+        $teacher_positions = $db_skj->table('tb_position')
+                                     ->select('posi_id')
+                                     ->whereIn('posi_name', ['ครู', 'ครูผู้ช่วย'])
+                                     ->get()->getResultArray();
+        $teacher_position_ids = array_column($teacher_positions, 'posi_id');
+
+        $personnel_with_names = [];
+        if (!empty($teacher_position_ids)) {
+            $personnel_raw = $db_default->table('tb_personnel')
+                                ->where('pers_status', 'กำลังใช้งาน')
+                                ->whereIn('pers_position', $teacher_position_ids)
+                                ->orderBy('pers_learning', 'ASC')
+                                ->orderBy('pers_firstname', 'ASC')
+                                ->get()->getResultArray();
+
+            foreach ($personnel_raw as $person) {
+                $person['learning_area_name'] = $learning_groups[$person['pers_learning']] ?? '';
+                $person['position_name'] = $positions[$person['pers_position']] ?? '';
+                $personnel_with_names[] = $person;
+            }
+        }
+
+        // 3. Get all completed evaluation submissions for the relevant teachers
+        $teacher_ids = array_column($personnel_with_names, 'pers_id');
+        $submitted_evals = [];
+
+        if (!empty($teacher_ids)) {
+            $submissions = $db_pa_evaluation->table('tb_evaluations as ev')
+                ->select('ev.t_id, sc.e_id')
+                ->join('tb_evaluator_scores as sc', 'sc.ev_id = ev.ev_id')
+                ->join('tb_item_scores as it', 'it.es_id = sc.es_id') // JOIN to ensure completion
+                ->where('ev.ev_fiscal_year', $fiscal_year_be)
+                ->whereIn('ev.t_id', $teacher_ids)
+                ->distinct()
+                ->get()->getResultArray();
+
+            // Process the flat results into the map we need
+            foreach ($submissions as $sub) {
+                $submitted_evals[$sub['t_id']][$sub['e_id']] = true;
+            }
+        }
+
+        // 4. For each teacher, determine their assigned evaluators and their status
+        $final_personnel_data = [];
+        foreach ($personnel_with_names as $person) {
+            $assigned_evaluator_ids = [];
+            foreach ($assessor_scopes as $scope) {
+                $is_match = false;
+                $scope_has_posi = !empty($scope['scope_posi_id']);
+                $scope_has_lear = !empty($scope['scope_lear_id']);
+
+                if ($scope_has_posi && $scope_has_lear) {
+                    if (($scope['scope_posi_id'] === $person['pers_position']) && ($scope['scope_lear_id'] === $person['pers_learning'])) {
+                        $is_match = true;
+                    }
+                } else if ($scope_has_posi) {
+                    if ($scope['scope_posi_id'] === $person['pers_position']) {
+                        $is_match = true;
+                    }
+                } else if ($scope_has_lear) {
+                    if ($scope['scope_lear_id'] === $person['pers_learning']) {
+                        $is_match = true;
+                    }
+                } else {
+                    $is_match = true;
+                }
+
+                if ($is_match) {
+                    $assigned_evaluator_ids[$scope['assessor_e_id']] = true;
+                }
+            }
+
+            $person['evaluators_info'] = [];
+            foreach (array_keys($assigned_evaluator_ids) as $e_id) {
+                if (isset($evaluators_map[$e_id])) {
+                    $has_evaluated = isset($submitted_evals[$person['pers_id']][$e_id]);
+                    $person['evaluators_info'][] = [
+                        'name' => $evaluators_map[$e_id]['e_first_name'] . ' ' . $evaluators_map[$e_id]['e_last_name'],
+                        'id' => $e_id,
+                        'has_evaluated' => $has_evaluated
+                    ];
+                }
+            }
+            $final_personnel_data[] = $person;
+        }
+
+        // 5. Pass data to view
         $data = $this->DataMain();
         $data['title'] = 'รายงานประเมิน PA';
-        $data['description'] = 'รายงานผลการประเมิน PA';
+        $data['description'] = 'รายงานผลการประเมิน PA ปีการศึกษา ' . $fiscal_year_be;
         $data['UrlMenuMain'] = 'Admin';
         $data['UrlMenuSub'] = 'PaReport';
+        $data['personnel'] = $final_personnel_data;
+        $data['fiscal_year'] = $fiscal_year_be;
 
         return view('Admin/AdminPaEvaluation/report', $data);
+    }
+
+    public function getScores($personId, $evaluatorId)
+    {
+        $db_default = \Config\Database::connect();
+        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+
+        // Get current fiscal year
+        $current_month = date('m');
+        $current_year_ad = date('Y');
+        $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+
+        // 2. Find the main evaluation record (tb_evaluations)
+        $evaluation = $db_pa_evaluation->table('tb_evaluations')
+            ->where('t_id', $personId)
+            ->where('ev_fiscal_year', $fiscal_year_be)
+            ->get()->getRowArray();
+
+        if (!$evaluation) {
+            return $this->response->setBody('<div class="alert alert-warning">ไม่พบข้อมูลการประเมินหลักสำหรับบุคลากรนี้ในปีการศึกษานี้</div>');
+        }
+
+        // 3. Find the specific evaluator's score summary (tb_evaluator_scores)
+        $evaluatorScoreSummary = $db_pa_evaluation->table('tb_evaluator_scores')
+            ->where('ev_id', $evaluation['ev_id'])
+            ->where('e_id', $evaluatorId)
+            ->get()->getRowArray();
+
+        if (!$evaluatorScoreSummary) {
+            return $this->response->setBody('<div class="alert alert-warning">ผู้ประเมินยังไม่ได้ส่งผลการประเมิน</div>');
+        }
+
+        // 4. Get all individual item scores (tb_item_scores) for this evaluation
+        $itemScoresRaw = $db_pa_evaluation->table('tb_item_scores')
+            ->where('es_id', $evaluatorScoreSummary['es_id'])
+            ->get()->getResultArray();
+
+        // Extract ri_id's from the raw item scores to filter rubric items
+        $scored_ri_ids = array_column($itemScoresRaw, 'ri_id');
+
+        // 5. Get only the rubric items that actually have scores
+        $rubricItems = $db_pa_evaluation->table('tb_rubric_items')
+            ->whereIn('ri_id', $scored_ri_ids) // Filter by scored rubric item IDs
+            ->orderBy('ri_part', 'ASC')
+            ->orderBy('ri_item_number', 'ASC')
+            ->get()->getResultArray();
+            
+        // 6. Process scores and calculate points
+        $rubricItemsMap = array_column($rubricItems, null, 'ri_id');
+        $itemScoresMap = [];
+        $calculatedScoresMap = [];
+
+        foreach ($itemScoresRaw as $scoreRow) {
+            $rubricItemId = $scoreRow['ri_id'];
+            $rawScore = $scoreRow['is_score'];
+
+            $itemScoresMap[$rubricItemId] = $rawScore;
+
+            $calculatedScore = 0;
+            if (isset($rubricItemsMap[$rubricItemId])) {
+                $rubricItem = $rubricItemsMap[$rubricItemId];
+                $part = $rubricItem['ri_part'];
+                $itemNumber = $rubricItem['ri_item_number'];
+
+                if ($part == 1) {
+                    $calculatedScore = $rawScore;
+                } elseif ($part == 2) {
+                    if ($itemNumber === '2.1' || $itemNumber === '2.2') {
+                        switch ($rawScore) {
+                            case 1: $calculatedScore = 2.50; break;
+                            case 2: $calculatedScore = 5.00; break;
+                            case 3: $calculatedScore = 7.50; break;
+                            case 4: $calculatedScore = 10.00; break;
+                        }
+                    } else {
+                        switch ($rawScore) {
+                            case 1: $calculatedScore = 5.00; break;
+                            case 2: $calculatedScore = 10.00; break;
+                            case 3: $calculatedScore = 15.00; break;
+                            case 4: $calculatedScore = 20.00; break;
+                        }
+                    }
+                }
+            }
+            $calculatedScoresMap[$rubricItemId] = $calculatedScore;
+        }
+
+        $data['evaluation_data'] = [
+            'rubric_items' => $rubricItems,
+            'item_scores' => $itemScoresMap,
+            'calculated_scores' => $calculatedScoresMap,
+            'summary' => $evaluatorScoreSummary,
+        ];
+
+        return view('Admin/AdminPaEvaluation/score_details_modal', $data);
     }
 
     public function saveScope()
@@ -129,8 +333,6 @@ class ConAdminPaConfig extends BaseController
 
         if ($table->delete(['id' => $id])) {
             $session->setFlashdata('Success', 'ลบการตั้งค่าสำเร็จ!');
-        } else {
-            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการลบ!');
         }
 
         return redirect()->to(base_url('Admin/PaConfig'));
@@ -174,8 +376,6 @@ class ConAdminPaConfig extends BaseController
 
         if ($table->insert($data)) {
             $session->setFlashdata('Success', 'เพิ่มข้อมูลผู้ประเมินสำเร็จ!');
-        } else {
-            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการเพิ่มข้อมูลผู้ประเมิน!');
         }
 
         return redirect()->to(base_url('Admin/PaConfig'));
@@ -225,7 +425,7 @@ class ConAdminPaConfig extends BaseController
             'ri_item_number' => $this->request->getPost('ri_item_number'),
             'ri_item_description' => $this->request->getPost('ri_item_description'),
             'ri_expected_level_description' => $this->request->getPost('ri_expected_level_description'),
-            'ri_academic_standing' => $academic_standing === '' ? null : $academic_standing, // Set to null if empty
+            'ri_academic_standing' => $academic_standing === '' ? null : $academic_standing,
         ];
 
         // Basic validation
@@ -246,9 +446,9 @@ class ConAdminPaConfig extends BaseController
 
         if ($table->insert($data)) {
             return $this->response->setJSON(['success' => true, 'message' => 'เพิ่มหัวข้อการประเมินสำเร็จ!']);
-        } else {
-            return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล!']);
         }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล!']);
     }
 
     public function updateRubricItem()
@@ -292,9 +492,9 @@ class ConAdminPaConfig extends BaseController
 
         if ($table->where('ri_id', $ri_id)->update($data)) {
             return $this->response->setJSON(['success' => true, 'message' => 'อัปเดตหัวข้อการประเมินสำเร็จ!']);
-        } else {
-            return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล หรือไม่มีการเปลี่ยนแปลงข้อมูล!']);
         }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล หรือไม่มีการเปลี่ยนแปลงข้อมูล!']);
     }
 
     public function deleteRubricItem()
@@ -320,8 +520,8 @@ class ConAdminPaConfig extends BaseController
             $evaluatorScoresTable->where('es_rubric_item_id', $ri_id)->delete();
 
             return $this->response->setJSON(['success' => true, 'message' => 'ลบหัวข้อการประเมินและข้อมูลที่เกี่ยวข้องสำเร็จ!']);
-        } else {
-            return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการลบข้อมูล!']);
         }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการลบข้อมูล!']);
     }
 }

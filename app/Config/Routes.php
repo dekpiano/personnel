@@ -90,6 +90,8 @@ $routes->post('Admin/PaConfig/addRubricItem', 'ConAdminPaConfig::addRubricItem')
 $routes->post('Admin/PaConfig/updateRubricItem', 'ConAdminPaConfig::updateRubricItem');
 $routes->post('Admin/PaConfig/deleteRubricItem', 'ConAdminPaConfig::deleteRubricItem');
 $routes->get('Admin/PaReport', 'ConAdminPaConfig::report');
+$routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2');
+
 
 
 
