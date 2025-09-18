@@ -29,18 +29,9 @@ class ConUserHome extends BaseController
         $data['UrlMenuMain'] = 'Main';
         $data['UrlMenuSub'] = '';
 
-        //$data['DictationAll'] = $builder->countAll();
-       
-       
-
-        return view('User/UserLeyout/UserHeader',$data)
-                .view('User/UserLeyout/UserMenuLeft')
-                .view('User/UserHome/UserPageHome')
-                .view('User/UserLeyout/UserFooter');
+        return view('User/UserHome/UserPageHome', $data);
     }
 
-
-  
-
+    
     
 }

@@ -39,6 +39,12 @@
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">แบบฟอร์ม</span>
                 </li>
+                <li class="menu-item <?php echo @$UrlMenuMain == "PA_FORM"?"active":""?>">
+                    <a href="<?=base_url('pa-login');?>" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-file"></i>
+                        <div data-i18n="Analytics">แบบประเมิน PA</div>
+                    </a>
+                </li>
                 <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
                     <a href="<?=base_url();?>" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-home-circle"></i>
@@ -64,7 +70,7 @@
                         <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->
                         <a href="<?=base_url('LoginOfficerPersonnel?return_to='.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);?>"
                             class="menu-link">
-                            <i class="menu-icon tf-icons bx bxs-key"></i>
+                        <i class="menu-icon tf-icons bx bxs-key"></i>
                             <div data-i18n="Analytics">เข้าสู่ระบบ </div>
                         </a>
                     </li>

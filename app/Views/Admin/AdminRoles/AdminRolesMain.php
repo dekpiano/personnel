@@ -1,92 +1,78 @@
-<!-- Layout container -->
-<div class="layout-page">
-    <?php echo view('Admin/AdminLeyout/AdminNavbar'); ?>
+<?= $this->extend('Admin/Layout/main') ?>
 
-    <!-- Content wrapper -->
-    <div class="content-wrapper">
-        <!-- Content -->
-
-        <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="py-3 mb-4">
-                <span class="text-muted fw-light"></span> กำหนดสิทธิ์ใช้งานในระบบบริหารทั่วไป
-            </h4>
-            <div class="card">
-                <div class="card-header">
-                    <h5>ผู้บริหาร</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <?php foreach ($Manager as $key => $v_Manager) : ?>
-                        <?php if($v_Manager->admin_rloes_status ==="ManagerPersonnel" || $v_Manager->admin_rloes_status === "ExecutivePersonnel"): ?>
-                        <div class="col-md-4">
-                            <label for=""><?php echo $v_Manager->admin_rloes_nanetype;?></label>
-                            <div class="mt-3">
-                                <select class="select2Rloes form-select form-select-lg SettingPersonnelRloes"
-                                    rloes-id="<?=$v_Manager->admin_rloes_id;?>"
-                                    rloes-level="<?=$v_Manager->admin_rloes_level;?>"
-                                    Key-nanetype="<?=$v_Manager->admin_rloes_nanetype;?>">
-                                    <?php  foreach ($NameTeacher as $key => $v_NameTeacher) : ?>
-                                    <option
-                                        <?=$v_Manager->admin_rloes_userid == $v_NameTeacher->pers_id ? 'selected' : '';?>
-                                        value="<?=$v_NameTeacher->pers_id?>">
-                                        <?=$v_NameTeacher->pers_prefix.$v_NameTeacher->pers_firstname." ".$v_NameTeacher->pers_lastname?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <?php endif; ?>
+<?= $this->section('content') ?>
+<h4 class="py-3 mb-4">
+    <span class="text-muted fw-light"></span> กำหนดสิทธิ์ใช้งานในระบบบริหารทั่วไป
+</h4>
+<div class="card">
+    <div class="card-header">
+        <h5>ผู้บริหาร</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <?php foreach ($Manager as $key => $v_Manager) : ?>
+            <?php if($v_Manager->admin_rloes_status ==="ManagerPersonnel" || $v_Manager->admin_rloes_status === "ExecutivePersonnel"): ?>
+            <div class="col-md-4">
+                <label for=""><?php echo $v_Manager->admin_rloes_nanetype;?></label>
+                <div class="mt-3">
+                    <select class="select2Rloes form-select form-select-lg SettingPersonnelRloes"
+                        rloes-id="<?=$v_Manager->admin_rloes_id;?>"
+                        rloes-level="<?=$v_Manager->admin_rloes_level;?>"
+                        Key-nanetype="<?=$v_Manager->admin_rloes_nanetype;?>">
+                        <?php  foreach ($NameTeacher as $key => $v_NameTeacher) : ?>
+                        <option
+                            <?=$v_Manager->admin_rloes_userid == $v_NameTeacher->pers_id ? 'selected' : '';?>
+                            value="<?=$v_NameTeacher->pers_id?>">
+                            <?=$v_NameTeacher->pers_prefix.$v_NameTeacher->pers_firstname." ".$v_NameTeacher->pers_lastname?>
+                        </option>
                         <?php endforeach; ?>
-
-                    </div>
+                    </select>
                 </div>
             </div>
-          
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5>งานทะเบียนครูและบุคลากร</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-
-                        <?php foreach ($Manager as $key => $v_Manager) : ?>
-                        <?php if($v_Manager->admin_rloes_nanetype === "งานทะเบียนครูและบุคลากร"): ?>
-
-                        <div class="col-md-4 mt-2">
-                            <label for=""><?php $SubLevel = explode("/",$v_Manager->admin_rloes_level);
-                            echo $SubLevel[1]; ?></label>
-                            <div class="mt-2">
-                                <select class="select2Rloes form-select form-select-lg SettingPersonnelRloes"
-                                    rloes-id="<?=$v_Manager->admin_rloes_id;?>"
-                                    rloes-level="<?=$v_Manager->admin_rloes_level;?>"
-                                    Key-nanetype="<?=$v_Manager->admin_rloes_nanetype;?>">
-                                    <option value="">เลือกเจ้าหน้าที่</option>
-                                    <?php  foreach ($NameTeacher as $key => $v_NameTeacher) : ?>
-                                    <option
-                                        <?=$v_Manager->admin_rloes_userid == $v_NameTeacher->pers_id ? 'selected' : '';?>
-                                        value="<?=$v_NameTeacher->pers_id?>">
-                                        <?=$v_NameTeacher->pers_prefix.$v_NameTeacher->pers_firstname." ".$v_NameTeacher->pers_lastname?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <?php endif; ?>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </div>
-
+            <?php endif; ?>
+            <?php endforeach; ?>
 
         </div>
-        <!-- / Content -->
-
-
-
-
-        <div class="content-backdrop fade"></div>
     </div>
-    <!-- Content wrapper -->
 </div>
-<!-- / Layout page -->
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5>งานทะเบียนครูและบุคลากร</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+
+            <?php foreach ($Manager as $key => $v_Manager) : ?>
+            <?php if($v_Manager->admin_rloes_nanetype === "งานทะเบียนครูและบุคลากร"): ?>
+
+            <div class="col-md-4 mt-2">
+                <label for=""><?php $SubLevel = explode("/",$v_Manager->admin_rloes_level);
+                echo $SubLevel[1]; ?></label>
+                <div class="mt-2">
+                    <select class="select2Rloes form-select form-select-lg SettingPersonnelRloes"
+                        rloes-id="<?=$v_Manager->admin_rloes_id;?>"
+                        rloes-level="<?=$v_Manager->admin_rloes_level;?>"
+                        Key-nanetype="<?=$v_Manager->admin_rloes_nanetype;?>">
+                        <option value="">เลือกเจ้าหน้าที่</option>
+                        <?php  foreach ($NameTeacher as $key => $v_NameTeacher) : ?>
+                        <option
+                            <?=$v_Manager->admin_rloes_userid == $v_NameTeacher->pers_id ? 'selected' : '';?>
+                            value="<?=$v_NameTeacher->pers_id?>">
+                            <?=$v_NameTeacher->pers_prefix.$v_NameTeacher->pers_firstname." ".$v_NameTeacher->pers_lastname?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script src="<?=base_url()?>/assets/js/Admin/AdminRoles/AdminRolesMain.js?v=3"></script>
+<?= $this->endSection() ?>

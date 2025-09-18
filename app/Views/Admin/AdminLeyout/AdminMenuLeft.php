@@ -33,7 +33,10 @@
                 <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
 
 
-                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
+                                <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
+
+
+                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>?>
                       <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">จัดการข้อมูลพื้นฐาน</span>
                 </li>
@@ -62,7 +65,40 @@
                     </a>
                 </li>
                 <?php endif; ?>
+                <?php if(1) :?>
+            <ul class="menu-inner py-1">
+                <li class="menu-header small text-uppercase">
+                    <span class="menu-header-text">จัดการประเมิน PA</span>
+                </li>
+                <li class="menu-item <?php echo ($uri->getSegment(2) == "PaConfig" || $uri->getSegment(2) == "PaReport" ? "active open" : "")?>">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bx bx-file"></i>
+                        <div data-i18n="Layouts">จัดการประเมิน PA</div>
+                    </a>
+
+                    <ul class="menu-sub">
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == "PaConfig" && $uri->getSegment(3) != "Rubrics") ? "active" : ""?>">
+                            <a href="<?=base_url('Admin/PaConfig')?>" class="menu-link">
+                                <div data-i18n="Without menu">ตั้งค่าผู้ประเมิน PA</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?php echo $uri->getSegment(3) == "Rubrics"? "active" : ""?>">
+                            <a href="<?=base_url('Admin/PaConfig/Rubrics')?>" class="menu-link">
+                                <div data-i18n="Without menu">จัดการหัวข้อการประเมิน</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?php echo $uri->getSegment(2) == "PaReport"?"active":""?>">
+                            <a href="<?=base_url('Admin/PaReport')?>" class="menu-link">
+                                <div data-i18n="Without menu">รายงานประเมิน PA</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
+            <?php endif; ?>
+            </ul>
+
+          
 
             <?php if($_SESSION['id'] == "pers_021") : ?>
             <div>

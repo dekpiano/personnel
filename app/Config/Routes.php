@@ -27,12 +27,21 @@ $routes->setAutoRoute(false);
  * --------------------------------------------------------------------
  */
 
-// We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'ConUserHome::index');
+
+// PA Form routes
+// PA Form routes
+$routes->get('pa-personnel', 'ConUserPaEvaluation::paPersonnelList');
+$routes->get('pa-form', 'ConUserPaEvaluation::paForm');
+$routes->get('pa-form/(:segment)', 'ConUserPaEvaluation::paForm/$1');
+$routes->post('user/pa-evaluation/save', 'ConUserPaEvaluation::savePaEvaluation');
+
 //User งานจองห้อง
 
 $routes->get('/LoginOfficerPersonnel', 'ConLogin::LoginOfficerPersonnel');
+$routes->get('pa-login', 'ConLogin::paLogin');
+$routes->post('login-pa-traditional', 'ConLogin::processTraditionalLogin');
 //$routes->get('/LoginEoffice', 'ConUserHome::LoginEoffice');
 $routes->get('/LogoutOfficerPersonnel', 'ConLogin::LogoutOfficerPersonnel');
 
@@ -69,7 +78,18 @@ $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetAttendanceToDa
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/SaveAttendanceToDB', 'ConAdminSaveAttendance::SaveAttendanceToDB');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/DashboardAttendance', 'ConAdminSaveAttendance::DashboardAttendance');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/LeaveSummary', 'ConAdminSaveAttendance::GetLeaveSummary');
-$routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/leaveSummaryByPositionDay', 'ConAdminSaveAttendance::leaveSummaryByPositionDay');
+$routes->get('Admin/SaveAttendance/DB/Select/leaveSummaryByPositionDay', 'ConAdminSaveAttendance::leaveSummaryByPositionDay');
+
+// Admin PA Config routes
+$routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
+$routes->post('Admin/PaConfig/save', 'ConAdminPaConfig::saveScope');
+$routes->get('Admin/PaConfig/delete/(:num)', 'ConAdminPaConfig::deleteScope/$1');
+$routes->post('Admin/PaConfig/addEvaluator', 'ConAdminPaConfig::addEvaluator');
+$routes->get('Admin/PaConfig/Rubrics', 'ConAdminPaConfig::rubricItems');
+$routes->post('Admin/PaConfig/addRubricItem', 'ConAdminPaConfig::addRubricItem');
+$routes->post('Admin/PaConfig/updateRubricItem', 'ConAdminPaConfig::updateRubricItem');
+$routes->post('Admin/PaConfig/deleteRubricItem', 'ConAdminPaConfig::deleteRubricItem');
+$routes->get('Admin/PaReport', 'ConAdminPaConfig::report');
 
 
 

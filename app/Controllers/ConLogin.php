@@ -91,10 +91,10 @@ class ConLogin extends BaseController
                             ];                
                             $session->set($newdata);  
                             
-                            // if($User2['admin_rloes_status'] == "admin"){
-                            //     return redirect()->to(base_url('Admin/Home'));
+                            // if(in_array('งานประเมิน pa',explode(',',$User2['rloesAll']))){
+                            //     return redirect()->to(base_url('pa-personnel'));
                             // }else{
-                                return redirect()->to("https://".$_SESSION['Return']);
+                                return redirect()->to(("https://".$_SESSION['Return']));
                             // }
                           
                 } else{
@@ -122,5 +122,113 @@ class ConLogin extends BaseController
         $session = session();
         $session->destroy();
         return redirect()->to(base_url());
+    }
+
+    public function paLogin(){
+        $session = session();
+        if ($session->get('logged_in')) {
+            return redirect()->to(base_url('pa-personnel'));
+        }
+
+        $data = $this->DataMain();
+        $data['title']="เข้าสู่ระบบ PA";
+        $data['description']="เข้าสู่ระบบแบบประเมิน PA";
+        $data['UrlMenuMain'] = 'pa-login';
+        $data['UrlMenuSub'] = '';
+
+        // Store the return_to URL if present
+        if($this->request->getVar("return_to")){
+            session()->set('Return', $this->request->getVar("return_to"));
+        }
+
+        return view('User/UserLeyout/UserHeader',$data)
+        .view('User/UserLeyout/UserMenuLeft')
+        .view('User/UserPA/PaLogin');
+    }
+
+    public function processTraditionalLogin(){
+        $session = session();
+        $username = $this->request->getPost('username');
+        $password = $this->request->getPost('password');
+        $role = $this->request->getPost('role');
+
+        $DB_Personnel = \Config\Database::connect(); // Connects to 'default' (personnel) database
+        $DB_PA_Evaluation = \Config\Database::connect('pa_evaluation'); // Connects to 'pa_evaluation' database
+
+        $user = null;
+        $userRoles = null;
+        $loggedInId = null;
+        $loggedInUsername = null;
+        $loggedInStatus = null;
+
+        if ($role === 'assessor') {
+            $DBEvaluators = $DB_PA_Evaluation->table('tb_evaluators');
+            $evaluator = $DBEvaluators->where('e_Username', $username)->get()->getRowArray();
+
+            if ($evaluator) {
+                if (password_verify($password, $evaluator['e_Password'])) { // Verify hashed password
+                    $user = $evaluator;
+                    $loggedInId = $evaluator['e_id'];
+                    $loggedInUsername = $evaluator['e_first_name'] . ' ' . $evaluator['e_last_name'];
+                    $loggedInStatus = 'assessor'; // Assign a status for assessor
+                    // For assessors, rloesAll might not be directly from tb_admin_rloes, define it here if needed
+                    $userRoles = ['rloesAll' => 'assessor']; // Set a proper role name
+                }
+            }
+        } elseif ($role === 'admin') {
+            $DBPers = $DB_Personnel->table('tb_personnel');
+            $DBrloes = $DB_Personnel->table('tb_admin_rloes');
+
+            $personnelUser = $DBPers->where('pers_username', $username)->get()->getRowArray();
+
+            if ($personnelUser) {
+                if ($password === $personnelUser['pers_password']) { // IMPORTANT: Verify hashed password in real app
+                    $user = $personnelUser;
+                    $loggedInId = $personnelUser['pers_id'];
+                    $loggedInUsername = $personnelUser['pers_prefix'] . $personnelUser['pers_firstname'] . ' ' . $personnelUser['pers_lastname'];
+                    $userRoles = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')
+                                        ->where('admin_rloes_userid', $personnelUser['pers_id'])
+                                        ->get()->getRowArray();
+                    $loggedInStatus = (isset($userRoles) && $userRoles['admin_rloes_status'] != "" ? $userRoles['admin_rloes_status'] : "Member");
+                }
+            }
+        }
+
+        if ($user) {
+            $hasRole = false;
+            if ($role === 'assessor' && $loggedInStatus === 'assessor') {
+                $hasRole = true;
+            } elseif ($role === 'admin' && isset($userRoles['rloesAll']) && str_contains($userRoles['rloesAll'], 'งานประเมิน pa')) {
+                $hasRole = true;
+            }
+
+            if ($hasRole) {
+                $newdata = [
+                    'username'  => $loggedInUsername,
+                    'id'     => $loggedInId,
+                    'logged_in' => true,
+                    'rloes' => (isset($userRoles['rloesAll']) ? $userRoles['rloesAll'] : ''),
+                    'status' => $loggedInStatus
+                ];
+                $session->set($newdata);
+
+                // Specific redirect for Admin or Assessor
+                if ($role === 'admin' || $role === 'assessor') {
+                    session()->remove('Return'); // Clear the return URL
+                    return redirect()->to(base_url('pa-personnel'));
+                }
+
+                // Fallback for other roles or if no specific redirect
+                $returnUrl = session()->get('Return') ? session()->get('Return') : base_url();
+                session()->remove('Return');
+                return redirect()->to(base_url($returnUrl));
+            } else {
+                $session->setFlashdata('Error', 'บทบาทไม่ถูกต้องสำหรับผู้ใช้นี้!');
+            }
+        } else {
+            $session->setFlashdata('Error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!');
+        }
+
+        return redirect()->back(); // Redirect back to the login page with error
     }
 }

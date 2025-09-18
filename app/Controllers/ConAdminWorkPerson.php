@@ -40,8 +40,6 @@ class ConAdminWorkPerson extends BaseController
         ->orderBy('lear_id')
         ->get()->getResult();
 
-        //$test = $DBPers->select('json_array(GROUP_CONCAT(pers_img)) AS json_data')->get()->getResult();
-
         $data['Executive'] = $DBPers
         ->select('(GROUP_CONCAT(skjacth_personnel.tb_personnel.pers_img)) AS AllImg,
         count(skjacth_personnel.tb_personnel.pers_id) AS NumAll')
@@ -58,19 +56,15 @@ class ConAdminWorkPerson extends BaseController
         ->where('posi_id >=',"posi_007")
         ->groupBy('skjacth_skj.tb_position.posi_id')
         ->get()->getResult();
-        //echo '<pre>'; print_r($data['Support']); exit();
 
-        return view('Admin/AdminLeyout/AdminHeader',$data)
-                .view('Admin/AdminLeyout/AdminMenuLeft')
-                .view('Admin/AdminWorkPerson/AdminPersonMain')
-                .view('Admin/AdminLeyout/AdminFooter');
+        return view('Admin/AdminWorkPerson/AdminPersonMain', $data);
     }
 
     private function resizeImage($path, $width, $height)
     {
         $image = \Config\Services::image()
             ->withFile(ROOTPATH . $path)
-            ->resize($width, $height, true) // ให้สมส่วน
+            ->resize($width, $height, true)
             ->save(ROOTPATH . $path);
     }
 
@@ -92,15 +86,10 @@ class ConAdminWorkPerson extends BaseController
         $num1 = @sprintf("%03d",$num[1]+1);
         $data['pers_id'] = 'pers_'.$num1;
 
-
-        return view('Admin/AdminLeyout/AdminHeader',$data)
-                .view('Admin/AdminLeyout/AdminMenuLeft')
-                .view('Admin/AdminWorkPerson/AdminPersonAdd')
-                .view('Admin/AdminLeyout/AdminFooter');
+        return view('Admin/AdminWorkPerson/AdminPersonAdd', $data);
     }
    
     public function PersonnelInsert(){
-        //print_r($this->request->getVar()); exit();
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
@@ -148,7 +137,6 @@ class ConAdminWorkPerson extends BaseController
                 'pers_userEdit' => $session->get('id')
             ];
         }
-        //print_r($data); exit();
        
         echo $DBPers->insert($data);
 
@@ -181,13 +169,8 @@ class ConAdminWorkPerson extends BaseController
         ->where($Where)
         ->orderBy('pers_numberGroup','ASC')
         ->get()->getResult();
-        //echo '<pre>'; print_r($data['Teacher']); exit();
 
-
-        return view('Admin/AdminLeyout/AdminHeader',$data)
-                .view('Admin/AdminLeyout/AdminMenuLeft')
-                .view('Admin/AdminWorkPerson/AdminPersonGroup')
-                .view('Admin/AdminLeyout/AdminFooter');
+        return view('Admin/AdminWorkPerson/AdminPersonGroup', $data);
     }
 
 
@@ -201,7 +184,6 @@ class ConAdminWorkPerson extends BaseController
             $data = ['pers_numberGroup'=>$key];
             $DBPers->where('pers_id', $value);
             $DBPers->update($data);
-           // echo $key;
         }
        
     }
@@ -228,13 +210,7 @@ class ConAdminWorkPerson extends BaseController
          $data['PosiMain'] = $DBPosiMain->where('posi_id',$PosiMain->posi_id ?? "")
          ->get()->getResult();
 
-        //$fieldList = $DB_Personnel->getFieldNames('tb_personnel');
-        //echo '<pre>'; print_r($data['PosiMain']); exit();
-
-        return view('Admin/AdminLeyout/AdminHeader',$data)
-                .view('Admin/AdminLeyout/AdminMenuLeft')
-                .view('Admin/AdminWorkPerson/AdminPersonUpdate')
-                .view('Admin/AdminLeyout/AdminFooter');
+        return view('Admin/AdminWorkPerson/AdminPersonUpdate', $data);
     }
 
     public function PersonneUpdateDataPersonnel(){
@@ -256,7 +232,6 @@ class ConAdminWorkPerson extends BaseController
         ];
         $DBPers->where('pers_id', $this->request->getVar('pers_id'));
         echo $DBPers->update($data);
-        //echo $this->request->getVar('pers_britday');
     }
 
     public function PersonneUpdateDataHistory(){
@@ -268,7 +243,6 @@ class ConAdminWorkPerson extends BaseController
             'pers_history' => $this->request->getVar('pers_history'),
             'pers_date' => date('Y-m-d H:i:s')
         ];
-        //echo $DBPers->insert($data);
         print_r($this->request->getVar());
     }
 
@@ -283,7 +257,6 @@ class ConAdminWorkPerson extends BaseController
         $delFile = $DBPers->select('pers_img')->where('pers_id',$this->request->getPost('KeyPresID'))->get()->getRow();
          
         $filePath = ROOTPATH . 'uploads/admin/Personnal/'.@$delFile->pers_img;
-        //print_r(file_exists($filePath)); exit();
             if (file_exists($filePath)) {
                 @unlink($filePath);
             }
@@ -300,7 +273,6 @@ class ConAdminWorkPerson extends BaseController
             $DBPers->where('pers_id',$this->request->getPost('KeyPresID'));
             echo $DBPers->update($data);
         } else {
-                // เกิดข้อผิดพลาด!
                 $errorMsg = '';
                 if (empty($image)) {
                     $errorMsg = 'ไม่ได้เลือกไฟล์';
@@ -309,7 +281,6 @@ class ConAdminWorkPerson extends BaseController
                 } elseif ($image->hasMoved()) {
                     $errorMsg = 'ไฟล์นี้ถูกอัปโหลดไปแล้ว';
                 }
-                // แสดง error ตามต้องการ
                 echo '<div class="alert alert-danger">'.$errorMsg.'</div>';
             }
     }
@@ -321,7 +292,6 @@ class ConAdminWorkPerson extends BaseController
 
         $data = $DBPers->select('*')       
         ->join('tb_personnel_addresses','tb_personnel_addresses.pers_id = tb_personnel.pers_id','left')
-        //->join('tb_position','tb_position.posi_id = tb_personnel.pers_position','left')
         ->join('skjacth_skj.tb_position_main','tb_position_main.work_id = tb_personnel.pers_workother_id','left')
         ->where('tb_personnel.pers_id',$id)
         ->get()->getResult();
@@ -367,7 +337,6 @@ class ConAdminWorkPerson extends BaseController
             }
             
             if($CheckPresID){
-                //print_r(($fieldNew)); exit();
                 $DBPersAddr->where('pers_id', $this->request->getVar('PresID'));
                 $DBPersAddr->where('addr_type',"ปัจจุบัน");
                 $DBPersAddr->update([$fieldNew => $value]);

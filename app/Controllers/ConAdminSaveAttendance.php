@@ -27,11 +27,7 @@ class ConAdminSaveAttendance extends BaseController
         $data['title']="บันทึกการมาทำงาน";        
         $DBPers = $data['database']->table('tb_personnel');
 
-       
-        return view('Admin/AdminLeyout/AdminHeader',$data)
-                .view('Admin/AdminLeyout/AdminMenuLeft')
-                .view('Admin/AdminSaveAttendance/AdminSaveAttendanceHome')
-                .view('Admin/AdminLeyout/AdminFooter');
+        return view('Admin/AdminSaveAttendance/AdminSaveAttendanceHome', $data);
     }
 
     public function GetPersonnalData(){
@@ -39,8 +35,7 @@ class ConAdminSaveAttendance extends BaseController
         $data['title']="บันทึกการมาทำงาน";        
         $DBPers = $data['database']->table('tb_personnel');
         $DBPosi = $data['databaseSKJ']->table('tb_position');
-       // print_r($DBPers->get()->getResult());
-       // exit();
+
         $DBPers->select('pers_id,tb_personnel.pers_prefix,tb_personnel.pers_firstname,tb_personnel.pers_lastname,tb_position.posi_name');
         $DBPers->join('skjacth_skj.tb_position','tb_position.posi_id = tb_personnel.pers_position','left');
         $DBPers->where('tb_personnel.pers_status','กำลังใช้งาน');
@@ -79,7 +74,6 @@ class ConAdminSaveAttendance extends BaseController
                 'att_reason' => $remark[$person_id] ?? null,
                 'att_adminid' => session()->get('id')
             ];
-            // REPLACE หรือ UPSERT (ถ้ามี UNIQUE KEY att_person_id, att_date)
             $DBPers->replace($data);
         }
         return $this->response->setJSON(['success' => true]);
@@ -90,10 +84,9 @@ class ConAdminSaveAttendance extends BaseController
         $data = $this->DataMain();    
         $DBPersAttendance = $data['database']->table('tb_personnel_attendance a');
 
-        $type = $this->request->getGet('type');    // day/month/year
-        $value = $this->request->getGet('value');  // 2025-05-01 หรือ 2025-05 หรือ 2025
+        $type = $this->request->getGet('type');
+        $value = $this->request->getGet('value');
 
-        // กำหนดช่วงวันที่
         if ($type === 'day') {
             $start = $end = $value;
         } elseif ($type === 'month') {
@@ -106,7 +99,6 @@ class ConAdminSaveAttendance extends BaseController
             return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid type']);
         }
 
-        // 1. Query ข้อมูล attendance ตามช่วงวันที่
         $builder = $DBPersAttendance
             ->join('tb_personnel p', 'a.att_person_id = p.pers_id')
             ->select('a.att_date, p.pers_prefix,p.pers_firstname,p.pers_lastname, a.att_status, a.att_reason')
@@ -118,7 +110,6 @@ class ConAdminSaveAttendance extends BaseController
 
         $rows = $builder->get()->getResultArray();
 
-        // 2. รวมข้อมูลสำหรับตาราง
         $table = [];
         foreach ($rows as $r) {
             $table[] = [
@@ -129,15 +120,14 @@ class ConAdminSaveAttendance extends BaseController
             ];
         }
 
-        // 3. คำนวณสถิติ (stats)
         $statCount = [
             'present' => 0,
             'absent' => 0,
             'sick' => 0,
             'official' => 0,
-            'personal' => 0, // ลากิจ
+            'personal' => 0,
             'other' => 0, 
-            'late' => 0,   // ลาอื่น ๆ
+            'late' => 0,
             'total' => 0
         ];
         foreach ($rows as $r) {
@@ -150,7 +140,7 @@ class ConAdminSaveAttendance extends BaseController
            else if ($r['att_status'] == 'สาย') $statCount['late']++;
             $statCount['total']++;
         }
-        // คิด % (กันหาร 0)
+
         $stats = [
             'present' => $statCount['present'],
             'absent' => $statCount['absent'],
@@ -168,7 +158,6 @@ class ConAdminSaveAttendance extends BaseController
             'late_percent' => $statCount['total'] ? round($statCount['late']*100/$statCount['total'], 1) : 0,
         ];
 
-        // 4. คืนค่า JSON
         return $this->response->setJSON([
             'stats' => $stats,
             'table' => $table
@@ -210,7 +199,6 @@ class ConAdminSaveAttendance extends BaseController
         $DBLeave = $data['database']->table('tb_personnel_attendance');
         $DBPosi = $data['databaseSKJ']->table('tb_position');
 
-        // รับค่าวันที่จาก query string
          $date = $this->request->getGet('date') ?: date('Y-m-d');
   
 
@@ -235,7 +223,6 @@ class ConAdminSaveAttendance extends BaseController
         $query = $builder->get();
         $result = $query->getResultArray();
 
-        // ส่ง JSON
         return $this->response->setJSON($result);
 
     }
