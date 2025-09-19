@@ -64,6 +64,16 @@
                         </a>
                     </li>
                 </ul>
+                <?php elseif(isset($_SESSION['username'])) :?>
+                    <ul class="menu-inner py-1">
+                    <li class="menu-item <?php echo $UrlMenuMain == "LoginOfficerPersonnel"?"active":""?>">
+                        <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->
+                        <a class="dropdown-item" href="<?=base_url('/LogoutOfficerPersonnel')?>">
+                                <i class="bx bx-power-off me-2"></i>
+                                <span class="align-middle">ออกจากระบบ</span>
+                            </a>
+                    </li>
+                </ul>
                 <?php else: ?>
                 <ul class="menu-inner py-1">
                     <li class="menu-item <?php echo $UrlMenuMain == "LoginOfficerPersonnel"?"active":""?>">

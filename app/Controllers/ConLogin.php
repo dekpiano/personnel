@@ -91,11 +91,11 @@ class ConLogin extends BaseController
                             ];                
                             $session->set($newdata);  
                             
-                            // if(in_array('งานประเมิน pa',explode(',',$User2['rloesAll']))){
-                            //     return redirect()->to(base_url('pa-personnel'));
-                            // }else{
+                            if($User2['admin_rloes_status'] == "AdminPersonnel"){
+                                return redirect()->to(base_url('Admin/Home'));
+                            }else{
                                 return redirect()->to(("https://".$_SESSION['Return']));
-                            // }
+                            }
                           
                 } else{
                     

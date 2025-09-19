@@ -36,9 +36,9 @@
                                 <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
 
 
-                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>?>
+                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
                       <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">จัดการข้อมูลพื้นฐาน</span>
+                    <span class="menu-header-text">งานทะเบียนครูและบุคลากร</span>
                 </li>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "WorkPerson"?"active open":""?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -55,9 +55,6 @@
 
                     </ul>
                 </li>
-                <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">บันทึกงาน</span>
-                </li>
                 <li class="menu-item <?php echo $uri->getSegment(2) == "SaveAttendance"?"active":""?>">
                     <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-layout"></i>
@@ -65,10 +62,10 @@
                     </a>
                 </li>
                 <?php endif; ?>
-                <?php if(1) :?>
+                <?php if(in_array('งานประเมิน pa',$SubRloes)) :?>
             <ul class="menu-inner py-1">
                 <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">จัดการประเมิน PA</span>
+                    <span class="menu-header-text">งานการประเมิน PA</span>
                 </li>
                 <li class="menu-item <?php echo ($uri->getSegment(2) == "PaConfig" || $uri->getSegment(2) == "PaReport" ? "active open" : "")?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
