@@ -381,6 +381,101 @@ class ConAdminPaConfig extends BaseController
         return redirect()->to(base_url('Admin/PaConfig'));
     }
 
+    public function updateEvaluator()
+    {
+        $session = session();
+        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+            return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
+        }
+
+        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+        $table = $db_pa_evaluation->table('tb_evaluators');
+
+        $e_id = $this->request->getPost('e_id');
+        $username = $this->request->getPost('e_Username');
+
+        // Basic validation to check if username already exists for a DIFFERENT user
+        $existingUser = $table->where('e_Username', $username)
+                              ->where('e_id !=', $e_id)
+                              ->get()->getRow();
+        if ($existingUser) {
+            $session->setFlashdata('Error', 'ชื่อผู้ใช้งานนี้มีอยู่แล้วในระบบ!');
+            return redirect()->to(base_url('Admin/PaConfig'));
+        }
+
+        $data = [
+            'e_first_name' => $this->request->getPost('e_first_name'),
+            'e_last_name' => $this->request->getPost('e_last_name'),
+            'e_position' => $this->request->getPost('e_position'),
+            'e_academic_standing' => $this->request->getPost('e_academic_standing'),
+            'e_organization' => $this->request->getPost('e_organization'),
+            'e_Username' => $username,
+        ];
+
+        // Hash the password only if a new one is provided
+        $password = $this->request->getPost('e_Password');
+        if (!empty($password)) {
+            $data['e_Password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        if ($table->where('e_id', $e_id)->update($data)) {
+            $session->setFlashdata('Success', 'อัปเดตข้อมูลผู้ประเมินสำเร็จ!');
+        } else {
+            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล หรือไม่มีการเปลี่ยนแปลง!');
+        }
+
+        return redirect()->to(base_url('Admin/PaConfig'));
+    }
+
+    public function deleteEvaluator($id)
+    {
+        $session = session();
+        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+            return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
+        }
+
+        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+
+        // Start a transaction
+        $db_pa_evaluation->transStart();
+
+        // 1. Find all evaluator score IDs (es_id) linked to this evaluator
+        $evaluatorScores = $db_pa_evaluation->table('tb_evaluator_scores')
+                                            ->select('es_id')
+                                            ->where('e_id', $id)
+                                            ->get()->getResultArray();
+
+        if (!empty($evaluatorScores)) {
+            $es_ids = array_column($evaluatorScores, 'es_id');
+
+            // 2. Delete all item scores linked to those evaluator scores
+            $db_pa_evaluation->table('tb_item_scores')->whereIn('es_id', $es_ids)->delete();
+        }
+
+        // 3. Delete the evaluator's score summaries
+        $db_pa_evaluation->table('tb_evaluator_scores')->delete(['e_id' => $id]);
+
+        // 4. Finally, delete the evaluator
+        $db_pa_evaluation->table('tb_evaluators')->delete(['e_id' => $id]);
+
+        // Complete the transaction
+        $db_pa_evaluation->transComplete();
+
+        // Check the transaction status
+        if ($db_pa_evaluation->transStatus() === false) {
+            // Transaction failed
+            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการลบข้อมูลผู้ประเมินและข้อมูลที่เกี่ยวข้อง');
+        } else {
+            // Transaction successful
+            $session->setFlashdata('Success', 'ลบผู้ประเมินและข้อมูลการประเมินที่เกี่ยวข้องทั้งหมดสำเร็จ!');
+        }
+
+        return redirect()->to(base_url('Admin/PaConfig'));
+    }
+
+
+
+
     public function rubricItems()
     {
         $session = session();

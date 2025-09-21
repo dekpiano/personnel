@@ -1,0 +1,151 @@
+INFO - 2025-09-21 10:24:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:24:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:24:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:24:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:24:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:24:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:33:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:35:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:36:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-09-21 10:38:44 --> syntax error, unexpected token "public"
+in APPPATH\Controllers\ConAdminPaConfig.php on line 426.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(289): CodeIgniter\Autoloader\Autoloader->includeFile('D:\\xampp\\htdocs\\personnel\\app\\Controllers\\ConAdminPaConfig.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(267): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\ConAdminPaConfig')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\ConAdminPaConfig')
+ 4 SYSTEMPATH\CodeIgniter.php(892): class_exists('\\App\\Controllers\\ConAdminPaConfig', true)
+ 5 SYSTEMPATH\CodeIgniter.php(486): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH\index.php(67): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-09-21 10:38:47 --> syntax error, unexpected token "public"
+in APPPATH\Controllers\ConAdminPaConfig.php on line 426.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(289): CodeIgniter\Autoloader\Autoloader->includeFile('D:\\xampp\\htdocs\\personnel\\app\\Controllers\\ConAdminPaConfig.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(267): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\ConAdminPaConfig')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\ConAdminPaConfig')
+ 4 SYSTEMPATH\CodeIgniter.php(892): class_exists('\\App\\Controllers\\ConAdminPaConfig', true)
+ 5 SYSTEMPATH\CodeIgniter.php(486): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH\index.php(67): CodeIgniter\CodeIgniter->run()
+INFO - 2025-09-21 10:39:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:41:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:43:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:43:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:43:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:43:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-09-21 10:43:15 --> mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_evaluator_scores`, CONSTRAINT `tb_evaluator_scores_ibfk_2` FOREIGN KEY (`e_id`) REFERENCES `tb_evaluators` (`e_id`)) in D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:295
+Stack trace:
+#0 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb...', 0)
+#1 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb...')
+#2 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb...')
+#3 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb...', Array, false)
+#4 D:\xampp\htdocs\personnel\app\Controllers\ConAdminPaConfig.php(440): CodeIgniter\Database\BaseBuilder->delete(Array)
+#5 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+#6 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+#7 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\personnel\index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-09-21 10:43:15 --> Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_evaluator_scores`, CONSTRAINT `tb_evaluator_scores_ibfk_2` FOREIGN KEY (`e_id`) REFERENCES `tb_evaluators` (`e_id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 295.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'')
+ 3 SYSTEMPATH\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb_evaluators`
+WHERE `e_id` = :e_id:', [...], false)
+ 5 APPPATH\Controllers\ConAdminPaConfig.php(440): CodeIgniter\Database\BaseBuilder->delete([...])
+ 6 SYSTEMPATH\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+ 7 SYSTEMPATH\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+ 8 SYSTEMPATH\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH\index.php(67): CodeIgniter\CodeIgniter->run()
+INFO - 2025-09-21 10:43:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:43:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-09-21 10:43:31 --> mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_evaluator_scores`, CONSTRAINT `tb_evaluator_scores_ibfk_2` FOREIGN KEY (`e_id`) REFERENCES `tb_evaluators` (`e_id`)) in D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:295
+Stack trace:
+#0 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb...', 0)
+#1 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb...')
+#2 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb...')
+#3 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb...', Array, false)
+#4 D:\xampp\htdocs\personnel\app\Controllers\ConAdminPaConfig.php(440): CodeIgniter\Database\BaseBuilder->delete(Array)
+#5 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+#6 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+#7 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\personnel\index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-09-21 10:43:31 --> Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_evaluator_scores`, CONSTRAINT `tb_evaluator_scores_ibfk_2` FOREIGN KEY (`e_id`) REFERENCES `tb_evaluators` (`e_id`))
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 295.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'')
+ 3 SYSTEMPATH\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb_evaluators`
+WHERE `e_id` = \'e68cbe0df7d8f0\'')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb_evaluators`
+WHERE `e_id` = :e_id:', [...], false)
+ 5 APPPATH\Controllers\ConAdminPaConfig.php(440): CodeIgniter\Database\BaseBuilder->delete([...])
+ 6 SYSTEMPATH\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+ 7 SYSTEMPATH\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+ 8 SYSTEMPATH\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH\index.php(67): CodeIgniter\CodeIgniter->run()
+INFO - 2025-09-21 10:49:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:49:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:49:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-09-21 10:49:50 --> mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_item_scores`, CONSTRAINT `tb_item_scores_ibfk_1` FOREIGN KEY (`es_id`) REFERENCES `tb_evaluator_scores` (`es_id`)) in D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:295
+Stack trace:
+#0 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb...', 0)
+#1 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb...')
+#2 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb...')
+#3 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb...', Array, false)
+#4 D:\xampp\htdocs\personnel\app\Controllers\ConAdminPaConfig.php(443): CodeIgniter\Database\BaseBuilder->delete(Array)
+#5 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+#6 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+#7 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\personnel\index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2025-09-21 10:49:50 --> mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails (`skjacth_pa_evaluation`.`tb_evaluator_scores`, CONSTRAINT `tb_evaluator_scores_ibfk_2` FOREIGN KEY (`e_id`) REFERENCES `tb_evaluators` (`e_id`)) in D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php:295
+Stack trace:
+#0 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\MySQLi\Connection.php(295): mysqli->query('DELETE FROM `tb...', 0)
+#1 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(692): CodeIgniter\Database\MySQLi\Connection->execute('DELETE FROM `tb...')
+#2 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseConnection.php(606): CodeIgniter\Database\BaseConnection->simpleQuery('DELETE FROM `tb...')
+#3 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\Database\BaseBuilder.php(2791): CodeIgniter\Database\BaseConnection->query('DELETE FROM `tb...', Array, false)
+#4 D:\xampp\htdocs\personnel\app\Controllers\ConAdminPaConfig.php(446): CodeIgniter\Database\BaseBuilder->delete(Array)
+#5 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(934): App\Controllers\ConAdminPaConfig->deleteEvaluator('e68cbe0df7d8f0')
+#6 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(499): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ConAdminPaConfig))
+#7 D:\xampp\htdocs\personnel\vendor\codeigniter4\framework\system\CodeIgniter.php(368): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 D:\xampp\htdocs\personnel\index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+INFO - 2025-09-21 10:49:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:49:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:51:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:51:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:51:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:51:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:51:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:52:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:52:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:53:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-21 10:54:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

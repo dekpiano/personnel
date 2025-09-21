@@ -85,6 +85,8 @@ $routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
 $routes->post('Admin/PaConfig/save', 'ConAdminPaConfig::saveScope');
 $routes->get('Admin/PaConfig/delete/(:num)', 'ConAdminPaConfig::deleteScope/$1');
 $routes->post('Admin/PaConfig/addEvaluator', 'ConAdminPaConfig::addEvaluator');
+$routes->post('Admin/PaConfig/updateEvaluator', 'ConAdminPaConfig::updateEvaluator');
+$routes->get('Admin/PaConfig/deleteEvaluator/(:segment)', 'ConAdminPaConfig::deleteEvaluator/$1');
 $routes->get('Admin/PaConfig/Rubrics', 'ConAdminPaConfig::rubricItems');
 $routes->post('Admin/PaConfig/addRubricItem', 'ConAdminPaConfig::addRubricItem');
 $routes->post('Admin/PaConfig/updateRubricItem', 'ConAdminPaConfig::updateRubricItem');
