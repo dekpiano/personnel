@@ -558,6 +558,7 @@ class ConAdminPaConfig extends BaseController
 
         $ri_id = $this->request->getPost('ri_id');
         $academic_standing = $this->request->getPost('ri_academic_standing');
+        $position = $this->request->getPost('ri_position');
 
         $data = [
             'ri_part' => $this->request->getPost('ri_part'),
@@ -566,6 +567,7 @@ class ConAdminPaConfig extends BaseController
             'ri_item_description' => $this->request->getPost('ri_item_description'),
             'ri_expected_level_description' => $this->request->getPost('ri_expected_level_description'),
             'ri_academic_standing' => $academic_standing === '' ? null : $academic_standing,
+            'ri_position' => $position === '' ? null : $position,
         ];
 
         // Basic validation
@@ -578,6 +580,7 @@ class ConAdminPaConfig extends BaseController
                               ->where('ri_domain', $data['ri_domain'])
                               ->where('ri_item_number', $data['ri_item_number'])
                               ->where('ri_academic_standing', $data['ri_academic_standing'])
+                              ->where('ri_position', $data['ri_position'])
                               ->where('ri_id !=', $ri_id) // Exclude current item
                               ->get()->getRow();
 

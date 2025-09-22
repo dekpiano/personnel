@@ -9,7 +9,17 @@
             <h5 class="card-header">แบบประเมินผลการพัฒนางานตามข้อตกลง (PA)</h5>
             <div class="card-body">
                 <form action="<?= base_url('user/pa-evaluation/save'); ?>" method="post">
-                    <p>สำหรับข้าราชการครูและบุคลากรทางการศึกษา ตำแหน่งครู (ยังไม่มีวิทยฐานะ)</p>
+                    <p>สำหรับข้าราชการครูและบุคลากรทางการศึกษา ตำแหน่ง: <strong><?= esc($person['posi_name']); ?></strong> (วิทยฐานะ: <strong><?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?></strong>)</p>
+                    
+                    <?php if (empty($rubricItems)): ?>
+                        <div class="alert alert-danger text-center mt-4" role="alert">
+                            <h4 class="alert-heading">ไม่พบหัวข้อการประเมิน!</h4>
+                            <p>ไม่พบหัวข้อการประเมินสำหรับตำแหน่งและวิทยฐานะนี้</p>
+                            <hr>
+                            <p class="mb-0">กรุณาติดต่อผู้ดูแลระบบเพื่อทำการตั้งค่าหัวข้อการประเมินให้ถูกต้อง</p>
+                        </div>
+                    <?php else: ?>
+
                     <hr class="my-4">
 
                     <!-- Section 1: Evaluated Person's Info -->
@@ -274,6 +284,8 @@
                         <button type="submit" class="btn btn-primary">บันทึกแบบประเมิน</button>
                         <button type="button" class="btn btn-label-secondary">ยกเลิก</button>
                     </div>
+                    
+                    <?php endif; ?>
 
                 </form>
             </div>

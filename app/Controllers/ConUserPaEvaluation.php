@@ -64,10 +64,12 @@ class ConUserPaEvaluation extends BaseController
             $builder->groupEnd(); // End the main OR group
         } else {
             // If no scope is defined for the assessor, they should not see any personnel.
-            // Admins should see all, Assessors with no scope should see nothing.
-            if ($session->get('status') !== 'admin' && $session->get('status') !== 'assessor') {
-                $builder->where('1=0'); // Show no results if no scope and not admin/assessor
+            // An admin with no scope should see everyone.
+            if ($session->get('status') !== 'admin') {
+                // Any non-admin user (like an assessor) with no scopes should see no one.
+                $builder->where('1=0'); 
             }
+            // If the user IS an admin, we do nothing, so they will see all personnel.
         }
         // --- End Assessor Scope Filtering ---
 
@@ -117,17 +119,49 @@ class ConUserPaEvaluation extends BaseController
         // ดึงวิทยฐานะของบุคลากร
         $academicStanding = empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : $person['pers_academic'];
 
-        // ดึงหัวข้อการประเมินตามวิทยฐานะ
-        $rubricBuilder = $db_pa_evaluation->table('tb_rubric_items');
-        $rubricBuilder->groupStart();
-        $rubricBuilder->where('ri_academic_standing', $academicStanding); // ตรงกับวิทยฐานะของบุคลากร
-        $rubricBuilder->orWhere('ri_academic_standing', 'ทั่วไป'); // หัวข้อทั่วไป
-        $rubricBuilder->orWhere('ri_academic_standing IS NULL'); // หัวข้อที่ไม่มีการระบุวิทยฐานะ
-        $rubricBuilder->orWhere('ri_academic_standing', ''); // หัวข้อที่ไม่มีการระบุวิทยฐานะ (สตริงว่าง)
-        $rubricBuilder->groupEnd();
-        $rubricBuilder->orderBy('ri_part', 'ASC');
-        $rubricBuilder->orderBy('ri_item_number', 'ASC');
-        $rubricItems = $rubricBuilder->get()->getResultArray();
+        // ดึงหัวข้อการประเมินตามวิทยฐานะและตำแหน่ง
+        $personPosition = $person['posi_name'];
+
+        // --- Query for Part 1 with specific filters ---
+        $part1Builder = $db_pa_evaluation->table('tb_rubric_items');
+        $part1Builder->where('ri_part', 1);
+
+        // Filter by Academic Standing for Part 1
+        $part1Builder->groupStart();
+        $part1Builder->where('ri_academic_standing', $academicStanding);
+        $part1Builder->orWhere('ri_academic_standing', 'ทั่วไป');
+        $part1Builder->orWhere('ri_academic_standing IS NULL');
+        $part1Builder->orWhere('ri_academic_standing', '');
+        $part1Builder->groupEnd();
+
+        // Filter by Position for Part 1
+        $part1Builder->groupStart();
+        if (strpos($personPosition, 'ผู้อำนวยการ') !== false) {
+            $part1Builder->like('ri_position', 'ผู้อำนวยการ', 'after');
+        } else {
+            $part1Builder->where('ri_position', $personPosition);
+        }
+        // $part1Builder->orWhere('ri_position IS NULL');
+        // $part1Builder->orWhere('ri_position', '');
+        $part1Builder->groupEnd();
+        
+        $part1Items = $part1Builder->get()->getResultArray();
+
+        // --- Query for Part 2 (generic for all) ---
+        $part2Builder = $db_pa_evaluation->table('tb_rubric_items');
+        $part2Builder->where('ri_part', 2);
+        $part2Items = $part2Builder->get()->getResultArray();
+
+        // --- Merge and Sort Results ---
+        $rubricItems = array_merge($part1Items, $part2Items);
+        usort($rubricItems, function($a, $b) {
+            if ($a['ri_part'] == $b['ri_part']) {
+                return version_compare($a['ri_item_number'], $b['ri_item_number']);
+            }
+            return $a['ri_part'] < $b['ri_part'] ? -1 : 1;
+        });
+
+       // print_r($rubricItems); exit(); // Debug: Show the last executed query
 
         $session = session();
         $evaluatorId = $session->get('id');
