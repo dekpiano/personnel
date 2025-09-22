@@ -228,13 +228,16 @@ $(document).ready(function() {
         }
 
         // If validation passes, proceed with AJAX submission
-        const formData = $(this).serialize(); // Serialize form data for AJAX
-        const formAction = $(this).attr('action'); // Get the form action URL
+        const form = this;
+        const formData = new FormData(form); // Use FormData for a more robust submission
+        const formAction = $(form).attr('action'); // Get the form action URL
 
         $.ajax({
             url: formAction,
             type: 'POST',
             data: formData,
+            processData: false,  // Important: Don't process the files
+            contentType: false,  // Important: Set content type to false
             dataType: 'json', // Expect JSON response from the server
             beforeSend: function() {
                 // Optional: Show a loading indicator

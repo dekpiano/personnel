@@ -9,15 +9,18 @@
             <h5 class="card-header">แบบประเมินผลการพัฒนางานตามข้อตกลง (PA)</h5>
             <div class="card-body">
                 <form action="<?= base_url('user/pa-evaluation/save'); ?>" method="post">
-                    <p>สำหรับข้าราชการครูและบุคลากรทางการศึกษา ตำแหน่ง: <strong><?= esc($person['posi_name']); ?></strong> (วิทยฐานะ: <strong><?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?></strong>)</p>
-                    
+                    <p>สำหรับข้าราชการครูและบุคลากรทางการศึกษา ตำแหน่ง:
+                        <strong><?= esc($person['posi_name']); ?></strong> (วิทยฐานะ:
+                        <strong><?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?></strong>)
+                    </p>
+
                     <?php if (empty($rubricItems)): ?>
-                        <div class="alert alert-danger text-center mt-4" role="alert">
-                            <h4 class="alert-heading">ไม่พบหัวข้อการประเมิน!</h4>
-                            <p>ไม่พบหัวข้อการประเมินสำหรับตำแหน่งและวิทยฐานะนี้</p>
-                            <hr>
-                            <p class="mb-0">กรุณาติดต่อผู้ดูแลระบบเพื่อทำการตั้งค่าหัวข้อการประเมินให้ถูกต้อง</p>
-                        </div>
+                    <div class="alert alert-danger text-center mt-4" role="alert">
+                        <h4 class="alert-heading">ไม่พบหัวข้อการประเมิน!</h4>
+                        <p>ไม่พบหัวข้อการประเมินสำหรับตำแหน่งและวิทยฐานะนี้</p>
+                        <hr>
+                        <p class="mb-0">กรุณาติดต่อผู้ดูแลระบบเพื่อทำการตั้งค่าหัวข้อการประเมินให้ถูกต้อง</p>
+                    </div>
                     <?php else: ?>
 
                     <hr class="my-4">
@@ -66,11 +69,26 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" style="vertical-align: middle;">ลักษณะงานที่ปฏิบัติตามมาตรฐานตำแหน่ง
-                                        ระดับการปฏิบัติที่คาดหวัง
-                                        ปรับประยุกต์ <br>(Apply & Adapt)
-                                    </th>
-                                    <th colspan="4" class="text-center">ระดับผลการประเมิน</th>
+                                    <?php 
+                                     $de = "ลักษณะงานที่ปฏิบัติตามมาตรฐานกำหนดตำแหน่ง ระดับการปฏิบัติที่คาดหวัง ริเริ่ม พัฒนา (Originate & Improve)";
+                                        $NoExpertise ="ลักษณะงานที่ปฏิบัติตามมาตรฐานตำแหน่ง ระดับการปฏิบัติที่คาดหวัง ปรับประยุกต์ (Apply & Adapt)";
+                                        $Expertise = "ลักษณะงานที่ปฏิบัติตามมาตรฐานตำแหน่ง ระดับการปฏิบัติที่คาดหวัง แก้ไขปัญหา (Solve the Problem)";    
+                                        $SpecialExpertise = "ลักษณะงานที่ปฏิบัติตามมาตรฐานตำแหน่ง ระดับการปฏิบัติที่คาดหวัง ริเริ่ม พัฒนา (Originate & Improve)";
+
+
+                                    if($person['posi_name'] == "ผู้อำนวยการสถานศึกษา" || $person['posi_name'] == "รองผู้อำนวยการสถานศึกษา" && $person['pers_academic'] == "ชำนาญการพิเศษ"){
+                                            echo "<th rowspan='2' style='vertical-align: middle;'>$de</th>";
+                                        }elseif(($person['posi_name'] == "ครูผู้ช่วย" || $person['posi_name'] == "ครู") && empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic'])){
+                                            echo "<th rowspan='2' style='vertical-align: middle;'>$NoExpertise</th>";
+                                        }elseif($person['posi_name'] == "ครู" && $person['pers_academic'] == "ชำนาญการ"){
+                                            echo "<th rowspan='2' style='vertical-align: middle;'>$Expertise</th>";
+                                        }elseif($person['posi_name'] == "ครู" && $person['pers_academic'] == "ชำนาญการพิเศษ" ){
+                                            echo "<th rowspan='2' style='vertical-align: middle;'>$SpecialExpertise</th>";
+                                        }
+                                       
+                                        
+                                    ?>
+                                    <th colspan="4" class="text-center">ระดับผลการประเมิน </th>
                                     <th rowspan="2" style="vertical-align: middle;">คะแนนที่ได้</th>
                                 </tr>
                                 <tr>
@@ -89,47 +107,48 @@
                                             if ($item['ri_domain'] !== $currentPart1Domain):
                                                 $currentPart1Domain = $item['ri_domain'];
                                                 ?>
-                                                <tr>
-                                                    <td colspan="6" class="table-light"><strong><?= esc($item['ri_domain']); ?></strong></td>
-                                                </tr>
-                                            <?php endif; ?>
-                                            <tr>
-                                                <td>
-                                                    <?= esc($item['ri_item_number']); ?> <?= esc($item['ri_item_description']); ?>
-                                                    <?php if (!empty($item['ri_expected_level_description'])): ?>
-                                                        <div class="mt-2 text-muted small">
-                                                            <strong>ระดับที่คาดหวัง:</strong>
-                                                            <?= esc($item['ri_expected_level_description']); ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="1" data-part="1"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 1) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="2" data-part="1"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 2) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="3" data-part="1"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 3) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="4" data-part="1"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 4) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td><input type="text" class="form-control form-control-sm" min="0" max="4" data-part="1" readonly
-                                                        name="points_<?= esc($item['ri_id']); ?>"
-                                                        value="<?= isset($itemScores[$item['ri_id']]) ? esc($itemScores[$item['ri_id']]) : ''; ?>">
-                                                </td>
-                                            </tr>
+                                <tr>
+                                    <td colspan="6" class="table-light"><strong><?= esc($item['ri_domain']); ?></strong>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <tr>
+                                    <td>
+                                        <?= esc($item['ri_item_number']); ?> <?= esc($item['ri_item_description']); ?>
+                                        <?php if (!empty($item['ri_expected_level_description'])): ?>
+                                        <div class="mt-2 text-muted small">
+                                            <strong>ระดับที่คาดหวัง:</strong>
+                                            <?= esc($item['ri_expected_level_description']); ?>
+                                        </div>
                                         <?php endif; ?>
-                                    <?php endforeach; ?>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="1" data-part="1"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 1) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="2" data-part="1"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 2) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="3" data-part="1"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 3) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="4" data-part="1"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 4) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td><input type="text" class="form-control form-control-sm" min="0" max="4"
+                                            data-part="1" readonly name="points_<?= esc($item['ri_id']); ?>"
+                                            value="<?= isset($itemScores[$item['ri_id']]) ? esc($itemScores[$item['ri_id']]) : ''; ?>">
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center">ไม่พบหัวข้อการประเมินสำหรับส่วนที่ 1</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="6" class="text-center">ไม่พบหัวข้อการประเมินสำหรับส่วนที่ 1</td>
+                                </tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -167,47 +186,53 @@
                                             if ($item['ri_domain'] !== $currentPart2Domain):
                                                 $currentPart2Domain = $item['ri_domain'];
                                                 ?>
-                                                <tr>
-                                                    <td colspan="6" class="table-light"><strong><?= esc($item['ri_domain']); ?></strong></td>
-                                                </tr>
-                                            <?php endif; ?>
-                                            <tr>
-                                                <td>
-                                                    <?= esc($item['ri_item_number']); ?> <?= esc($item['ri_item_description']); ?>
-                                                    <?php if (!empty($item['ri_expected_level_description'])): ?>
-                                                        <div class="mt-2 text-muted small">
-                                                            <strong>ระดับที่คาดหวัง:</strong>
-                                                            <?= esc($item['ri_expected_level_description']); ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="1" data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 1) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="2" data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 2) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="3" data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 3) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td class="text-center"><input class="form-check-input" type="radio"
-                                                        name="raw_score_<?= esc($item['ri_id']); ?>" value="4" data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>"
-                                                        <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 4) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td><input type="text" class="form-control form-control-sm" min="0" max="20" data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>" readonly
-                                                        name="points_<?= esc($item['ri_id']); ?>"
-                                                        value="<?= isset($itemScores[$item['ri_id']]) ? esc($itemScores[$item['ri_id']]) : ''; ?>">
-                                                </td>
-                                            </tr>
+                                <tr>
+                                    <td colspan="6" class="table-light"><strong><?= esc($item['ri_domain']); ?></strong>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <tr>
+                                    <td>
+                                        <?= esc($item['ri_item_number']); ?> <?= esc($item['ri_item_description']); ?>
+                                        <?php if (!empty($item['ri_expected_level_description'])): ?>
+                                        <div class="mt-2 text-muted small">
+                                            <strong>ระดับที่คาดหวัง:</strong>
+                                            <?= esc($item['ri_expected_level_description']); ?>
+                                        </div>
                                         <?php endif; ?>
-                                    <?php endforeach; ?>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="1" data-part="2"
+                                            data-item-number="<?= esc($item['ri_item_number']); ?>"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 1) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="2" data-part="2"
+                                            data-item-number="<?= esc($item['ri_item_number']); ?>"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 2) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="3" data-part="2"
+                                            data-item-number="<?= esc($item['ri_item_number']); ?>"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 3) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="text-center"><input class="form-check-input" type="radio"
+                                            name="raw_score_<?= esc($item['ri_id']); ?>" value="4" data-part="2"
+                                            data-item-number="<?= esc($item['ri_item_number']); ?>"
+                                            <?= (isset($rawItemScores[$item['ri_id']]) && $rawItemScores[$item['ri_id']] == 4) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td><input type="text" class="form-control form-control-sm" min="0" max="20"
+                                            data-part="2" data-item-number="<?= esc($item['ri_item_number']); ?>"
+                                            readonly name="points_<?= esc($item['ri_id']); ?>"
+                                            value="<?= isset($itemScores[$item['ri_id']]) ? esc($itemScores[$item['ri_id']]) : ''; ?>">
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                                <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center">ไม่พบหัวข้อการประเมินสำหรับส่วนที่ 2</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="6" class="text-center">ไม่พบหัวข้อการประเมินสำหรับส่วนที่ 2</td>
+                                </tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -284,7 +309,7 @@
                         <button type="submit" class="btn btn-primary">บันทึกแบบประเมิน</button>
                         <button type="button" class="btn btn-label-secondary">ยกเลิก</button>
                     </div>
-                    
+
                     <?php endif; ?>
 
                 </form>
@@ -343,20 +368,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (itemNumber === '2.1' || itemNumber === '2.2') {
                         // Scoring for 2.1 and 2.2: 4=10, 3=7.50, 2=5, 1=2.50
                         switch (selectedValue) {
-                            case 1: calculatedScore = 2.50; break;
-                            case 2: calculatedScore = 5; break;
-                            case 3: calculatedScore = 7.50; break;
-                            case 4: calculatedScore = 10; break;
-                            default: calculatedScore = 0;
+                            case 1:
+                                calculatedScore = 2.50;
+                                break;
+                            case 2:
+                                calculatedScore = 5;
+                                break;
+                            case 3:
+                                calculatedScore = 7.50;
+                                break;
+                            case 4:
+                                calculatedScore = 10;
+                                break;
+                            default:
+                                calculatedScore = 0;
                         }
                     } else {
                         // Default scoring for other Part 2 items: 4=20, 3=15, 2=10, 1=5
                         switch (selectedValue) {
-                            case 1: calculatedScore = 5; break;
-                            case 2: calculatedScore = 10; break;
-                            case 3: calculatedScore = 15; break;
-                            case 4: calculatedScore = 20; break;
-                            default: calculatedScore = 0;
+                            case 1:
+                                calculatedScore = 5;
+                                break;
+                            case 2:
+                                calculatedScore = 10;
+                                break;
+                            case 3:
+                                calculatedScore = 15;
+                                break;
+                            case 4:
+                                calculatedScore = 20;
+                                break;
+                            default:
+                                calculatedScore = 0;
                         }
                     }
                 }
@@ -418,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     firstUncheckedElement.style.backgroundColor = '#fff3cd'; // Light yellow background
                     setTimeout(() => {
                         firstUncheckedElement.style.backgroundColor =
-                        ''; // Remove highlight after a short delay
+                            ''; // Remove highlight after a short delay
                     }, 3000);
                 }
             });
