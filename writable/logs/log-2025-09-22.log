@@ -1,0 +1,67 @@
+INFO - 2025-09-22 09:41:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:42:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:42:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:42:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:42:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:42:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:44:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:45:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:45:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:48:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:49:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:49:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:49:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:50:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:50:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:50:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:51:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:52:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:53:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:54:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:54:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:57:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 09:59:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:01:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-09-22 10:01:46 --> Evaluator ID from session: e68d0ba4ad852c
+DEBUG - 2025-09-22 10:01:46 --> Evaluator data fetched: {"e_id":"e68d0ba4ad852c","e_first_name":"\u0e19\u0e32\u0e07\u0e2a\u0e32\u0e27\u0e2d\u0e23\u0e48\u0e32\u0e21","e_last_name":"\u0e27\u0e31\u0e12\u0e19\u0e30","e_position":"\u0e1c\u0e39\u0e49\u0e2d\u0e33\u0e19\u0e27\u0e22\u0e01\u0e32\u0e23\u0e01\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 \u0e28\u0e32\u0e2a\u0e19\u0e32\u0e41\u0e25\u0e30\u0e27\u0e31\u0e12\u0e19\u0e18\u0e23\u0e23\u0e21","e_academic_standing":"\u0e0a\u0e33\u0e19\u0e32\u0e0d\u0e01\u0e32\u0e23","e_organization":"\u0e01\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 \u0e28\u0e32\u0e2a\u0e19\u0e32\u0e41\u0e25\u0e30\u0e27\u0e31\u0e12\u0e19\u0e18\u0e23\u0e23\u0e21 ","e_Username":"skj00","e_Password":"$2y$10$7c94Y.FF6rYmPGjRBMyr1.jzZCILeG0wqUavH9YCxy6OuwFqzgJ9K"}
+DEBUG - 2025-09-22 10:01:46 --> rawItemScores: []
+INFO - 2025-09-22 10:02:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-09-22 10:02:12 --> Attempting to save PA evaluation for personId: pers_060
+DEBUG - 2025-09-22 10:02:13 --> Person ID pers_060 exists in tb_personnel: true
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3505148","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbddce7fede","is_score":"1","is_calculated_score":1,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc35058e7","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbddecb051a","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3505b12","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde067f391","is_score":"3","is_calculated_score":3,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3506e78","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde1e7a091","is_score":"4","is_calculated_score":4,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc35070a2","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde326d520","is_score":"3","is_calculated_score":3,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507284","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde4334eaa","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507450","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde5cd124d","is_score":"1","is_calculated_score":1,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507621","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde711f432","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507811","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbde8c91bee","is_score":"3","is_calculated_score":3,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc35079f4","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdea20333f","is_score":"4","is_calculated_score":4,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507bbf","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdebb6d341","is_score":"3","is_calculated_score":3,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507d5f","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdecf11499","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3507f5e","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdedee4418","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3508101","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdeecc7ea6","is_score":"2","is_calculated_score":2,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc35082d9","es_id":"ES_68d0bc3504f98","ri_id":"ri68cbdefadfab2","is_score":"3","is_calculated_score":3,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3508595","es_id":"ES_68d0bc3504f98","ri_id":"ri68cb8b959524e","is_score":"3","is_calculated_score":15,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3508a4f","es_id":"ES_68d0bc3504f98","ri_id":"ri68cb8bd793967","is_score":"2","is_calculated_score":5,"is_notes":null}
+DEBUG - 2025-09-22 10:02:13 --> ItemScoreData to insert: {"is_id":"IS_68d0bc3508e86","es_id":"ES_68d0bc3504f98","ri_id":"ri68cb8bf0824f2","is_score":"1","is_calculated_score":2.5,"is_notes":null}
+INFO - 2025-09-22 10:02:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-09-22 10:02:17 --> Evaluator ID from session: e68d0ba4ad852c
+DEBUG - 2025-09-22 10:02:17 --> Evaluator data fetched: {"e_id":"e68d0ba4ad852c","e_first_name":"\u0e19\u0e32\u0e07\u0e2a\u0e32\u0e27\u0e2d\u0e23\u0e48\u0e32\u0e21","e_last_name":"\u0e27\u0e31\u0e12\u0e19\u0e30","e_position":"\u0e1c\u0e39\u0e49\u0e2d\u0e33\u0e19\u0e27\u0e22\u0e01\u0e32\u0e23\u0e01\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 \u0e28\u0e32\u0e2a\u0e19\u0e32\u0e41\u0e25\u0e30\u0e27\u0e31\u0e12\u0e19\u0e18\u0e23\u0e23\u0e21","e_academic_standing":"\u0e0a\u0e33\u0e19\u0e32\u0e0d\u0e01\u0e32\u0e23","e_organization":"\u0e01\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e28\u0e36\u0e01\u0e29\u0e32 \u0e28\u0e32\u0e2a\u0e19\u0e32\u0e41\u0e25\u0e30\u0e27\u0e31\u0e12\u0e19\u0e18\u0e23\u0e23\u0e21 ","e_Username":"skj00","e_Password":"$2y$10$7c94Y.FF6rYmPGjRBMyr1.jzZCILeG0wqUavH9YCxy6OuwFqzgJ9K"}
+DEBUG - 2025-09-22 10:02:17 --> rawItemScores: {"ri68cbddce7fede":"1","ri68cbddecb051a":"2","ri68cbde067f391":"3","ri68cbde1e7a091":"4","ri68cbde326d520":"3","ri68cbde4334eaa":"2","ri68cbde5cd124d":"1","ri68cbde711f432":"2","ri68cbde8c91bee":"3","ri68cbdea20333f":"4","ri68cbdebb6d341":"3","ri68cbdecf11499":"2","ri68cbdedee4418":"2","ri68cbdeecc7ea6":"2","ri68cbdefadfab2":"3","ri68cb8b959524e":"3","ri68cb8bd793967":"2","ri68cb8bf0824f2":"1"}
+INFO - 2025-09-22 10:02:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:02:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:02:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:02:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 10:03:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 13:27:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-22 13:27:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

@@ -28,7 +28,7 @@
                 <select class="form-select" id="scope_posi_id" name="scope_posi_id">
                     <option value="">ทั้งหมด</option>
                     <?php foreach ($positions as $pos): ?>
-                        <?php if ($pos['posi_name'] === 'ครู' || $pos['posi_name'] === 'ครูผู้ช่วย'): ?>
+                        <?php if ($pos['posi_name'] === 'ผู้อำนวยการสถานศึกษา' || $pos['posi_name'] === 'รองผู้อำนวยการสถานศึกษา' || $pos['posi_name'] === 'ครู' || $pos['posi_name'] === 'ครูผู้ช่วย'): ?>
                         <option value="<?= esc($pos['posi_id']); ?>">
                             <?= esc($pos['posi_name']); ?>
                         </option>
@@ -70,7 +70,7 @@
             <tbody>
                 <?php if (!empty($assessorScopes)): ?>
                     <?php $i = 1; ?>
-                    <?php foreach ($assessorScopes as $scope): ?>
+                    <?php foreach ($assessorScopes as $scope):  ?>
                         <tr>
                             <td><?= $i++; ?></td>
                             <td>
@@ -398,5 +398,29 @@
             modal.querySelector('#edit_e_Password').value = ''; // Clear password field
         });
     }
+
+    // Logic to disable learning group based on position
+    document.addEventListener('DOMContentLoaded', function() {
+        const positionSelect = document.getElementById('scope_posi_id');
+        const learningGroupSelect = document.getElementById('scope_lear_id');
+
+        if (positionSelect && learningGroupSelect) {
+            const toggleLearningGroup = () => {
+                const selectedPositionText = positionSelect.options[positionSelect.selectedIndex].text;
+                
+                if (selectedPositionText === 'ผู้อำนวยการสถานศึกษา' || selectedPositionText === 'รองผู้อำนวยการสถานศึกษา') {
+                    learningGroupSelect.value = ''; // Set to "ทั้งหมด"
+                    learningGroupSelect.disabled = true;
+                } else {
+                    learningGroupSelect.disabled = false;
+                }
+            };
+
+            positionSelect.addEventListener('change', toggleLearningGroup);
+            
+            // Initial check in case the form is pre-filled
+            toggleLearningGroup();
+        }
+    });
 </script>
 <?= $this->endSection() ?>

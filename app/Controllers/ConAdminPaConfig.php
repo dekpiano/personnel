@@ -33,7 +33,7 @@ class ConAdminPaConfig extends BaseController
         // Fetch all positions
         $positions = $db_skj->table('tb_position')
                             ->select('posi_id, posi_name')
-                            ->orderBy('posi_name', 'ASC')
+                            ->orderBy('posi_id', 'ASC')
                             ->get()->getResultArray();
 
         // Fetch all learning groups
@@ -90,7 +90,7 @@ class ConAdminPaConfig extends BaseController
         // 2. Get the list of teachers (personnel)
         $teacher_positions = $db_skj->table('tb_position')
                                      ->select('posi_id')
-                                     ->whereIn('posi_name', ['ครู', 'ครูผู้ช่วย'])
+                                     ->whereIn('posi_name', ['ครู', 'ครูผู้ช่วย', 'ผู้อำนวยการสถานศึกษา', 'รองผู้อำนวยการสถานศึกษา'])
                                      ->get()->getResultArray();
         $teacher_position_ids = array_column($teacher_positions, 'posi_id');
 
