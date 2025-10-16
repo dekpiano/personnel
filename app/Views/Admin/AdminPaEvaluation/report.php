@@ -32,24 +32,24 @@
                                     <div class="btn-group" role="group" aria-label="Evaluators">
                                         <?php if (!empty($person['evaluators_info'])):
                                             foreach ($person['evaluators_info'] as $evaluator):
-                                                $btn_class = $evaluator['has_evaluated'] ? 'btn-success' : 'btn-outline-secondary';
-                                                if ($evaluator['has_evaluated']) { ?>
-                                                    <button type="button" 
-                                                            class="btn <?= $btn_class ?> btn-sm view-scores" 
-                                                            data-bs-toggle="modal" 
-                                                            data-bs-target="#evaluationScoreModal"
-                                                            data-person-id="<?= esc($person['pers_id']) ?>"
-                                                            data-evaluator-id="<?= esc($evaluator['id']) ?>"
-                                                            data-person-name="<?= esc($person['pers_prefix'] . $person['pers_firstname'] . ' ' . $person['pers_lastname']) ?>"
-                                                            data-evaluator-name="<?= esc($evaluator['name']) ?>">
-                                                        <?= esc($evaluator['name']) ?>
-                                                    </button>
-                                                <?php } else { ?>
-                                                    <button type="button" class="btn <?= $btn_class ?> btn-sm" disabled>
-                                                        <?= esc($evaluator['name']) ?>
-                                                    </button>
-                                                <?php }
-                                            endforeach;
+                                                $is_evaluated = !empty($evaluator['has_evaluated']);
+                                                $btn_class = $is_evaluated ? 'btn-success' : 'btn-outline-secondary';
+                                                ?>
+                                                <button type="button"
+                                                        class="btn <?= $btn_class ?> btn-sm <?= $is_evaluated ? 'view-scores' : '' ?>"
+                                                    <?php if ($is_evaluated): ?>
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#evaluationScoreModal"
+                                                        data-person-id="<?= esc($person['pers_id']) ?>"
+                                                        data-evaluator-id="<?= esc($evaluator['id']) ?>"
+                                                        data-person-name="<?= esc($person['pers_prefix'] . $person['pers_firstname'] . ' ' . $person['pers_lastname']) ?>"
+                                                        data-evaluator-name="<?= esc($evaluator['name']) ?>"
+                                                    <?php else: ?>
+                                                        disabled
+                                                    <?php endif; ?>>
+                                                    <?= esc($evaluator['name']) ?>
+                                                </button>
+                                            <?php endforeach;
                                         else: ?>
                                             <span>ไม่มีผู้ประเมิน</span>
                                         <?php endif; ?>

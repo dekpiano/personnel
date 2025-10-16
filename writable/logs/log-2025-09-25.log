@@ -1,0 +1,17 @@
+INFO - 2025-09-25 17:53:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:53:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-09-25 17:54:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-09-25 17:54:36 --> Evaluator ID from session: e68d1132cc62a9
+DEBUG - 2025-09-25 17:54:36 --> Evaluator data fetched: {"e_id":"e68d1132cc62a9","e_first_name":"\u0e19\u0e32\u0e22\u0e1e\u0e07\u0e29\u0e4c\u0e28\u0e31\u0e01\u0e14\u0e34\u0e4c","e_last_name":"\u0e40\u0e07\u0e34\u0e19\u0e2a\u0e31\u0e19\u0e40\u0e17\u0e35\u0e22\u0e30","e_position":"\u0e1c\u0e39\u0e49\u0e2d\u0e33\u0e19\u0e27\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e16\u0e32\u0e19\u0e28\u0e36\u0e01\u0e29\u0e32","e_academic_standing":"\u0e04\u0e23\u0e39\u0e0a\u0e33\u0e19\u0e32\u0e0d\u0e01\u0e32\u0e23\u0e1e\u0e34\u0e40\u0e28\u0e29","e_organization":"\u0e42\u0e23\u0e07\u0e40\u0e23\u0e35\u0e22\u0e19\u0e2a\u0e27\u0e19\u0e01\u0e38\u0e2b\u0e25\u0e32\u0e1a\u0e27\u0e34\u0e17\u0e22\u0e32\u0e25\u0e31\u0e22 (\u0e08\u0e34\u0e23\u0e1b\u0e23\u0e30\u0e27\u0e31\u0e15\u0e34) \u0e19\u0e04\u0e23\u0e2a\u0e27\u0e23\u0e23\u0e04\u0e4c","e_Username":"skj01","e_Password":"$2y$10$f0tQppNBMklfRtoNVcK.UODjsjFfWYDEBWp22mTYxxxzBlSeeILSq"}
+DEBUG - 2025-09-25 17:54:36 --> rawItemScores: []

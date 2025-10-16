@@ -71,12 +71,11 @@ class ConAdminPaConfig extends BaseController
         $db_default = \Config\Database::connect(); // Default connection
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
         $db_skj = \Config\Database::connect('skj');
-
         // Get current fiscal year
-        $current_month = date('m');
-        $current_year_ad = date('Y');
-        $fiscal_year = ($current_month >= 10) ? $current_year_ad + 1 : $current_year_ad;
-        $fiscal_year_be = $fiscal_year + 543;
+        // $current_month = date('m');
+        // $current_year_ad = date('Y');
+        // $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        $fiscal_year_be = 2568; // Hardcoded for testing as per user request
 
         // 1. Fetch all necessary lookup tables at once
         $assessor_scopes = $db_pa_evaluation->table('tb_assessor_scope')->get()->getResultArray();
@@ -118,7 +117,6 @@ class ConAdminPaConfig extends BaseController
             $submissions = $db_pa_evaluation->table('tb_evaluations as ev')
                 ->select('ev.t_id, sc.e_id')
                 ->join('tb_evaluator_scores as sc', 'sc.ev_id = ev.ev_id')
-                ->join('tb_item_scores as it', 'it.es_id = sc.es_id') // JOIN to ensure completion
                 ->where('ev.ev_fiscal_year', $fiscal_year_be)
                 ->whereIn('ev.t_id', $teacher_ids)
                 ->distinct()
@@ -192,9 +190,10 @@ class ConAdminPaConfig extends BaseController
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
         // Get current fiscal year
-        $current_month = date('m');
-        $current_year_ad = date('Y');
-        $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        // $current_month = date('m');
+        // $current_year_ad = date('Y');
+        // $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        $fiscal_year_be = 2568; // Hardcoded for testing to match report()
 
         // 2. Find the main evaluation record (tb_evaluations)
         $evaluation = $db_pa_evaluation->table('tb_evaluations')
