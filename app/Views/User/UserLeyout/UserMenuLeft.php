@@ -36,19 +36,25 @@
                         <div data-i18n="Analytics">บุคลากร</div>
                     </a>
                 </li>
-                <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">แบบฟอร์ม</span>
-                </li>
                 <li class="menu-item <?php echo @$UrlMenuMain == "PA_FORM"?"active":""?>">
                     <a href="<?=base_url('pa-login');?>" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-file"></i>
                         <div data-i18n="Analytics">แบบประเมิน PA</div>
                     </a>
                 </li>
+                 <li class="menu-header small text-uppercase">
+                    <span class="menu-header-text">โหลดเอกสาร</span>
+                </li>
                 <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
-                    <a href="<?=base_url();?>" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                        <div data-i18n="Analytics">โหลดแบบฟอร์ม</div>
+                    <a href="https://documentcenter.skj.ac.th/category/dictation-person" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-receipt"></i>
+                        <div data-i18n="Analytics">คำสั่ง</div>
+                    </a>
+                </li>
+                <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
+                    <a href="https://documentcenter.skj.ac.th/category/form-person" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-file-blank"></i>
+                        <div data-i18n="Analytics">แบบฟอร์ม</div>
                     </a>
                 </li>
                 
