@@ -201,8 +201,38 @@ html:not([dir=rtl]) .select2-container--default .select2-selection--single .sele
 }
 
 .select2-container--default .select2-results__option[aria-selected=true] {
-    background-color: rgba(105, 108, 255, .08) !important;
-    color: #696cff !important
+    background-color: rgba(0, 123, 255, .08) !important;
+    color: #007bff !important
+}
+
+/* Select2 Floating Label Support for Sneat Admin */
+.form-floating .select2-container--default .select2-selection--single {
+    height: 58px !important;
+    padding-top: 1.3rem !important;
+    border-color: #d9dee3 !important;
+    background-color: #fff !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.form-floating .select2-container--default.select2-container--open .select2-selection--single,
+.form-floating .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #007bff !important;
+}
+
+.form-floating .select2-container--default .select2-selection--single .select2-selection__rendered {
+    padding-left: 0.85rem !important;
+    color: #697a8d !important;
+    line-height: normal !important;
+}
+
+.form-floating .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 54px !important;
+}
+
+.form-floating .select2-container--default ~ label {
+    transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem) !important;
+    opacity: 0.65 !important;
+    z-index: 5 !important;
 }
 
 .select2-container--default,

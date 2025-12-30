@@ -23,11 +23,31 @@ class ConAdminHome extends BaseController
     {
         $session = session();
         $data = $this->DataMain();
-        $data['title']="หน้าแรก";
-        $database = \Config\Database::connect();
-        $DBPers = $database->table('tb_personnel');
-      
-        $data['countAllPersonnel'] = $DBPers->where("pers_status","กำลังใช้งาน")->countAllResults();
+        $data['title'] = "หน้าแรก";
+        
+        $db = \Config\Database::connect();
+        $db_pa = \Config\Database::connect('pa_evaluation');
+        
+        // 1. จำนวนบุคลากรทั้งหมดที่กำลังใช้งาน
+        $data['countAllPersonnel'] = $db->table('tb_personnel')
+                                        ->where("pers_status", "กำลังใช้งาน")
+                                        ->countAllResults();
+
+        // 2. จำนวนคนลงเวลาวันนี้
+        $data['countAttendanceToday'] = $db->table('tb_personnel_attendance')
+                                           ->where('att_date', date('Y-m-d'))
+                                           ->countAllResults();
+
+        // 3. จำนวนรายการประเมิน PA (ในที่นี้ขอนับรายการประเมินทั้งหมดในปีปัจจุบันเป็นตัวอย่าง)
+        $data['countPendingEvaluations'] = $db_pa->table('tb_evaluations')
+                                               ->where('ev_fiscal_year', 2568) // ปีปัจจุบันตามระบบ
+                                               ->countAllResults();
+
+        // 4. จำนวนผู้ใช้งานที่มีสิทธิ์
+        $data['countTotalUsers'] = $db->table('tb_admin_rloes')
+                                      ->distinct()
+                                      ->select('admin_rloes_userid')
+                                      ->countAllResults();
 
         return view('Admin/AdminHome/AdminPageHome', $data);
     }

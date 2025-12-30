@@ -184,7 +184,7 @@ class ConAdminSaveAttendance extends BaseController
             ->join('tb_personnel_attendance a', "p.pers_id = a.att_person_id AND a.att_date BETWEEN '{$start}' AND '{$end}'", 'left')
             ->join('skjacth_skj.tb_position posi', 'p.pers_position = posi.posi_id', 'left')
             ->where('p.pers_status', 'กำลังใช้งาน')
-            ->groupBy('p.pers_id')   
+            ->groupBy('p.pers_id, p.pers_prefix, p.pers_firstname, p.pers_lastname, posi_name')   
             ->orderBy('p.pers_position', 'asc')
             ->orderBy('p.pers_learning', 'asc')                    
             ->get()->getResultArray();

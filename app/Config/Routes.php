@@ -61,6 +61,7 @@ $routes->get('Admin/WorkPerson/Personnel', 'ConAdminWorkPerson::index');
 $routes->get('Admin/WorkPerson/Personnel/Add', 'ConAdminWorkPerson::FormAdd');
 $routes->get('Admin/WorkPerson/Personnel/Group/(:any)', 'ConAdminWorkPerson::PersonneViewGroup/$1');
 $routes->get('Admin/WorkPerson/Personnel/Update/(:any)', 'ConAdminWorkPerson::FormPersonneUpdate/$1');
+$routes->get('Admin/WorkPerson/Personnel/PDF/(:any)', 'ConAdminWorkPerson::PersonnelPDF/$1');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/SortableTeacher', 'ConAdminWorkPerson::SortableTeacher');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Insert', 'ConAdminWorkPerson::PersonnelInsert');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/DataPersonnel', 'ConAdminWorkPerson::PersonneUpdateDataPersonnel');
@@ -71,6 +72,22 @@ $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Get/(:any)', 'ConA
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Alone', 'ConAdminWorkPerson::PersonnelUpdateAlone');
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Select/GetPositionData', 'ConAdminWorkPerson::GetPositionData');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/CleanupImages', 'ConAdminWorkPerson::CleanupImages');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Family/Add', 'ConAdminWorkPerson::PersonnelFamilyAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Family/Delete', 'ConAdminWorkPerson::PersonnelFamilyDelete');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Education/Add', 'ConAdminWorkPerson::PersonnelEducationAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Education/Delete', 'ConAdminWorkPerson::PersonnelEducationDelete');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Education/GetOptions', 'ConAdminWorkPerson::getEducationOptions');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/History/Add', 'ConAdminWorkPerson::PersonnelWorkHistoryAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/History/Update', 'ConAdminWorkPerson::PersonnelWorkHistoryUpdate');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/History/Delete', 'ConAdminWorkPerson::PersonnelWorkHistoryDelete');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/License/Update', 'ConAdminWorkPerson::PersonnelLicenseUpdate');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Decoration/Add', 'ConAdminWorkPerson::PersonnelDecorationAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Decoration/Delete', 'ConAdminWorkPerson::PersonnelDecorationDelete');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Training/Add', 'ConAdminWorkPerson::PersonnelTrainingAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Training/Delete', 'ConAdminWorkPerson::PersonnelTrainingDelete');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Leave/Add', 'ConAdminWorkPerson::PersonnelLeaveAdd');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Leave/Delete', 'ConAdminWorkPerson::PersonnelLeaveDelete');
 
 $routes->get('Admin/SaveAttendance', 'ConAdminSaveAttendance::index');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetPersonnalData', 'ConAdminSaveAttendance::GetPersonnalData');

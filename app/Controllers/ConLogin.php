@@ -11,8 +11,7 @@ class ConLogin extends BaseController
     private $GoogleButton = "";
     private $ReturnUrl = "";
     function __construct(){
-        $path = (dirname(dirname(dirname(dirname((dirname(__FILE__)))))));
-		require $path . '/librarie_skj/google_sheet/vendor/autoload.php';
+        require SHARED_LIB_PATH . '/google_sheet/vendor/autoload.php';
 
         $redirect_uri = base_url('LoginOfficerPersonnel');
         
@@ -80,7 +79,7 @@ class ConLogin extends BaseController
                         $DBPers->where('pers_username', $data['email'])->update($UserData);
 
                             $User = $DBPers->where('pers_username', $data['email'])->get()->getRowArray();
-                            $User2 = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')->where('admin_rloes_userid', $User['pers_id'])->get()->getRowArray();
+                            $User2 = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')->where('admin_rloes_userid', $User['pers_id'])->groupBy('admin_rloes_status')->get()->getRowArray();
                            //print_r($User2); exit();
                             $newdata = [
                                 'username'  => $User['pers_prefix'].$User['pers_firstname'].' '.$User['pers_lastname'],
@@ -188,6 +187,7 @@ class ConLogin extends BaseController
                     $loggedInUsername = $personnelUser['pers_prefix'] . $personnelUser['pers_firstname'] . ' ' . $personnelUser['pers_lastname'];
                     $userRoles = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')
                                         ->where('admin_rloes_userid', $personnelUser['pers_id'])
+                                        ->groupBy('admin_rloes_status')
                                         ->get()->getRowArray();
                     $loggedInStatus = (isset($userRoles) && $userRoles['admin_rloes_status'] != "" ? $userRoles['admin_rloes_status'] : "Member");
                 }

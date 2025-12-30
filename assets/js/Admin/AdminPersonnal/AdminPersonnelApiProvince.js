@@ -1,20 +1,27 @@
 
-
-const apiUrl = "../../../assets/js/api_province_with_amphure_tambon.json";
-let data = {};
+const assetsPath = document.documentElement.getAttribute('data-assets-path') || '/assets/';
+const apiUrl = assetsPath + 'js/api_province_with_amphure_tambon.json';
+let data = []; // Change to array to avoid map errors
 
 $(document).ready(function() {
     $('.province, .district, .subdistrict').select2();
 
     fetch(apiUrl)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
         .then(json => {
             data = json;
-            const provinces = data.map(p => p.name_th);
-            provinces.sort().forEach(p => {
-                $('.province').append(`<option value="${p}">${p}</option>`);
-            });
-        });
+            if (Array.isArray(data)) {
+                const provinces = data.map(p => p.name_th);
+                provinces.sort().forEach(p => {
+                    $('.province').append(`<option value="${p}">${p}</option>`);
+                });
+                $(document).trigger('provinceDataLoaded'); // Trigger event for other components
+            }
+        })
+        .catch(err => console.error('Error loading province data:', err));
 
     $('.province').on('change', function() {
         const selectedProvince = $(this).val();
@@ -22,6 +29,7 @@ $(document).ready(function() {
         $('.subdistrict').html('<option selected disabled>เลือกตำบล</option>').prop('disabled', true);
         $('.zipcode').val('');
 
+        if (!Array.isArray(data)) return;
         const provinceData = data.find(p => p.name_th === selectedProvince);
         if (!provinceData) return;
 
@@ -37,6 +45,7 @@ $(document).ready(function() {
         $('.subdistrict').html('<option selected disabled>เลือกตำบล</option>').prop('disabled', false);
         $('.zipcode').val('');
 
+        if (!Array.isArray(data)) return;
         const provinceData = data.find(p => p.name_th === selectedProvince);
         if (!provinceData) return;
 
@@ -61,15 +70,21 @@ $(document).ready(function() {
 $(document).ready(function() {
     $('.curr_province, .curr_district, .curr_subdistrict').select2();
 
-    fetch(apiUrl)
-        .then(res => res.json())
-        .then(json => {
-            data = json;
+    // Use already loaded data instead of fetching again
+    if (Array.isArray(data) && data.length > 0) {
+        const provinces = data.map(p => p.name_th);
+        provinces.sort().forEach(p => {
+            $('.curr_province').append(`<option value="${p}">${p}</option>`);
+        });
+    } else {
+        // Fallback if data is not loaded yet when this runs
+        $(document).on('provinceDataLoaded', function() {
             const provinces = data.map(p => p.name_th);
             provinces.sort().forEach(p => {
                 $('.curr_province').append(`<option value="${p}">${p}</option>`);
             });
         });
+    }
 
     $('.curr_province').on('change', function() {
         const selectedProvince = $(this).val();
@@ -77,6 +92,7 @@ $(document).ready(function() {
         $('.curr_subdistrict').html('<option selected disabled>เลือกตำบล</option>').prop('disabled', true);
         $('.curr_zipcode').val('');
 
+        if (!Array.isArray(data)) return;
         const provinceData = data.find(p => p.name_th === selectedProvince);
         if (!provinceData) return;
 
@@ -92,6 +108,7 @@ $(document).ready(function() {
         $('.curr_subdistrict').html('<option selected disabled>เลือกตำบล</option>').prop('disabled', false);
         $('.curr_zipcode').val('');
 
+        if (!Array.isArray(data)) return;
         const provinceData = data.find(p => p.name_th === selectedProvince);
         if (!provinceData) return;
 
