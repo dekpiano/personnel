@@ -172,7 +172,9 @@ class ConAdminSaveAttendance extends BaseController
         $start = $this->request->getGet('start');
         $end = $this->request->getGet('end');
 
-        $data = $DBPers->select("p.pers_id, p.pers_prefix, p.pers_firstname, p.pers_lastname,posi_name,
+        $dbSKJName = $data['databaseSKJ']->getDatabase();
+
+        $data = $DBPers->select("p.pers_id, p.pers_prefix, p.pers_firstname, p.pers_lastname, posi.posi_name,
                 COUNT(a.att_id) as total_days,
                 SUM(CASE WHEN a.att_status = 'มา' THEN 1 ELSE 0 END) as present,
                 SUM(CASE WHEN a.att_status = 'สาย' THEN 1 ELSE 0 END) as late,
@@ -182,11 +184,10 @@ class ConAdminSaveAttendance extends BaseController
                 SUM(CASE WHEN a.att_status = 'ไปราชการ' THEN 1 ELSE 0 END) as official_leave,
                 SUM(CASE WHEN a.att_status = 'อื่นๆ' THEN 1 ELSE 0 END) as other_leave")
             ->join('tb_personnel_attendance a', "p.pers_id = a.att_person_id AND a.att_date BETWEEN '{$start}' AND '{$end}'", 'left')
-            ->join('skjacth_skj.tb_position posi', 'p.pers_position = posi.posi_id', 'left')
+            ->join($dbSKJName.'.tb_position posi', 'p.pers_position = posi.posi_id', 'left')
             ->where('p.pers_status', 'กำลังใช้งาน')
-            ->groupBy('p.pers_id, p.pers_prefix, p.pers_firstname, p.pers_lastname, posi_name')   
-            ->orderBy('p.pers_position', 'asc')
-            ->orderBy('p.pers_learning', 'asc')                    
+            ->groupBy('p.pers_id, p.pers_prefix, p.pers_firstname, p.pers_lastname, posi.posi_name')   
+            ->orderBy('posi.posi_name', 'asc')
             ->get()->getResultArray();
 
         return $this->response->setJSON($data);
@@ -202,6 +203,8 @@ class ConAdminSaveAttendance extends BaseController
          $date = $this->request->getGet('date') ?: date('Y-m-d');
   
 
+        $dbSKJName = $data['databaseSKJ']->getDatabase();
+
         $builder = $DBPers
             ->select(
                 'pos.posi_name,
@@ -212,13 +215,11 @@ class ConAdminSaveAttendance extends BaseController
              SUM(CASE WHEN a.att_status = "ไปราชการ" AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS official_leave,
              SUM(CASE WHEN a.att_status IN ("อื่นๆ", "ขาด") AND a.att_date = "'.$date.'" THEN 1 ELSE 0 END) AS other_leave'
             )
-            ->join('skjacth_skj.tb_position pos', 'p.pers_position = pos.posi_id', 'left')
-            ->join('skjacth_personnel.tb_personnel_attendance a', "p.pers_id = a.att_person_id", 'left')
+            ->join($dbSKJName.'.tb_position pos', 'p.pers_position = pos.posi_id', 'left')
+            ->join('tb_personnel_attendance a', "p.pers_id = a.att_person_id", 'left')
             ->where('p.pers_status', 'กำลังใช้งาน')
             ->groupBy('pos.posi_name')
-            ->orderBy('p.pers_position', 'asc')
-            ->orderBy('p.pers_learning', 'asc')    
-            ->orderBy('pos.posi_name');
+            ->orderBy('pos.posi_name', 'asc');
 
         $query = $builder->get();
         $result = $query->getResultArray();

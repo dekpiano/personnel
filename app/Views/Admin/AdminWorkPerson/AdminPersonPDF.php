@@ -36,17 +36,7 @@
         
         .id-card-box {
             text-align: right;
-            margin-bottom: 10px;
-        }
-        .id-digit {
-            display: inline-block;
-            width: 15px;
-            height: 20px;
-            border: 1px solid #000;
-            text-align: center;
-            line-height: 20px;
-            font-size: 12pt;
-            margin-left: 1px;
+            margin-bottom: 15px;
         }
 
         .main-section {
@@ -145,14 +135,7 @@
 
     <div class="id-card-box">
         <span style="font-size: 14pt;">เลขประจำตัวประชาชน </span>
-        <?php 
-            $id_str = str_replace('-', '', $p->pers_id_card ?? '');
-            $chars = str_split(str_pad($id_str, 13, ' ', STR_PAD_RIGHT));
-            foreach($chars as $i => $char): 
-        ?>
-            <span class="id-digit"><?= trim($char) ?: '&nbsp;' ?></span>
-            <?php if(in_array($i, [0, 4, 9, 11])): ?> <span style="margin: 0 2px;"></span> <?php endif; ?>
-        <?php endforeach; ?>
+        <span style="font-size: 14pt;" class="bold"><?= $p->pers_id_card ?></span>
     </div>
 
     <div class="main-section">
@@ -172,7 +155,7 @@
 
         <table class="personal-info-table">
             <tr>
-                <td width="10%">ชื่อ <span class="dotted-line" style="min-width: 250px;"><?= $p->pers_firstname ?></span></td>
+                <td width="10%">ชื่อ <span class="dotted-line" style="min-width: 250px;"><?= $p->pers_prefix . $p->pers_firstname ?></span></td>
                 <td width="15%">นามสกุล <span class="dotted-line" style="min-width: 250px;"><?= $p->pers_lastname ?></span></td>
             </tr>
         </table>
