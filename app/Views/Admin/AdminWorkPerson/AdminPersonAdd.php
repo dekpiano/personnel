@@ -149,7 +149,7 @@
                         <div class="mb-0">
                             <label class="form-label fw-bold small">สถานะการทำงาน</label>
                             <select class="form-select border-0 shadow-none bg-white fw-semibold" id="pers_status" name="pers_status" required="">
-                                <option value="กำลังใช้งาน border-0 bg-light">กำลังใช้งาน</option>
+                                <option value="กำลังใช้งาน">กำลังใช้งาน</option>
                                 <option value="ย้ายสถานศึกษา">ย้ายสถานศึกษา</option>
                                 <option value="ลาออก">ลาออก</option>
                                 <option value="เกษียรอายุ">เกษียรอายุ</option>
