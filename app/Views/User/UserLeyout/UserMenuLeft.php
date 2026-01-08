@@ -30,10 +30,10 @@
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานบุคคล</span>
                 </li>
-                <li class="menu-item <?php echo $UrlMenuMain == ""?"active":""?>">
-                    <a href="<?=base_url();?>" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                        <div data-i18n="Analytics">บุคลากร</div>
+                <li class="menu-item <?php echo @$UrlMenuMain == "Directory"?"active":""?>">
+                    <a href="<?=base_url('directory');?>" class="menu-link">
+                        <i class="menu-icon tf-icons bx bxs-graduation"></i>
+                        <div data-i18n="Analytics">ทำเนียบครูและบุคลากร</div>
                     </a>
                 </li>
                 <li class="menu-item <?php echo @$UrlMenuMain == "PA_FORM"?"active":""?>">

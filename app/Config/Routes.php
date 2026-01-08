@@ -30,6 +30,12 @@ $routes->setAutoRoute(false);
 // route since we don't have to scan directories.
 $routes->get('/', 'ConUserHome::index');
 
+// ทำเนียบครูและบุคลากร (Public)
+$routes->get('directory', 'ConUserDirectory::index');
+$routes->get('directory/detail/(:segment)', 'ConUserDirectory::detail/$1');
+$routes->get('directory/api/filter/(:segment)', 'ConUserDirectory::getByLearning/$1');
+$routes->post('directory/save-profile', 'ConUserDirectory::saveProfile');
+
 // PA Form routes
 // PA Form routes
 $routes->get('pa-personnel', 'ConUserPaEvaluation::paPersonnelList');

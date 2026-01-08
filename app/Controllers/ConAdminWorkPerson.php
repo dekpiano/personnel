@@ -195,6 +195,10 @@ class ConAdminWorkPerson extends BaseController
     }
 
     public function FormPersonneUpdate($IDPres){
+        if (!$this->canEditPersonnel($IDPres)) {
+            return redirect()->to(base_url())->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
+        }
+
         $session = session();
         $data = $this->DataMain();
         $data['title']="อัพเดตข้อมูลครูและบุคคลทางการศึกษา";    
@@ -232,6 +236,11 @@ class ConAdminWorkPerson extends BaseController
     }
 
     public function PersonneUpdateDataPersonnel(){
+        $pers_id = $this->request->getVar('pers_id');
+        if (!$this->canEditPersonnel($pers_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์แก้ไขข้อมูลนี้']);
+        }
+
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
@@ -257,6 +266,10 @@ class ConAdminWorkPerson extends BaseController
     }
 
     public function PersonneUpdateDataHistory(){
+        $pers_id = $this->request->getVar('pers_id');
+        if (!$this->canEditPersonnel($pers_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์แก้ไขข้อมูลประวัตินี้']);
+        }
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
@@ -324,6 +337,10 @@ class ConAdminWorkPerson extends BaseController
     }
 
     public function PersonnelUpdateImg(){ 
+        $pers_id = $this->request->getPost('KeyPresID');
+        if (!$this->canEditPersonnel($pers_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์แก้ไขรูปภาพนี้']);
+        }
         try {
             $session = session();
             $DB_Personnel = \Config\Database::connect('personnel');

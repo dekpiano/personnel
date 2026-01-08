@@ -55,4 +55,24 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = \Config\Services::session();
     }
+    /**
+     * Check if current user can edit a specific personnel record
+     */
+    protected function canEditPersonnel($pers_id)
+    {
+        $session = session();
+        $status = $session->get('status');
+        
+        // Allow Admins and Managers
+        if (in_array($status, ['admin', 'manager', 'AdminPersonnel'])) {
+            return true;
+        }
+        
+        // Allow the owner of the record
+        if ($session->get('id') == $pers_id) {
+            return true;
+        }
+        
+        return false;
+    }
 }
