@@ -60,7 +60,9 @@ $routes->match(['get', 'post'],'Admin/LocationRoom/Delete', 'ConAdminLocationRoo
 $routes->match(['get', 'post'],'Admin/LocationRoom/ShowData', 'ConAdminLocationRoom::LocationRoomShowData');
 
 $routes->get('Admin/Rloes/Setting', 'ConAdminRoles::index');
-$routes->match(['get', 'post'],'Admin/Rloes/RloesSettingManager', 'ConAdminRoles::RloesSettingManager');
+$routes->post('Admin/Rloes/UpdateUser', 'ConAdminRoles::RloesUpdateUser');
+$routes->post('Admin/Rloes/AddUser', 'ConAdminRoles::RloesAddUser');
+$routes->post('Admin/Rloes/DeleteUser', 'ConAdminRoles::RloesDeleteUser');
 
 //Admin Person
 $routes->get('Admin/WorkPerson/Personnel', 'ConAdminWorkPerson::index');

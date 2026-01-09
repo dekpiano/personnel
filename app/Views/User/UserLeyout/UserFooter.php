@@ -51,6 +51,22 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Ensure SweetAlert2 is always on top */
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+    </style>
+    <script>
+        // Set global SweetAlert2 defaults to always be on top
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    </script>
 
     <!-- Vendors JS -->
     <script src="<?=base_url()?>/assets/vendor/libs/apex-charts/apexcharts.js"></script>

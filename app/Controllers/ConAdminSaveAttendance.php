@@ -6,7 +6,7 @@ class ConAdminSaveAttendance extends BaseController
 {
     public function __construct(){
         $session = session();
-        if(!$session->get('username') && $session->get('status') != "AdminGeneral" && $session->get('status') != "ManagerGeneral"){
+        if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "ผู้บริหาร"])){
             header("Location:".base_url()); exit();
         } 
     }

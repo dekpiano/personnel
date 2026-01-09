@@ -30,13 +30,10 @@
                 </li>
 
                 <!-- Layouts -->
-                <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
+                <?php $SubRloes = explode('|',$_SESSION['rloes'] ?? ''); ?>
 
 
-                                <?php $SubRloes = explode(',',$_SESSION['rloes']); ?>
-
-
-                <?php if(in_array("งานทะเบียนครูและบุคลากร",$SubRloes)) :?>
+                <?php if($_SESSION['status'] === "superadmin" || in_array("งานทะเบียนครูและบุคลากร",$SubRloes) || strpos($_SESSION['rloes'] ?? '', 'งานทะเบียนครูและบุคลากร') !== false) :?>
                       <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานทะเบียนครูและบุคลากร</span>
                 </li>
@@ -62,7 +59,7 @@
                     </a>
                 </li>
                 <?php endif; ?>
-                <?php if(in_array('งานประเมิน pa',$SubRloes)) :?>
+                <?php if($_SESSION['status'] === "superadmin" || in_array('งานประเมิน pa',$SubRloes) || strpos($_SESSION['rloes'] ?? '', 'งานประเมิน pa') !== false) :?>
             <ul class="menu-inner py-1">
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานการประเมิน PA</span>
@@ -97,7 +94,7 @@
 
           
 
-            <?php if($_SESSION['id'] == "pers_021") : ?>
+            <?php if($_SESSION['status'] === "superadmin") : ?>
             <div>
                 <ul class="menu-inner py-1">
                     <li class="menu-item <?php echo $uri->getSegment(2) == "Rloes"?"active":""?>">

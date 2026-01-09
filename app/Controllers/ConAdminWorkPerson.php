@@ -5,12 +5,10 @@ class ConAdminWorkPerson extends BaseController
 {
     public function __construct(){
         $session = session();
-        if(!$session->get('username') && $session->get('status') != "admin" && $session->get('status') != "manager"){
+        if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "manager"])){
             header("Location:".base_url()); exit();
         } 
     }
-
-
     public function DataMain(){
         $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         

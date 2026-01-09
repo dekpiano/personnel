@@ -33,11 +33,15 @@
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"
                         aria-expanded="false">
-                        <div class="avatar avatar-online">
-
-                            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt=""
-                                class="w-px-40 h-auto rounded-circle">
-                        </div>
+                        <?php if (isset($_SESSION['img']) && $_SESSION['img'] != ""): ?>
+                            <div class="avatar avatar-online">
+                                <img src="<?= base_url('uploads/admin/Personnal/'.$_SESSION['img']) ?>" alt="" class="w-px-40 h-auto rounded-circle">
+                            </div>
+                        <?php else: ?>
+                            <div class="avatar avatar-online">
+                                <span class="avatar-initial rounded-circle bg-label-primary"><?= mb_substr($_SESSION['fname'] ?? 'U', 0, 1) ?></span>
+                            </div>
+                        <?php endif; ?>
                     </a>
                     
                     <ul class="dropdown-menu dropdown-menu-end">

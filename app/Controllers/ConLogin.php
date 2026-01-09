@@ -79,18 +79,27 @@ class ConLogin extends BaseController
                         $DBPers->where('pers_username', $data['email'])->update($UserData);
 
                             $User = $DBPers->where('pers_username', $data['email'])->get()->getRowArray();
-                            $User2 = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')->where('admin_rloes_userid', $User['pers_id'])->groupBy('admin_rloes_status')->get()->getRowArray();
-                           //print_r($User2); exit();
+                            $User2 = $DBrloes->select('admin_rloes_status, admin_rloes_nanetype')->where('admin_rloes_userid', $User['pers_id'])->get()->getRowArray();
+                            $userStatus = (isset($User2) && $User2['admin_rloes_status'] != "" ? $User2['admin_rloes_status'] : "Member");
+                            
+                            // Hardcode pers_021 as superadmin
+                            if ($User['pers_id'] === 'pers_021') {
+                                $userStatus = 'superadmin';
+                            }
+
                             $newdata = [
                                 'username'  => $User['pers_prefix'].$User['pers_firstname'].' '.$User['pers_lastname'],
                                 'id'     => $User['pers_id'],
+                                'img'    => $User['pers_img'],
+                                'fname'  => $User['pers_firstname'],
+                                'lname'  => $User['pers_lastname'],
                                 'logged_in' => true,
-                                'rloes' => $User2['rloesAll'],
-                                'status' => (isset($User2) != "" ?$User2['admin_rloes_status']:"Member")
+                                'rloes' => (isset($User2['admin_rloes_nanetype']) ? $User2['admin_rloes_nanetype'] : ''),
+                                'status' => $userStatus
                             ];                
                             $session->set($newdata);  
                             
-                            if($User2['admin_rloes_status'] == "AdminPersonnel"){
+                            if(in_array($userStatus, ["superadmin", "admin", "manager"])){
                                 return redirect()->to(base_url('Admin/Home'));
                             }else{
                                 return redirect()->to(("https://".$_SESSION['Return']));
@@ -185,9 +194,8 @@ class ConLogin extends BaseController
                     $user = $personnelUser;
                     $loggedInId = $personnelUser['pers_id'];
                     $loggedInUsername = $personnelUser['pers_prefix'] . $personnelUser['pers_firstname'] . ' ' . $personnelUser['pers_lastname'];
-                    $userRoles = $DBrloes->select('admin_rloes_status,GROUP_CONCAT(admin_rloes_nanetype) AS rloesAll')
+                    $userRoles = $DBrloes->select('admin_rloes_status, admin_rloes_nanetype')
                                         ->where('admin_rloes_userid', $personnelUser['pers_id'])
-                                        ->groupBy('admin_rloes_status')
                                         ->get()->getRowArray();
                     $loggedInStatus = (isset($userRoles) && $userRoles['admin_rloes_status'] != "" ? $userRoles['admin_rloes_status'] : "Member");
                 }
@@ -198,7 +206,7 @@ class ConLogin extends BaseController
             $hasRole = false;
             if ($role === 'assessor' && $loggedInStatus === 'assessor') {
                 $hasRole = true;
-            } elseif ($role === 'admin' && isset($userRoles['rloesAll']) && str_contains($userRoles['rloesAll'], 'งานประเมิน pa')) {
+            } elseif ($role === 'admin' && isset($userRoles['admin_rloes_nanetype']) && str_contains($userRoles['admin_rloes_nanetype'], 'งานประเมิน pa')) {
                 $hasRole = true;
             }
 
@@ -206,8 +214,11 @@ class ConLogin extends BaseController
                 $newdata = [
                     'username'  => $loggedInUsername,
                     'id'     => $loggedInId,
+                    'img'    => (isset($user['pers_img']) ? $user['pers_img'] : ''),
+                    'fname'  => (isset($user['pers_firstname']) ? $user['pers_firstname'] : (isset($user['e_first_name']) ? $user['e_first_name'] : '')),
+                    'lname'  => (isset($user['pers_lastname']) ? $user['pers_lastname'] : (isset($user['e_last_name']) ? $user['e_last_name'] : '')),
                     'logged_in' => true,
-                    'rloes' => (isset($userRoles['rloesAll']) ? $userRoles['rloesAll'] : ''),
+                    'rloes' => (isset($userRoles['admin_rloes_nanetype']) ? $userRoles['admin_rloes_nanetype'] : ''),
                     'status' => $loggedInStatus
                 ];
                 $session->set($newdata);

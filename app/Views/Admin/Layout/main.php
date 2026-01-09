@@ -172,6 +172,25 @@
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Ensure SweetAlert2 is always on top */
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+    </style>
+    <script>
+        // Set global SweetAlert2 defaults to always be on top
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                container: 'swal2-container-top'
+            }
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

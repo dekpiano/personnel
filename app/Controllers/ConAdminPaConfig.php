@@ -4,6 +4,13 @@ namespace App\Controllers;
 
 class ConAdminPaConfig extends BaseController
 {
+    public function __construct(){
+        $session = session();
+        if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "ผู้บริหาร"])){
+            header("Location:".base_url()); exit();
+        } 
+    }
+
     public function DataMain(){
         $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         
@@ -15,7 +22,7 @@ class ConAdminPaConfig extends BaseController
     {
         $session = session();
         // Check if user is admin (using 'rloes' session variable)
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
         }
 
@@ -64,7 +71,7 @@ class ConAdminPaConfig extends BaseController
     public function report()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
         }
 
@@ -284,7 +291,7 @@ class ConAdminPaConfig extends BaseController
     {
         $session = session();
          $data = $this->DataMain();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
@@ -323,7 +330,7 @@ class ConAdminPaConfig extends BaseController
     {
         $session = session();
          $data = $this->DataMain();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
@@ -340,7 +347,7 @@ class ConAdminPaConfig extends BaseController
     public function addEvaluator()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
@@ -383,7 +390,7 @@ class ConAdminPaConfig extends BaseController
     public function updateEvaluator()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
@@ -429,7 +436,7 @@ class ConAdminPaConfig extends BaseController
     public function deleteEvaluator($id)
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
@@ -478,7 +485,7 @@ class ConAdminPaConfig extends BaseController
     public function rubricItems()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
         }
 
@@ -503,7 +510,7 @@ class ConAdminPaConfig extends BaseController
     public function addRubricItem()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return $this->response->setJSON(['success' => false, 'message' => 'คุณไม่มีสิทธิ์ดำเนินการนี้!']);
         }
 
@@ -551,7 +558,7 @@ class ConAdminPaConfig extends BaseController
     public function updateRubricItem()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return $this->response->setJSON(['success' => false, 'message' => 'คุณไม่มีสิทธิ์ดำเนินการนี้!']);
         }
 
@@ -600,7 +607,7 @@ class ConAdminPaConfig extends BaseController
     public function deleteRubricItem()
     {
         $session = session();
-        if (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false) {
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return $this->response->setJSON(['success' => false, 'message' => 'คุณไม่มีสิทธิ์ดำเนินการนี้!']);
         }
 
