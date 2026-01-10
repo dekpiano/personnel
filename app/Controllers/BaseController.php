@@ -63,8 +63,8 @@ abstract class BaseController extends Controller
         $session = session();
         $status = $session->get('status');
         
-        // Allow Admins and Managers
-        if (in_array($status, ['admin', 'manager', 'AdminPersonnel'])) {
+        // Allow Superadmins and Admins
+        if (in_array($status, ['superadmin', 'admin'])) {
             return true;
         }
         

@@ -97,6 +97,15 @@ $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Training/Delete', 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Leave/Add', 'ConAdminWorkPerson::PersonnelLeaveAdd');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Leave/Delete', 'ConAdminWorkPerson::PersonnelLeaveDelete');
 
+// Document Management
+$routes->post('Admin/WorkPerson/Personnel/DB/Document/Upload', 'ConAdminWorkPerson::PersonnelDocUpload');
+$routes->get('Admin/WorkPerson/Personnel/DB/Document/View/(:num)', 'ConAdminWorkPerson::PersonnelDocView/$1');
+$routes->post('Admin/WorkPerson/Personnel/DB/Document/Delete', 'ConAdminWorkPerson::PersonnelDocDelete');
+$routes->get('Admin/WorkPerson/Personnel/DB/Document/List/(:segment)', 'ConAdminWorkPerson::PersonnelDocList/$1');
+
+// Attendance Summary for Personnel (with date range)
+$routes->get('Admin/WorkPerson/Personnel/DB/Attendance/Summary/(:segment)', 'ConAdminWorkPerson::PersonnelAttendanceSummary/$1');
+
 $routes->get('Admin/SaveAttendance', 'ConAdminSaveAttendance::index');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetPersonnalData', 'ConAdminSaveAttendance::GetPersonnalData');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/GetAttendanceToDate', 'ConAdminSaveAttendance::GetAttendanceToDate');

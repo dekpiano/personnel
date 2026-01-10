@@ -19,6 +19,7 @@
                         <th class="py-3">สังกัด/ส่วนราชการ</th>
                         <th class="py-3">เงินเดือน</th>
                         <th class="py-3">คำสั่ง/ลงวันที่</th>
+                        <th class="py-3 text-center">เอกสาร</th>
                         <th class="text-center py-3">จัดการ</th>
                     </tr>
                 </thead>
@@ -29,5 +30,3 @@
         </div>
     </div>
 </div>
-
-

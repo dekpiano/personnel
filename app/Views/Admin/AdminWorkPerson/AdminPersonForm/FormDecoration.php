@@ -16,6 +16,7 @@
                     <th class="py-3">ชั้นตรา / ชนิดเครื่องราชฯ</th>
                     <th class="py-3">ราชกิจจานุเบกษา (เล่ม/ตอน/หน้า/ลำดับ)</th>
                     <th class="py-3">ลงวันที่</th>
+                    <th class="py-3 text-center">เอกสาร</th>
                     <th class="text-center py-3">จัดการ</th>
                 </tr>
             </thead>

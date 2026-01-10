@@ -28,6 +28,65 @@
     .form-group-subtitle:first-of-type {
         margin-top: 0;
     }
+    
+    /* Document Upload Card Styles */
+    .document-upload-card {
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: #f8faff;
+        cursor: pointer;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .document-upload-card:hover {
+        border-color: var(--primary-blue);
+        background: rgba(0, 123, 255, 0.05);
+    }
+    .document-upload-card.has-file {
+        border-style: solid;
+        border-color: #28a745;
+        background: rgba(40, 167, 69, 0.05);
+    }
+    .document-upload-card .upload-icon {
+        font-size: 2.5rem;
+        color: #adb5bd;
+        margin-bottom: 0.5rem;
+    }
+    .document-upload-card.has-file .upload-icon {
+        color: #28a745;
+    }
+    .document-upload-card .doc-title {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    .document-upload-card .doc-hint {
+        font-size: 0.7rem;
+        color: #adb5bd;
+    }
+    .document-upload-card .file-name {
+        font-size: 0.75rem;
+        color: #28a745;
+        margin-top: 0.5rem;
+        word-break: break-all;
+        max-width: 100%;
+    }
+    .document-upload-card .file-actions {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    .document-upload-card .file-actions .btn {
+        padding: 0.2rem 0.6rem;
+        font-size: 0.7rem;
+    }
 </style>
 
 <form class="history-form-container needs-validation" id="FormPersonnalHistory" method="post" novalidate>
@@ -335,6 +394,61 @@
                         <!-- ดึงข้อมูลอัตโนมัติจากคอนโทรลเลอร์ -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- เอกสารประจำตัว Section -->
+    <div class="form-group-subtitle">
+        <i class='bx bx-file me-2'></i> สำเนาเอกสารประจำตัว
+    </div>
+    <div class="row g-4">
+        <!-- บัตรประชาชน -->
+        <div class="col-md-4">
+            <div class="document-upload-card <?= !empty($DocIdCard->file_path ?? '') ? 'has-file' : '' ?>" id="card-id_card" onclick="triggerDocUpload('id_card')">
+                <i class='bx <?= !empty($DocIdCard->file_path ?? '') ? 'bx-check-circle' : 'bx-upload' ?> upload-icon'></i>
+                <div class="doc-title">สำเนาบัตรประชาชน</div>
+                <div class="doc-hint">PDF หรือ รูปภาพ (สูงสุด 5MB)</div>
+                <input type="file" id="file-id_card" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadPersonnelDoc('id_card', this)">
+                <?php if (!empty($DocIdCard->file_path ?? '')): ?>
+                <div class="file-name"><?= basename($DocIdCard->file_path) ?></div>
+                <div class="file-actions" onclick="event.stopPropagation();">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="viewPersonnelDoc('<?= $DocIdCard->id ?>')"><i class='bx bx-show'></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deletePersonnelDoc('<?= $DocIdCard->id ?>', 'id_card')"><i class='bx bx-trash'></i></button>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <!-- ทะเบียนบ้าน -->
+        <div class="col-md-4">
+            <div class="document-upload-card <?= !empty($DocHouseReg->file_path ?? '') ? 'has-file' : '' ?>" id="card-house_reg" onclick="triggerDocUpload('house_reg')">
+                <i class='bx <?= !empty($DocHouseReg->file_path ?? '') ? 'bx-check-circle' : 'bx-upload' ?> upload-icon'></i>
+                <div class="doc-title">สำเนาทะเบียนบ้าน</div>
+                <div class="doc-hint">PDF หรือ รูปภาพ (สูงสุด 5MB)</div>
+                <input type="file" id="file-house_reg" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadPersonnelDoc('house_reg', this)">
+                <?php if (!empty($DocHouseReg->file_path ?? '')): ?>
+                <div class="file-name"><?= basename($DocHouseReg->file_path) ?></div>
+                <div class="file-actions" onclick="event.stopPropagation();">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="viewPersonnelDoc('<?= $DocHouseReg->id ?>')"><i class='bx bx-show'></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deletePersonnelDoc('<?= $DocHouseReg->id ?>', 'house_reg')"><i class='bx bx-trash'></i></button>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <!-- ใบเปลี่ยนชื่อ-สกุล -->
+        <div class="col-md-4">
+            <div class="document-upload-card <?= !empty($DocNameChange->file_path ?? '') ? 'has-file' : '' ?>" id="card-name_change" onclick="triggerDocUpload('name_change')">
+                <i class='bx <?= !empty($DocNameChange->file_path ?? '') ? 'bx-check-circle' : 'bx-upload' ?> upload-icon'></i>
+                <div class="doc-title">สำเนาใบเปลี่ยนชื่อ-สกุล</div>
+                <div class="doc-hint">PDF หรือ รูปภาพ (ถ้ามี)</div>
+                <input type="file" id="file-name_change" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadPersonnelDoc('name_change', this)">
+                <?php if (!empty($DocNameChange->file_path ?? '')): ?>
+                <div class="file-name"><?= basename($DocNameChange->file_path) ?></div>
+                <div class="file-actions" onclick="event.stopPropagation();">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="viewPersonnelDoc('<?= $DocNameChange->id ?>')"><i class='bx bx-show'></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deletePersonnelDoc('<?= $DocNameChange->id ?>', 'name_change')"><i class='bx bx-trash'></i></button>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

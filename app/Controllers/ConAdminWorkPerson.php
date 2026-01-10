@@ -230,6 +230,23 @@ class ConAdminWorkPerson extends BaseController
         $data['PosiMain'] = $DBPosiMain->where('posi_id',$PosiMain->posi_id ?? "")
         ->get()->getResult();
 
+        // Fetch Personnel Documents
+        $this->checkDocumentsTable($DB_Personnel);
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents');
+        
+        // Single-type documents (เอกสารประจำตัว)
+        $data['DocIdCard'] = $DBDoc->where(['pers_id' => $IDPres, 'doc_type' => 'id_card'])->get()->getRow();
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents'); // Reset query
+        $data['DocHouseReg'] = $DBDoc->where(['pers_id' => $IDPres, 'doc_type' => 'house_reg'])->get()->getRow();
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents'); // Reset query
+        $data['DocNameChange'] = $DBDoc->where(['pers_id' => $IDPres, 'doc_type' => 'name_change'])->get()->getRow();
+        
+        // License documents (ใบประกอบวิชาชีพ)
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents'); // Reset query
+        $data['DocTeacherLicense'] = $DBDoc->where(['pers_id' => $IDPres, 'doc_type' => 'teacher_license'])->get()->getRow();
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents'); // Reset query
+        $data['DocAdminLicense'] = $DBDoc->where(['pers_id' => $IDPres, 'doc_type' => 'admin_license'])->get()->getRow();
+
         return view('Admin/AdminWorkPerson/AdminPersonUpdate', $data);
     }
 
@@ -449,6 +466,15 @@ class ConAdminWorkPerson extends BaseController
                 $DBEdu = $DB_Personnel->table('tb_personnel_education');
                 $eduData = $DBEdu->where('pers_id', $id)->orderBy('edu_year', 'ASC')->get()->getResult();
 
+                // Attach document info to each education record
+                $this->checkDocumentsTable($DB_Personnel);
+                foreach ($eduData as &$edu) {
+                    $doc = $DB_Personnel->table('tb_personnel_documents')
+                        ->where(['pers_id' => $id, 'doc_category' => 'education', 'related_id' => $edu->id])
+                        ->get()->getRow();
+                    $edu->doc_id = $doc->id ?? null;
+                }
+
                 if(!empty($data)) {
                     $data[0]->education = $eduData;
                 }
@@ -504,6 +530,14 @@ class ConAdminWorkPerson extends BaseController
                     }
                 }
 
+                // Attach document info to each work history record
+                foreach ($workData as &$w) {
+                    $doc = $DB_Personnel->table('tb_personnel_documents')
+                        ->where(['pers_id' => $id, 'doc_category' => 'work_order', 'related_id' => $w->id])
+                        ->get()->getRow();
+                    $w->doc_id = $doc->id ?? null;
+                }
+
                 if(!empty($data)) {
                     $data[0]->work_history = $workData;
                 }
@@ -542,6 +576,13 @@ class ConAdminWorkPerson extends BaseController
                          $d->deco_gazette_date_display = '';
                     }
                 }
+                // Attach document info to each decoration record
+                foreach ($decoData as &$d) {
+                    $doc = $DB_Personnel->table('tb_personnel_documents')
+                        ->where(['pers_id' => $id, 'doc_category' => 'decoration', 'related_id' => $d->id])
+                        ->get()->getRow();
+                    $d->doc_id = $doc->id ?? null;
+                }
                 if(!empty($data)) {
                     $data[0]->decorations = $decoData;
                 }
@@ -566,6 +607,12 @@ class ConAdminWorkPerson extends BaseController
                         $p2 = explode('-', $t->train_end_date);
                         $t->train_end_display = (count($p2) == 3) ? $p2[2] . '/' . $p2[1] . '/' . ($p2[0] + 543) : $t->train_end_date;
                     } else { $t->train_end_display = '-'; }
+
+                    // Attach document info
+                    $doc = $DB_Personnel->table('tb_personnel_documents')
+                        ->where(['pers_id' => $id, 'doc_category' => 'training', 'related_id' => $t->id])
+                        ->get()->getRow();
+                    $t->doc_id = $doc->id ?? null;
                 }
                 if(!empty($data)) {
                     $data[0]->training = $trainData;
@@ -574,30 +621,71 @@ class ConAdminWorkPerson extends BaseController
                 // Ignore
             }
 
-            // Fetch Leave Data (New)
+            // Fetch Leave/Attendance Data from Attendance System (NOT from tb_personnel_leave)
             try {
-                $this->checkLeaveTable($DB_Personnel);
+                $DBAttendance = $DB_Personnel->table('tb_personnel_attendance');
                 
-                $DBLeave = $DB_Personnel->table('tb_personnel_leave');
-                $leaveData = $DBLeave->where('pers_id', $id)->orderBy('leave_start_date', 'ASC')->get()->getResult();
+                // Get current year's leave/absence records
+                $currentYear = date('Y');
+                $startDate = $currentYear . '-01-01';
+                $endDate = $currentYear . '-12-31';
+                
+                // Get leave records (ลากิจ, ลาป่วย, ไปราชการ, ขาด, อื่นๆ)
+                $leaveRecords = $DBAttendance
+                    ->where('att_person_id', $id)
+                    ->where('att_date >=', $startDate)
+                    ->where('att_date <=', $endDate)
+                    ->whereIn('att_status', ['ลากิจ', 'ลาป่วย', 'ไปราชการ', 'ขาด', 'อื่นๆ'])
+                    ->orderBy('att_date', 'DESC')
+                    ->get()->getResult();
 
-                foreach ($leaveData as &$l) {
-                    if (!empty($l->leave_start_date)) {
-                        $p1 = explode('-', $l->leave_start_date);
-                        $l->leave_start_display = (count($p1) == 3) ? $p1[2] . '/' . $p1[1] . '/' . ($p1[0] + 543) : $l->leave_start_date;
-                    } else { $l->leave_start_display = '-'; }
-
-                    if (!empty($l->leave_end_date)) {
-                        $p2 = explode('-', $l->leave_end_date);
-                        $l->leave_end_display = (count($p2) == 3) ? $p2[2] . '/' . $p2[1] . '/' . ($p2[0] + 543) : $l->leave_end_date;
-                    } else { $l->leave_end_display = '-'; }
+                foreach ($leaveRecords as &$l) {
+                    if (!empty($l->att_date)) {
+                        $p1 = explode('-', $l->att_date);
+                        $l->date_display = (count($p1) == 3) ? $p1[2] . '/' . $p1[1] . '/' . ($p1[0] + 543) : $l->att_date;
+                    } else { 
+                        $l->date_display = '-'; 
+                    }
                 }
+
+                // Get summary stats for current year
+                $DBAttendanceStats = $DB_Personnel->table('tb_personnel_attendance');
+                $summaryRaw = $DBAttendanceStats
+                    ->select("
+                        SUM(CASE WHEN att_status = 'มา' THEN 1 ELSE 0 END) as present,
+                        SUM(CASE WHEN att_status = 'สาย' THEN 1 ELSE 0 END) as late,
+                        SUM(CASE WHEN att_status = 'ลาป่วย' THEN 1 ELSE 0 END) as sick,
+                        SUM(CASE WHEN att_status = 'ลากิจ' THEN 1 ELSE 0 END) as personal,
+                        SUM(CASE WHEN att_status = 'ไปราชการ' THEN 1 ELSE 0 END) as official,
+                        SUM(CASE WHEN att_status = 'ขาด' THEN 1 ELSE 0 END) as absent,
+                        SUM(CASE WHEN att_status = 'อื่นๆ' THEN 1 ELSE 0 END) as other
+                    ")
+                    ->where('att_person_id', $id)
+                    ->where('att_date >=', $startDate)
+                    ->where('att_date <=', $endDate)
+                    ->get()->getRow();
 
                 if(!empty($data)) {
-                    $data[0]->leave_history = $leaveData;
+                    $data[0]->leave_records = $leaveRecords;
+                    $data[0]->attendance_summary = [
+                        'year' => $currentYear,
+                        'present' => (int)($summaryRaw->present ?? 0) + (int)($summaryRaw->late ?? 0),
+                        'sick' => (int)($summaryRaw->sick ?? 0),
+                        'personal' => (int)($summaryRaw->personal ?? 0),
+                        'official' => (int)($summaryRaw->official ?? 0),
+                        'absent' => (int)($summaryRaw->absent ?? 0),
+                        'other' => (int)($summaryRaw->other ?? 0),
+                    ];
                 }
             } catch (\Throwable $e) {
-                // Ignore
+                if(!empty($data)) {
+                    $data[0]->leave_records = [];
+                    $data[0]->attendance_summary = [
+                        'year' => date('Y'),
+                        'present' => 0, 'sick' => 0, 'personal' => 0, 
+                        'official' => 0, 'absent' => 0, 'other' => 0
+                    ];
+                }
             }
 
             return $this->response->setJSON($data);
@@ -1716,4 +1804,367 @@ class ConAdminWorkPerson extends BaseController
         return $this->response->setHeader('Content-Type', 'application/pdf')->setBody($mpdf->Output($filename, 'I'));
     }
 
+    // ===== DOCUMENT MANAGEMENT METHODS =====
+    
+    /**
+     * ตรวจสอบและสร้างตาราง tb_personnel_documents ถ้ายังไม่มี
+     */
+    private function checkDocumentsTable($db) {
+        if (!$db->tableExists('tb_personnel_documents')) {
+            $forge = \Config\Database::forge('personnel');
+            $forge->addField([
+                'id' => [
+                    'type'           => 'INT',
+                    'constraint'     => 11,
+                    'unsigned'       => true,
+                    'auto_increment' => true,
+                ],
+                'pers_id' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '20',
+                ],
+                'doc_category' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '50',
+                    'comment'    => 'personal, license, education, work_order, training, decoration, other',
+                ],
+                'doc_type' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '50',
+                    'comment'    => 'id_card, house_reg, teacher_license, etc.',
+                ],
+                'doc_title' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '255',
+                    'null'       => true,
+                ],
+                'file_name' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '255',
+                ],
+                'file_path' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '500',
+                ],
+                'file_type' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '20',
+                ],
+                'file_size' => [
+                    'type'       => 'INT',
+                    'constraint' => 11,
+                    'unsigned'   => true,
+                    'default'    => 0,
+                ],
+                'related_id' => [
+                    'type'       => 'INT',
+                    'constraint' => 11,
+                    'unsigned'   => true,
+                    'null'       => true,
+                    'comment'    => 'FK ถ้าเชื่อมกับ education_id, training_id ฯลฯ',
+                ],
+                'doc_date' => [
+                    'type'    => 'DATE',
+                    'null'    => true,
+                ],
+                'doc_reference' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '255',
+                    'null'       => true,
+                ],
+                'doc_note' => [
+                    'type'    => 'TEXT',
+                    'null'    => true,
+                ],
+                'uploaded_by' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '20',
+                    'null'       => true,
+                ],
+                'created_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                ],
+                'updated_at' => [
+                    'type' => 'DATETIME',
+                    'null' => true,
+                ],
+            ]);
+            $forge->addKey('id', true);
+            $forge->addKey('pers_id');
+            $forge->addKey(['doc_category', 'doc_type']);
+            $forge->createTable('tb_personnel_documents');
+        }
+    }
+
+    /**
+     * อัปโหลดเอกสารบุคลากร
+     */
+    public function PersonnelDocUpload() {
+        $session = session();
+        $pers_id = $this->request->getPost('pers_id');
+        
+        if (!$this->canEditPersonnel($pers_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์อัปโหลดเอกสารนี้']);
+        }
+
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $this->checkDocumentsTable($DB_Personnel);
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents');
+
+        $file = $this->request->getFile('document');
+        $docType = $this->request->getPost('doc_type');
+        $docCategory = $this->request->getPost('doc_category') ?? 'personal';
+        $docTitle = $this->request->getPost('doc_title') ?? '';
+        $docDate = $this->request->getPost('doc_date') ?? null;
+        $docReference = $this->request->getPost('doc_reference') ?? '';
+        $docNote = $this->request->getPost('doc_note') ?? '';
+        $relatedId = $this->request->getPost('related_id') ?? null;
+
+        // Validate file
+        if (!$file || !$file->isValid()) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'ไม่ได้เลือกไฟล์หรือไฟล์ไม่ถูกต้อง']);
+        }
+
+        // Check file size (max 5MB)
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'ขนาดไฟล์เกิน 5MB']);
+        }
+
+        // Check file type
+        $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+        if (!in_array($file->getMimeType(), $allowedTypes)) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'ประเภทไฟล์ไม่ถูกต้อง (รองรับ PDF, JPG, PNG)']);
+        }
+
+        // Create upload directory
+        $uploadPath = ROOTPATH . 'uploads/admin/Personnel/documents/' . $pers_id . '/';
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        // For single-type documents (id_card, house_reg, etc.), delete existing file first
+        $singleTypeDocuments = ['id_card', 'house_reg', 'name_change', 'teacher_license', 'admin_license'];
+        if (in_array($docType, $singleTypeDocuments)) {
+            $existing = $DBDoc->where('pers_id', $pers_id)->where('doc_type', $docType)->get()->getRow();
+            if ($existing) {
+                // Delete old file
+                $oldPath = ROOTPATH . $existing->file_path;
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+                // Delete DB record
+                $DBDoc->where('id', $existing->id)->delete();
+            }
+        }
+
+        // Convert date format if provided
+        if ($docDate) {
+            $docDate = $this->convertThaiDateToSQL($docDate);
+        }
+
+        // Move file
+        $newName = $docType . '_' . time() . '_' . $file->getRandomName();
+        $file->move($uploadPath, $newName);
+
+        $relativePath = 'uploads/admin/Personnel/documents/' . $pers_id . '/' . $newName;
+
+        // Insert to database
+        $data = [
+            'pers_id'       => $pers_id,
+            'doc_category'  => $docCategory,
+            'doc_type'      => $docType,
+            'doc_title'     => $docTitle,
+            'file_name'     => $file->getClientName(),
+            'file_path'     => $relativePath,
+            'file_type'     => pathinfo($newName, PATHINFO_EXTENSION),
+            'file_size'     => $file->getSize(),
+            'related_id'    => $relatedId,
+            'doc_date'      => $docDate,
+            'doc_reference' => $docReference,
+            'doc_note'      => $docNote,
+            'uploaded_by'   => $session->get('id'),
+            'created_at'    => date('Y-m-d H:i:s'),
+        ];
+
+        if ($DBDoc->insert($data)) {
+            $insertId = $DB_Personnel->insertID();
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'อัปโหลดเอกสารสำเร็จ',
+                'doc_id'  => $insertId,
+                'file_name' => $file->getClientName()
+            ]);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'ไม่สามารถบันทึกข้อมูลได้']);
+        }
+    }
+
+    /**
+     * ดูเอกสารบุคลากร
+     */
+    public function PersonnelDocView($docId) {
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $this->checkDocumentsTable($DB_Personnel);
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents');
+
+        $doc = $DBDoc->where('id', $docId)->get()->getRow();
+        if (!$doc) {
+            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'ไม่พบเอกสาร']);
+        }
+
+        $filePath = ROOTPATH . $doc->file_path;
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์เอกสาร']);
+        }
+
+        // Determine content type
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $contentType = match($extension) {
+            'pdf'  => 'application/pdf',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+            default => 'application/octet-stream',
+        };
+
+        return $this->response
+            ->setHeader('Content-Type', $contentType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $doc->file_name . '"')
+            ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * ลบเอกสารบุคลากร
+     */
+    public function PersonnelDocDelete() {
+        $session = session();
+        $docId = $this->request->getPost('doc_id');
+
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $this->checkDocumentsTable($DB_Personnel);
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents');
+
+        $doc = $DBDoc->where('id', $docId)->get()->getRow();
+        if (!$doc) {
+            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'ไม่พบเอกสาร']);
+        }
+
+        // Check permission
+        if (!$this->canEditPersonnel($doc->pers_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์ลบเอกสารนี้']);
+        }
+
+        // Delete file
+        $filePath = ROOTPATH . $doc->file_path;
+        if (file_exists($filePath)) {
+            @unlink($filePath);
+        }
+
+        // Delete DB record
+        if ($DBDoc->where('id', $docId)->delete()) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'ลบเอกสารสำเร็จ']);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'ไม่สามารถลบเอกสารได้']);
+        }
+    }
+
+    /**
+     * ดึงรายการเอกสารตาม pers_id
+     */
+    public function PersonnelDocList($persId) {
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $this->checkDocumentsTable($DB_Personnel);
+        $DBDoc = $DB_Personnel->table('tb_personnel_documents');
+
+        $docs = $DBDoc->where('pers_id', $persId)->orderBy('doc_category')->orderBy('created_at', 'DESC')->get()->getResult();
+        return $this->response->setJSON($docs);
+    }
+
+    /**
+     * Helper: แปลงวันที่ไทย (DD/MM/YYYY+543) เป็น SQL Date (YYYY-MM-DD)
+     */
+    private function convertThaiDateToSQL($dateStr) {
+        if (empty($dateStr)) return null;
+        $normValue = str_replace('-', '/', $dateStr);
+        $d = explode("/", $normValue);
+        if (count($d) != 3) return null;
+        
+        if ((int)$d[0] > 1000) { // YYYY/MM/DD
+            $year = (int)$d[0]; $month = (int)$d[1]; $day = (int)$d[2];
+        } else { // DD/MM/YYYY
+            $year = (int)$d[2]; $month = (int)$d[1]; $day = (int)$d[0];
+        }
+        if ($year > 2400) $year -= 543;
+        return sprintf("%04d-%02d-%02d", $year, $month, $day);
+    }
+
+    /**
+     * ดึงสรุปการลา/มาทำงานของบุคลากรตามช่วงวันที่ระบุจาก Attendance System
+     */
+    public function PersonnelAttendanceSummary($persId) {
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $DBAttendance = $DB_Personnel->table('tb_personnel_attendance');
+        
+        $start = $this->request->getGet('start');
+        $end = $this->request->getGet('end');
+
+        // Convert Thai dates to SQL format
+        $startDate = $this->convertThaiDateToSQL($start);
+        $endDate = $this->convertThaiDateToSQL($end);
+
+        // Fallback to current year if dates are missing
+        if (!$startDate) $startDate = date('Y-01-01');
+        if (!$endDate) $endDate = date('Y-12-31');
+        
+        // Get leave records
+        $leaveRecords = $DBAttendance
+            ->where('att_person_id', $persId)
+            ->where('att_date >=', $startDate)
+            ->where('att_date <=', $endDate)
+            ->whereIn('att_status', ['ลากิจ', 'ลาป่วย', 'ไปราชการ', 'ขาด', 'อื่นๆ'])
+            ->orderBy('att_date', 'DESC')
+            ->get()->getResult();
+
+        foreach ($leaveRecords as &$l) {
+            if (!empty($l->att_date)) {
+                $p1 = explode('-', $l->att_date);
+                $l->date_display = (count($p1) == 3) ? $p1[2] . '/' . $p1[1] . '/' . ($p1[0] + 543) : $l->att_date;
+            } else { 
+                $l->date_display = '-'; 
+            }
+        }
+
+        // Get summary stats
+        $DBAttendanceStats = $DB_Personnel->table('tb_personnel_attendance');
+        $summaryRaw = $DBAttendanceStats
+            ->select("
+                SUM(CASE WHEN att_status = 'มา' THEN 1 ELSE 0 END) as present,
+                SUM(CASE WHEN att_status = 'สาย' THEN 1 ELSE 0 END) as late,
+                SUM(CASE WHEN att_status = 'ลาป่วย' THEN 1 ELSE 0 END) as sick,
+                SUM(CASE WHEN att_status = 'ลากิจ' THEN 1 ELSE 0 END) as personal,
+                SUM(CASE WHEN att_status = 'ไปราชการ' THEN 1 ELSE 0 END) as official,
+                SUM(CASE WHEN att_status = 'ขาด' THEN 1 ELSE 0 END) as absent,
+                SUM(CASE WHEN att_status = 'อื่นๆ' THEN 1 ELSE 0 END) as other
+            ")
+            ->where('att_person_id', $persId)
+            ->where('att_date >=', $startDate)
+            ->where('att_date <=', $endDate)
+            ->get()->getRow();
+
+        return $this->response->setJSON([
+            'start' => $startDate,
+            'end' => $endDate,
+            'summary' => [
+                'present' => (int)($summaryRaw->present ?? 0) + (int)($summaryRaw->late ?? 0),
+                'sick' => (int)($summaryRaw->sick ?? 0),
+                'personal' => (int)($summaryRaw->personal ?? 0),
+                'official' => (int)($summaryRaw->official ?? 0),
+                'absent' => (int)($summaryRaw->absent ?? 0),
+                'other' => (int)($summaryRaw->other ?? 0),
+            ],
+            'records' => $leaveRecords
+        ]);
+    }
+
 }
+

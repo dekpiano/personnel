@@ -16,6 +16,7 @@
                     <th class="py-3">วุฒิการศึกษา / สาขาวิชา</th>
                     <th class="py-3">สถาบันการศึกษา</th>
                     <th class="py-3">ปีที่จบ</th>
+                    <th class="py-3 text-center">เอกสาร</th>
                     <th class="text-center py-3">จัดการ</th>
                 </tr>
             </thead>
@@ -25,4 +26,3 @@
         </table>
     </div>
 </div>
-

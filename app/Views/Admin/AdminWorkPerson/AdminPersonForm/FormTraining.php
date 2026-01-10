@@ -16,6 +16,7 @@
                     <th class="py-3">โครงการ / หลักสูตรการอบรม</th>
                     <th class="py-3">สถานที่ / หน่วยงานที่จัด</th>
                     <th class="py-3 text-center">ชั่วโมง</th>
+                    <th class="py-3 text-center">เอกสาร</th>
                     <th class="text-center py-3">จัดการ</th>
                 </tr>
             </thead>
