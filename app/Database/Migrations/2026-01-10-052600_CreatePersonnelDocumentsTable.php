@@ -21,9 +21,8 @@ class CreatePersonnelDocumentsTable extends Migration
                 'comment'        => 'รหัสเอกสาร (Primary Key)',
             ],
             'pers_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
                 'comment'    => 'รหัสบุคลากร (FK to tb_personnel)',
             ],
             'doc_category' => [
@@ -111,7 +110,8 @@ class CreatePersonnelDocumentsTable extends Migration
         $this->forge->addKey(['doc_category', 'doc_type']);
         $this->forge->addKey('related_id');
         
-        $this->forge->createTable('tb_personnel_documents', true);
+        $attributes = ['ENGINE' => 'InnoDB', 'CHARACTER SET' => 'utf8', 'COLLATE' => 'utf8_unicode_ci'];
+        $this->forge->createTable('tb_personnel_documents', true, $attributes);
     }
 
     public function down()

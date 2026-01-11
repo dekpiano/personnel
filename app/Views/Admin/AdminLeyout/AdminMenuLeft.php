@@ -58,6 +58,29 @@
                         <div data-i18n="Layouts">บันทึกการมาทำงาน</div>
                     </a>
                 </li>
+                <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' || $uri->getSegment(2) == 'Holiday') ? 'active open' : '' ?>">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+            <i class="menu-icon tf-icons bi bi-calendar-check-fill"></i>
+            <div data-i18n="Leave Management">ระบบจัดการการลา</div>
+        </a>
+        <ul class="menu-sub">
+            <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) != 'Settings') ? 'active' : '' ?>">
+                <a href="<?= base_url('Admin/Leave') ?>" class="menu-link">
+                    <div data-i18n="All Leaves">รายการขอลาทั้งหมด</div>
+                </a>
+            </li>
+            <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) == 'Settings') ? 'active' : '' ?>">
+                <a href="<?= base_url('Admin/Leave/Settings') ?>" class="menu-link">
+                    <div data-i18n="Leave Settings">ตั้งค่าโควตาการลา</div>
+                </a>
+            </li>
+            <li class="menu-item <?= ($uri->getSegment(2) == 'Holiday') ? 'active' : '' ?>">
+                <a href="<?= base_url('Admin/Holiday') ?>" class="menu-link">
+                    <div data-i18n="Holiday Settings">ตั้งค่าวันหยุดราชการ</div>
+                </a>
+            </li>
+        </ul>
+    </li>
                 <?php endif; ?>
                 <?php if($_SESSION['status'] === "superadmin" || in_array('งานประเมิน pa',$SubRloes) || strpos($_SESSION['rloes'] ?? '', 'งานประเมิน pa') !== false) :?>
             <ul class="menu-inner py-1">

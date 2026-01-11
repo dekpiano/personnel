@@ -64,6 +64,25 @@ $routes->post('Admin/Rloes/UpdateUser', 'ConAdminRoles::RloesUpdateUser');
 $routes->post('Admin/Rloes/AddUser', 'ConAdminRoles::RloesAddUser');
 $routes->post('Admin/Rloes/DeleteUser', 'ConAdminRoles::RloesDeleteUser');
 
+$routes->group('Admin', function ($routes) {
+    //Admin Leave Management
+    $routes->get('Leave', 'ConAdminLeave::index');
+    $routes->get('Leave/Settings', 'ConAdminLeave::Settings');
+    $routes->post('Leave/SaveType', 'ConAdminLeave::SaveLeaveType');
+    $routes->get('Leave/DeleteType/(:num)', 'ConAdminLeave::DeleteLeaveType/$1');
+    $routes->post('Leave/UpdateStatus', 'ConAdminLeave::UpdateStatus');
+    $routes->get('Leave/Get/(:num)', 'ConAdminLeave::GetLeaveRequest/$1');
+
+    // ระบบจัดการวันหยุด
+    $routes->get('Holiday', 'ConAdminHoliday::index');
+    $routes->post('Holiday/Save', 'ConAdminHoliday::Save');
+    $routes->get('Holiday/Delete/(:num)', 'ConAdminHoliday::Delete/$1');
+
+    // ระบบจัดการปีการศึกษาสำหรับการลา
+    $routes->post('Leave/SaveYear', 'ConAdminLeave::SaveLeaveYear');
+    $routes->get('Leave/SetActiveYear/(:num)', 'ConAdminLeave::SetActiveLeaveYear/$1');
+    $routes->get('Leave/DeleteYear/(:num)', 'ConAdminLeave::DeleteLeaveYear/$1');
+});
 //Admin Person
 $routes->get('Admin/WorkPerson/Personnel', 'ConAdminWorkPerson::index');
 $routes->get('Admin/WorkPerson/Personnel/Add', 'ConAdminWorkPerson::FormAdd');
