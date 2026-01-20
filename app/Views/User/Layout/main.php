@@ -332,7 +332,7 @@ $uri = service('uri');
                     $(currentInput).data('cropped-blob', blob);
                     $modal.modal('hide');
                     $(currentInput).trigger('cropped', [blob]);
-                }, 'image/jpeg', 0.9);
+                }, 'image/png');
             });
 
             // Expose cropper globally for the rotate buttons

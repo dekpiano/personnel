@@ -71,7 +71,7 @@ function getFormDataWithCroppedImages(form) {
       const blob = $(this).data("cropped-blob");
       if (blob) {
         const name = $(this).attr("name");
-        const filename = $(this).val().split("\\").pop() || "image.jpg";
+        const filename = $(this).val().split("\\").pop() || "image.png";
         formData.set(name, blob, filename);
       }
     });
@@ -240,7 +240,7 @@ $(document).on("cropped", 'input[name="pers_img"]', function (e, blob) {
   // Check if we are on the Update page (not Add page)
   if ($("#ChangeImgPersonnal").length > 0) {
     var formData = new FormData();
-    formData.append("file", blob, "profile.jpg");
+    formData.append("file", blob, "profile.png");
     formData.append("KeyPresID", $(this).attr("key-persid"));
 
     $.ajax({

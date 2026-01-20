@@ -312,7 +312,7 @@
                     
                     // Trigger custom event for special cases
                     $(currentInput).trigger('cropped', [blob]);
-                }, 'image/jpeg', 0.9);
+                }, 'image/png');
             });
 
             // Universal Form Submission Handler to include Cropped Images
@@ -334,7 +334,7 @@
                         const blob = $(this).data('cropped-blob');
                         if (blob) {
                             const name = $(this).attr('name');
-                            const filename = $(this).val().split('\\').pop() || 'image.jpg';
+                            const filename = $(this).val().split('\\').pop() || 'image.png';
                             formData.set(name, blob, filename);
                         }
                     });
