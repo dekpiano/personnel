@@ -358,14 +358,21 @@
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div class="row mb-4 align-items-end g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="filter-label">ระบุวันที่บันทึก</label>
                             <input type="date" id="att_date" name="att_date" class="form-control filter-input" value="<?=date('Y-m-d')?>">
                         </div>
-                        <div class="col-md-8 text-md-end">
+                        <div class="col-md-5">
+                            <label class="filter-label">ดึงข้อมูลจากไฟล์ Excel สแกนนิ้ว</label>
+                            <div class="input-group">
+                                <input type="file" id="excel_file" class="form-control" accept=".xlsx, .xls">
+                                <button type="button" class="btn btn-success" id="btn-parse-excel">ดึงข้อมูล</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
                             <div class="alert alert-info border-0 mb-0 py-2 px-3 d-inline-flex align-items-center rounded-3">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <span class="small">ระบบจะบันทึกสถานะล่าสุดทับข้อมูลเดิมในวันเดียวกัน</span>
+                                <span class="small">บันทึกซ้ำจะนำสถานะล่าสุดทบทับข้อมูลเดิม</span>
                             </div>
                         </div>
                     </div>
@@ -412,6 +419,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Modal: สรุปรายบุคคล -->
 <div class="modal fade" id="leaveSummaryModal" tabindex="-1">

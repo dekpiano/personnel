@@ -36,13 +36,91 @@ class ConAdminSaveAttendance extends BaseController
         $DBPers = $data['database']->table('tb_personnel');
         $DBPosi = $data['databaseSKJ']->table('tb_position');
 
-        $DBPers->select('pers_id,tb_personnel.pers_prefix,tb_personnel.pers_firstname,tb_personnel.pers_lastname,tb_position.posi_name');
+        // Ensure pers_finger_id column exists
+        $columns = $data['database']->getFieldNames('tb_personnel');
+        if (!in_array('pers_finger_id', $columns)) {
+            $data['database']->query("ALTER TABLE tb_personnel ADD COLUMN pers_finger_id VARCHAR(50) DEFAULT NULL");
+        }
+
+        $DBPers->select('pers_id,tb_personnel.pers_prefix,tb_personnel.pers_firstname,tb_personnel.pers_lastname,tb_position.posi_name,tb_personnel.pers_finger_id');
         $DBPers->join('skjacth_skj.tb_position','tb_position.posi_id = tb_personnel.pers_position','left');
         $DBPers->where('tb_personnel.pers_status','กำลังใช้งาน');
         $DBPers->orderBy('tb_personnel.pers_position','ASC');
         $DBPers->orderBy('tb_personnel.pers_learning','ASC');
         $query = $DBPers->get();
         return $this->response->setJSON($query->getResult());
+    }
+
+    public function SetupFingerprint()
+    {
+        $data = $this->DataMain();        
+        $data['title'] = "ตั้งค่ารหัสเครื่องสแกนนิ้ว";        
+        
+        // Use GetPersonnalData logic or just let the view call API to get data
+        $columns = $data['database']->getFieldNames('tb_personnel');
+        if (!in_array('pers_finger_id', $columns)) {
+            $data['database']->query("ALTER TABLE tb_personnel ADD COLUMN pers_finger_id VARCHAR(50) DEFAULT NULL");
+        }
+
+        return view('Admin/AdminSaveAttendance/AdminSetupFingerprint', $data);
+    }
+
+    public function SaveFingerprint()
+    {
+        $data = $this->DataMain();    
+        $DBPers = $data['database']->table('tb_personnel');
+
+        $pers_id = $this->request->getPost('pers_id');
+        $pers_finger_id = $this->request->getPost('pers_finger_id');
+
+        if ($DBPers->where('pers_id', $pers_id)->update(['pers_finger_id' => $pers_finger_id])) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'บันทึกข้อมูลสำเร็จ']);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล']);
+        }
+    }
+
+    public function SetupTime()
+    {
+        $data = $this->DataMain();        
+        $data['title'] = "ตั้งค่าเวลามาทำงาน";        
+        
+        $dbSKJ = $data['databaseSKJ'];
+        $columns = $dbSKJ->getFieldNames('tb_position');
+        if (!in_array('late_time', $columns)) {
+            $dbSKJ->query("ALTER TABLE tb_position ADD COLUMN late_time TIME DEFAULT '08:00:00'");
+        }
+
+        return view('Admin/AdminSaveAttendance/AdminSetupTime', $data);
+    }
+
+    public function GetTimeConfigs()
+    {
+        $data = $this->DataMain();    
+        $dbSKJ = $data['databaseSKJ']->table('tb_position');
+
+        $columns = $data['databaseSKJ']->getFieldNames('tb_position');
+        if (!in_array('late_time', $columns)) {
+            $data['databaseSKJ']->query("ALTER TABLE tb_position ADD COLUMN late_time TIME DEFAULT '08:00:00'");
+        }
+
+        $query = $dbSKJ->select('posi_id, posi_name, late_time')->orderBy('posi_name', 'ASC')->get();
+        return $this->response->setJSON($query->getResult());
+    }
+
+    public function SaveTimeConfig()
+    {
+        $data = $this->DataMain();    
+        $dbSKJ = $data['databaseSKJ']->table('tb_position');
+
+        $posi_id = $this->request->getPost('posi_id');
+        $late_time = $this->request->getPost('late_time');
+
+        if ($dbSKJ->where('posi_id', $posi_id)->update(['late_time' => $late_time])) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'บันทึกเวลาที่สายสำเร็จ']);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล']);
+        }
     }
 
     public function GetAttendanceToDate()
@@ -228,4 +306,103 @@ class ConAdminSaveAttendance extends BaseController
 
     }
 
+    public function UploadExcel()
+    {
+        $data = $this->DataMain();
+        $DBPers = $data['database']->table('tb_personnel');
+
+        if (defined('SHARED_LIB_PATH')) {
+            require_once SHARED_LIB_PATH .DIRECTORY_SEPARATOR. 'spreadsheet'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
+        }
+
+        $file = $this->request->getFile('excel_file');
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์']);
+        }
+
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getTempName());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, true);
+            
+            $headerSkipped = false;
+            $parsedData = [];
+            $debugRows = []; // To help debug
+
+            foreach ($rows as $index => $row) {
+                if (!$headerSkipped) {
+                    $headerSkipped = true;
+                    continue;
+                }
+
+                $finger_id = trim($row['A'] ?? '');
+                $datetime_str = trim($row['E'] ?? '');
+
+                if (empty($finger_id) || empty($datetime_str)) {
+                    continue;
+                }
+
+                $finger_id_clean = trim($finger_id);
+                $finger_id_int = (string)(int)$finger_id_clean;
+                $finger_id_padded = str_pad($finger_id_clean, 5, "0", STR_PAD_LEFT);
+
+                // Find user by trying exact, int matched (no leading zeros), and padded (5 digits with leading zeros)
+                // Also join tb_position from databaseSKJ to get late_time
+                $databaseSKJ_name = clone $data['databaseSKJ'];
+                $dbSKJ_name = $databaseSKJ_name->getDatabase();
+
+                $personnel = $DBPers->select('tb_personnel.pers_id, COALESCE('.$dbSKJ_name.'.tb_position.late_time, "08:00:00") as late_time')
+                                    ->join($dbSKJ_name.'.tb_position', $dbSKJ_name.'.tb_position.posi_id = tb_personnel.pers_position', 'left')
+                                    ->groupStart()
+                                        ->where('tb_personnel.pers_finger_id', $finger_id_clean)
+                                        ->orWhere('tb_personnel.pers_finger_id', $finger_id_int)
+                                        ->orWhere('tb_personnel.pers_finger_id', $finger_id_padded)
+                                    ->groupEnd()
+                                    ->get()->getRow();
+                
+                $debugRows[] = [
+                    'scan_row' => $index,
+                    'excel_finger_id' => $finger_id,
+                    'excel_datetime' => $datetime_str,
+                    'found_pers_id' => $personnel ? $personnel->pers_id : null,
+                    'found_late_time' => $personnel ? $personnel->late_time : null,
+                    'searched_for' => [$finger_id_clean, $finger_id_int, $finger_id_padded]
+                ];
+
+                if ($personnel) {
+                    $dateParts = explode(' ', $datetime_str);
+                    $timePortion = $dateParts[1] ?? '00:00';
+
+                    $isLate = false;
+                    $scanTime = strtotime($timePortion);
+                    // use position's late_time
+                    $lateTime = strtotime($personnel->late_time);
+
+                    if ($scanTime > $lateTime) {
+                         $isLate = true;
+                    }
+
+                    $status = $isLate ? 'สาย' : 'มา';
+                    $remark = "สแกนเมื่อ ".$timePortion;
+
+                    $parsedData[$personnel->pers_id] = [
+                        'status' => $status,
+                        'remark' => $remark
+                    ];
+                }
+            }
+
+            return $this->response->setJSON([
+                'status' => 'success', 
+                'data' => $parsedData,
+                'debug' => $debugRows
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'status' => 'error', 
+                'message' => 'เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

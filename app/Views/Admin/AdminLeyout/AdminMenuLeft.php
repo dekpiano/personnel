@@ -52,11 +52,28 @@
 
                     </ul>
                 </li>
-                <li class="menu-item <?php echo $uri->getSegment(2) == "SaveAttendance"?"active":""?>">
-                    <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-layout"></i>
-                        <div data-i18n="Layouts">บันทึกการมาทำงาน</div>
+                <li class="menu-item <?php echo $uri->getSegment(2) == 'SaveAttendance' ? 'active open' : '' ?>">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bx bx-time-five"></i>
+                        <div data-i18n="Layouts">ระบบเวลาทำงาน</div>
                     </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) != 'SetupFingerprint') ? 'active' : '' ?>">
+                            <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">
+                                <div data-i18n="Without menu">บันทึกการมาทำงาน</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) == 'SetupFingerprint') ? 'active' : '' ?>">
+                            <a href="<?=base_url('Admin/SaveAttendance/SetupFingerprint')?>" class="menu-link">
+                                <div data-i18n="Without menu">ตั้งค่าเครื่องสแกนนิ้ว</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) == 'SetupTime') ? 'active' : '' ?>">
+                            <a href="<?=base_url('Admin/SaveAttendance/SetupTime')?>" class="menu-link">
+                                <div data-i18n="Without menu">ตั้งค่าเวลามาทำงาน</div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' || $uri->getSegment(2) == 'Holiday') ? 'active open' : '' ?>">
         <a href="javascript:void(0);" class="menu-link menu-toggle">

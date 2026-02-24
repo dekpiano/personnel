@@ -225,7 +225,7 @@ class ConAdminWorkPerson extends BaseController
         $data['AddrReg'] = $DBAddr->where(['pers_id' => $IDPres, 'addr_type' => 'ทะเบียนบ้าน'])->get()->getRow();
         $data['AddrCurr'] = $DBAddr->where(['pers_id' => $IDPres, 'addr_type' => 'ปัจจุบัน'])->get()->getRow();
 
-        $PosiMain = $DBPosiMain->where('work_id',$data['Pers']->pers_workother_id)
+        $PosiMain = $DBPosiMain->where('work_id', $data['Pers']?->pers_workother_id ?? "")
         ->get()->getRow();
         $data['PosiMain'] = $DBPosiMain->where('posi_id',$PosiMain->posi_id ?? "")
         ->get()->getResult();

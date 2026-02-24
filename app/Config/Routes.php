@@ -132,6 +132,14 @@ $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/SaveAttendanceToD
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/DashboardAttendance', 'ConAdminSaveAttendance::DashboardAttendance');
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/LeaveSummary', 'ConAdminSaveAttendance::GetLeaveSummary');
 $routes->get('Admin/SaveAttendance/DB/Select/leaveSummaryByPositionDay', 'ConAdminSaveAttendance::leaveSummaryByPositionDay');
+$routes->post('Admin/SaveAttendance/UploadExcel', 'ConAdminSaveAttendance::UploadExcel');
+
+$routes->get('Admin/SaveAttendance/SetupFingerprint', 'ConAdminSaveAttendance::SetupFingerprint');
+$routes->post('Admin/SaveAttendance/SetupFingerprint/Save', 'ConAdminSaveAttendance::SaveFingerprint');
+
+$routes->get('Admin/SaveAttendance/SetupTime', 'ConAdminSaveAttendance::SetupTime');
+$routes->post('Admin/SaveAttendance/SetupTime/Save', 'ConAdminSaveAttendance::SaveTimeConfig');
+$routes->get('Admin/SaveAttendance/DB/Select/GetTimeConfigs', 'ConAdminSaveAttendance::GetTimeConfigs');
 
 // Admin PA Config routes
 $routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
