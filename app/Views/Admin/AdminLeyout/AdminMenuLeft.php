@@ -104,7 +104,7 @@
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานการประเมิน PA</span>
                 </li>
-                <li class="menu-item <?php echo ($uri->getSegment(2) == "PaConfig" || $uri->getSegment(2) == "PaReport" ? "active open" : "")?>">
+                <li class="menu-item <?php echo (in_array($uri->getSegment(2), ["PaConfig", "PaReport"]) ? "active open" : "")?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-file"></i>
                         <div data-i18n="Layouts">จัดการประเมิน PA</div>
@@ -127,6 +127,17 @@
                             </a>
                         </li>
                     </ul>
+                </li>
+
+                <!-- New Section for Performance Evaluation -->
+                <li class="menu-header small text-uppercase">
+                    <span class="menu-header-text">งานประเมินผลปฏิบัติงาน</span>
+                </li>
+                <li class="menu-item <?php echo ($uri->getSegment(2) == "TeacherEvaluation" ? "active" : "")?>">
+                    <a href="<?=base_url('Admin/TeacherEvaluation')?>" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-medal"></i>
+                        <div data-i18n="Analytics">ตรวจสอบการส่งงาน </div>
+                    </a>
                 </li>
             </ul>
             <?php endif; ?>
