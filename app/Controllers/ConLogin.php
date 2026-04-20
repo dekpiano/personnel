@@ -4,25 +4,24 @@ namespace App\Controllers;
 
 class ConLogin extends BaseController
 {
-        //$path = dirname(dirname(dirname(dirname((dirname(__FILE__))))));
-	    //require $path . '/skj.ac.th/public_html/librarie_skj/google_sheet/vendor/autoload.php';
-
-    private $googleClient = null;
     private $GoogleButton = "";
-    private $ReturnUrl = "";
-    function __construct(){
-        require SHARED_LIB_PATH . '/google_sheet/vendor/autoload.php';
 
-        $redirect_uri = base_url('LoginOfficerPersonnel');
+    public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
+    {
+        parent::initController($request, $response, $logger);
+
+        $config = config('Google');
+        $params = [
+            'client_id'     => $config->clientId,
+            'redirect_uri'  => $config->redirectUri,
+            'response_type' => 'code',
+            'scope'         => 'email profile openid',
+            'access_type'   => 'online',
+            'prompt'        => 'select_account'
+        ];
         
-        $this->googleClient = new \Google_Client();
-        $this->googleClient->setClientId('110650460520-35k7ea69727vjqv11jise3ihm7g3vrah.apps.googleusercontent.com');
-		$this->googleClient->setClientSecret('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');
-        $this->googleClient->setRedirectUri($redirect_uri);
-        $this->googleClient->addScope('email');
-        $this->googleClient->addScope('profile');
-
-        $this->GoogleButton = '<a href="'.$this->googleClient->createAuthUrl().'" class="btn btn-primary me-3 w-auto"><i class="tf-icons bx bxl-google-plus"></i> Login by Google </a>';
+        $authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
+        $this->GoogleButton = '<a href="'.$authUrl.'" class="btn btn-primary me-3 w-auto"><i class="tf-icons bx bxl-google-plus"></i> Login by Google </a>';
     }
 
     public function DataMain(){
@@ -46,42 +45,76 @@ class ConLogin extends BaseController
         $DB_Personnel = \Config\Database::connect();
         $DBrloes = $DB_Personnel->table('tb_admin_rloes');
         $DBPers = $DB_Personnel->table('tb_personnel');     
-
-        //print_r($this->request->getVar("code"));exit();
         
-        if($this->request->getVar("return_to") == ""){
-
-        }else{
+        if($this->request->getVar("return_to") != ""){
             session()->set('Return',$this->request->getVar("return_to"));
         }
         
-        
-            if($this->request->getVar("code")){
-
-            $token = $this->googleClient->fetchAccessTokenWithAuthCode($this->request->getVar("code"));
+        $code = $this->request->getVar('code');
+        if($code){
+            $config = config('Google');
+            $curl = \Config\Services::curlrequest();
             
-                if(!isset($token['error'])){
+            // Debug: log redirect_uri being used
+            log_message('error', '[GoogleLogin] redirect_uri: ' . $config->redirectUri);
+            log_message('error', '[GoogleLogin] code: ' . substr($code, 0, 20) . '...');
+
+            try {
+                // 1. Exchange code for access_token and id_token
+                $response = $curl->post('https://oauth2.googleapis.com/token', [
+                    'version' => 1.1,
+                    'http_errors' => false,
+                    'form_params' => [
+                        'code'          => $code,
+                        'client_id'     => $config->clientId,
+                        'client_secret' => $config->clientSecret,
+                        'redirect_uri'  => $config->redirectUri,
+                        'grant_type'    => 'authorization_code',
+                    ],
+                ]);
+                $responseBody = $response->getBody();
+                $tokens = json_decode($responseBody, true);
                 
-                    $this->googleClient->setAccessToken($token['access_token']);           
-                    session()->set('AccessToken', $token['access_token']);
-                
+                // Debug: log Google's response
+                log_message('error', '[GoogleLogin] Token response HTTP: ' . $response->getStatusCode());
+                log_message('error', '[GoogleLogin] Token response body: ' . $responseBody);
 
-                    $googleService = new \Google_Service_Oauth2($this->googleClient);  
-                    $data = $googleService->userinfo->get();            
-                             
-                   
+                // Check if Google returned an error
+                if (isset($tokens['error'])) {
+                     $error_desc = isset($tokens['error_description']) ? $tokens['error_description'] : $tokens['error'];
+                     log_message('error', '[GoogleLogin] Google Error: ' . $error_desc);
+                     session()->setFlashdata('Error', 'Google Error: ' . $error_desc);
+                     return redirect()->to(base_url('LoginOfficerPersonnel'));
+                }
 
-                $CheckEmail = $DBPers->where('pers_username', $data['email'])->get()->getRowArray()>0?true:false;
-                //echo '<pre>';print_r("555"); exit();  
-                if($CheckEmail){
-                        $UserData = array('login_oauth_uid' => $data['id'],
-                                            'updated_at' => date('Y-m-d H:i:s'));
-                        $DBPers->where('pers_username', $data['email'])->update($UserData);
+                if (isset($tokens['id_token'])) {
+                    // Modern way: Decode id_token (JWT) to get user profile directly
+                    $jwt_parts = explode('.', $tokens['id_token']);
+                    if (count($jwt_parts) < 2) {
+                        session()->setFlashdata('Error', 'Invalid Token Format from Google');
+                        return redirect()->to(base_url('LoginOfficerPersonnel'));
+                    }
+                    
+                    $payloadJson = base64_decode(strtr($jwt_parts[1], '-_', '+/'));
+                    $payload = json_decode($payloadJson, true);
+                    log_message('error', '[GoogleLogin] Payload from id_token: ' . $payloadJson);
+                    
+                    if (isset($payload['email'])) {
+                        $email = $payload['email'];
+                        $userRow = $DBPers->where('pers_username', $email)->get()->getRowArray();
+                        log_message('error', '[GoogleLogin] Checking email: ' . $email . ' | Found: ' . ($userRow ? 'Yes' : 'No'));
+                        
+                        if($userRow){
+                            $UserData = array('login_oauth_uid' => $payload['sub'],
+                                                'updated_at' => date('Y-m-d H:i:s'));
+                            $DBPers->where('pers_username', $email)->update($UserData);
 
-                            $User = $DBPers->where('pers_username', $data['email'])->get()->getRowArray();
+                            $User = $userRow;
                             $User2 = $DBrloes->select('admin_rloes_status, admin_rloes_nanetype')->where('admin_rloes_userid', $User['pers_id'])->get()->getRowArray();
                             $userStatus = (isset($User2) && $User2['admin_rloes_status'] != "" ? $User2['admin_rloes_status'] : "Member");
                             
+                            log_message('error', '[GoogleLogin] Login SUCCESS for ' . $email . ' | Status: ' . $userStatus);
+
                             // Hardcode pers_021 as superadmin
                             if ($User['pers_id'] === 'pers_021') {
                                 $userStatus = 'superadmin';
@@ -102,28 +135,41 @@ class ConLogin extends BaseController
                             if(in_array($userStatus, ["superadmin", "admin", "manager"])){
                                 return redirect()->to(base_url('Admin/Home'));
                             }else{
-                                return redirect()->to(("https://".$_SESSION['Return']));
+                                $ret = session()->get('Return');
+                                if ($ret) {
+                                    session()->remove('Return');
+                                    if (filter_var($ret, FILTER_VALIDATE_URL)) {
+                                        return redirect()->to($ret);
+                                    }
+                                    return redirect()->to(base_url($ret));
+                                }
+                                return redirect()->to(base_url());
                             }
-                          
-                } else{
-                    
-                  
-                    $session->setFlashdata('Error', 'Email นี้ไม่สามารถเข้าสู่ระบบได้ กรุณาติดต่อผู้ดูแลระบบ!');
-                    return redirect()->back();
-                }        
-
-                }else{
-                    session()->set('Error', "Something went Wrong!");     
-                    
+                        } else {
+                            log_message('error', '[GoogleLogin] Email not found in database: ' . $email);
+                            session()->setFlashdata('Error', 'ไม่พบอีเมล ' . $email . ' ในฐานข้อมูล! กรุณาติดต่อแอดมิน');
+                            return redirect()->to(base_url('LoginOfficerPersonnel'));
+                        }  
+                    } else {
+                        log_message('error', '[GoogleLogin] No email in payload: ' . $payloadJson);
+                        session()->setFlashdata('Error', 'ไม่สามารถระบุตัวตนอีเมลจาก Google ได้');
+                        return redirect()->to(base_url('LoginOfficerPersonnel'));
+                    }
+                } else {
+                    log_message('error', '[GoogleLogin] No id_token in Google response: ' . $responseBody);
+                    session()->setFlashdata('Error', 'ไม่ได้รับข้อมูล ID Token จาก Google');
+                    return redirect()->to(base_url('LoginOfficerPersonnel'));
                 }
-        
+            } catch (\Exception $e) {
+                session()->setFlashdata('Error', 'การเชื่อมต่อกับ Google ล้มเหลว: ' . $e->getMessage());
+                return redirect()->to(base_url('LoginOfficerPersonnel'));
             }
+        }
         
-        return view('User/UserLeyout/UserHeader',$data)
+        return view('User/UserLeyout/UserHeader', $data)
         .view('User/UserLeyout/UserMenuLeft')
         .view('Login/LoginGoogle')
         .view('User/UserLeyout/UserFooter');
-          
     }
 
     public function LogoutOfficerPersonnel(){

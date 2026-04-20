@@ -1,385 +1,317 @@
 <?= $this->extend('User/Layout/main') ?>
 
 <?= $this->section('content') ?>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Modern Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Kanit:wght@200;400;500;600&display=swap" rel="stylesheet">
 
 <style>
     :root {
-        --skj-blue: #0066cc;
-        --skj-blue-dark: #004c99;
-        --text-dark: #1a202c;
-        --text-muted: #4a5568;
-        --bg-color: #f8fbff; /* Changed to a very soft pastel blue */
-        
-        /* Pastel Colors for Cards */
-        --pastel-pink-bg: #ffe4e6;
-        --pastel-pink-text: #e11d48;
-        --pastel-blue-bg: #e0f2fe;
-        --pastel-blue-text: #0284c7;
-        --pastel-orange-bg: #ffedd5;
-        --pastel-orange-text: #ea580c;
-        --pastel-green-bg: #dcfce7;
-        --pastel-green-text: #16a34a;
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60efff 100%);
+        --accent-blue: #2563eb;
+        --accent-cyan: #06b6d4;
+        --text-slate: #0f172a;
     }
 
     body {
+        background: radial-gradient(circle at top right, #f8faff 0%, #e0f2fe 100%);
         font-family: 'Kanit', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-dark);
-        -webkit-font-smoothing: antialiased;
-        /* Subtle animated background pattern */
-        background-image: radial-gradient(#e0e7ff 1px, transparent 1px);
-        background-size: 20px 20px;
-        animation: bgMove 60s linear infinite;
+        color: var(--text-slate);
+        overflow-x: hidden;
     }
 
-    /* Keyframes for animations */
-    @keyframes bgMove {
-        0% { background-position: 0 0; }
-        100% { background-position: 400px 400px; }
+    /* Floating shapes for visual interest */
+    .shape-blob {
+        position: fixed;
+        width: 600px;
+        height: 600px;
+        background: var(--primary-gradient);
+        filter: blur(100px);
+        opacity: 0.12;
+        border-radius: 50%;
+        z-index: -1;
+        animation: move 30s infinite alternate;
     }
 
-    @keyframes floatLight {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
+    @keyframes move {
+        from { transform: translate(-15%, -15%); }
+        to { transform: translate(25%, 25%); }
     }
 
-    @keyframes pulseSoft {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto;
+        gap: 1.25rem;
+        margin-top: 1.5rem;
     }
 
-    @keyframes spinSlow {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    /* --- Welcome Hero (Mobile First) --- */
-    .welcome-hero {
-        background: linear-gradient(135deg, var(--skj-blue) 0%, var(--skj-blue-dark) 100%);
-        border-radius: 1.25rem;
-        padding: 2.5rem 1.5rem;
-        color: white;
-        margin-bottom: 2rem;
-        margin-top: 1rem;
+    .hero-glass {
+        grid-column: span 4;
+        background: var(--primary-gradient);
+        border-radius: 30px;
+        padding: 3rem 1.5rem;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0, 102, 204, 0.2);
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         text-align: center;
-        width: 100%;
+        box-shadow: 0 25px 50px -12px rgba(30, 64, 175, 0.3);
+        color: white;
+        margin-bottom: 0px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    /* Animated background elements in Hero */
-    .hero-bg-shape {
+    .hero-glass::before {
+        content: '';
         position: absolute;
-        top: -60px;
-        right: -60px;
-        width: 200px;
-        height: 200px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-        filter: blur(10px);
-        pointer-events: none;
-        animation: spinSlow 20s linear infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.6;
     }
 
-    .hero-bg-shape-2 {
-        position: absolute;
-        bottom: -40px;
-        left: -40px;
-        width: 150px;
-        height: 150px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-        filter: blur(15px);
-        pointer-events: none;
-        animation: spinSlow 25s linear infinite reverse;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
+    .hero-logo-box {
+        width: 85px;
+        height: 85px;
+        background: white;
+        border-radius: 24px;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        width: 100%;
+        padding: 12px;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        margin-bottom: 1.5rem;
+        animation: floatHero 6s ease-in-out infinite;
+        z-index: 2;
     }
 
-    .hero-logo {
-        width: 70px;
-        height: auto;
-        margin: 0 auto 1rem auto;
-        background: white;
-        padding: 8px;
-        border-radius: 50%;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        animation: floatLight 4s ease-in-out infinite;
+    @keyframes floatHero {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(3deg); }
     }
 
     .hero-title {
-        font-size: 1.5rem;
+        font-family: 'Outfit', 'Kanit', sans-serif;
+        font-size: clamp(1.8rem, 4.5vw, 2.8rem);
         font-weight: 700;
-        margin-bottom: 0.5rem;
-        line-height: 1.3;
-        color: white;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        text-align: center;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.75rem;
+        z-index: 2;
+        color: #ffffff;
+        text-shadow: 0 2px 15px rgba(0,0,0,0.3); /* Stronger shadow for better visibility on light blue */
+        background: rgba(0, 0, 0, 0.05); /* Very subtle backdrop for the text */
+        padding: 5px 15px;
+        border-radius: 12px;
+        backdrop-filter: blur(4px);
     }
 
-    .hero-subtitle {
-        font-size: 1.05rem;
-        opacity: 0.95;
-        font-weight: 400;
-        margin: 0;
+    .hero-desc {
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 0.95);
+        max-width: 600px;
+        font-weight: 300;
+        z-index: 2;
+        line-height: 1.5;
+        text-shadow: 0 1px 5px rgba(0,0,0,0.2);
     }
 
-    /* --- Main Grid (Mobile First) --- */
-    .main-grid {
+    /* Glass Cards - Elite Blue */
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 1.75rem;
+        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        text-decoration: none !important;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-    }
-
-    /* --- Action Cards (Mobile First Horizontal Layout) --- */
-    .action-card {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        background: white;
-        border-radius: 1.25rem;
-        padding: 1.25rem;
-        text-decoration: none !important;
-        border: 2px solid transparent;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.04);
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        justify-content: space-between;
         position: relative;
         overflow: hidden;
     }
 
-    .action-card:active {
-        transform: scale(0.97) !important;
+    .glass-card:hover {
+        transform: translateY(-12px) scale(1.03);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 40px 80px -15px rgba(30, 64, 175, 0.15);
+        border-color: #3b82f6;
     }
 
-    .icon-box {
-        width: 65px;
-        height: 65px;
-        border-radius: 1rem;
+    .glass-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+
+    .glass-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Card sizing for Bento effect */
+    .card-large { grid-column: span 2; grid-row: span 1; }
+    .card-small { grid-column: span 1; grid-row: span 1; }
+
+    .card-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.25rem;
-        flex-shrink: 0;
-        margin-right: 1.25rem;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5);
+        font-size: 1.85rem;
+        margin-bottom: 1.25rem;
+        transition: all 0.4s;
     }
 
-    /* Individual Card Colors */
-    .card-purple .icon-box {
-        background: #f3e8ff;
-        color: #9333ea;
-    }
-    .card-orange .icon-box {
-        background: var(--pastel-orange-bg);
-        color: var(--pastel-orange-text);
-    }
-    .card-blue .icon-box {
-        background: var(--pastel-blue-bg);
-        color: var(--pastel-blue-text);
-    }
-    .card-pink .icon-box {
-        background: var(--pastel-pink-bg);
-        color: var(--pastel-pink-text);
-    }
-    .card-green .icon-box {
-        background: var(--pastel-green-bg);
-        color: var(--pastel-green-text);
+    .glass-card:hover .card-icon {
+        transform: scale(1.1) rotate(5deg);
     }
 
-    /* Hover effects for mobile (active) and desktop */
-    .action-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
-    }
+    /* Card variations with Blue accents */
+    .bg-blue-soft { background: #eff6ff; color: #1e40af; }
+    .bg-cyan-soft { background: #ecfeff; color: #0891b2; }
+    .bg-sky-soft { background: #f0f9ff; color: #0369a1; }
+    .bg-indigo-soft { background: #eef2ff; color: #3730a3; }
 
-    .action-card:hover .icon-box {
-        transform: scale(1.15) rotate(5deg);
-    }
-    
-    .action-card:hover i.bxs-user-detail,
-    .action-card:hover i.bxs-file-blank {
-        animation: pulseSoft 1s infinite alternate;
-    }
-
-    .card-green:hover { border-color: #86efac; background-color: #f0fdf4; }
-    .card-blue:hover { border-color: #bae6fd; background-color: #f0f9ff; }
-    .card-orange:hover { border-color: #fdba74; background-color: #fffaf0; }
-    .card-pink:hover { border-color: #fda4af; background-color: #fff1f2; }
-
-    .text-box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-grow: 1;
-    }
-
-    .card-label {
-        font-size: 1.35rem; /* ใหญ่ อ่านง่าย */
+    .card-title {
+        font-size: 1.35rem;
         font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 0.25rem;
-        line-height: 1.2;
+        color: #1e293b;
+        margin-bottom: 0.6rem;
     }
 
-    .card-desc {
-        font-size: 1rem; /* ใหญ่ อ่านง่าย */
-        color: var(--text-muted);
-        line-height: 1.4;
-        font-weight: 400;
-        margin: 0;
+    .card-text {
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
 
-    .arrow-icon {
-        color: #cbd5e1;
-        font-size: 1.8rem;
-        margin-left: 0.5rem;
-        transition: transform 0.3s ease;
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+        .bento-grid { grid-template-columns: repeat(2, 1fr); }
+        .hero-glass { grid-column: span 2; }
     }
 
-    .action-card:hover .arrow-icon {
-        transform: translateX(6px);
+    @media (max-width: 640px) {
+        .bento-grid { grid-template-columns: 1fr; }
+        .hero-glass { grid-column: span 1; padding: 3rem 1.5rem; }
+        .card-large { grid-column: span 1; }
+        .glass-card { padding: 1.75rem; }
+        .hero-title { font-size: 2.2rem; }
     }
 
-    /* --- Tablets and Desktop --- */
-    @media (min-width: 768px) {
-        .welcome-hero {
-            padding: 3rem 2rem;
-            border-radius: 1.5rem;
-        }
-
-        .hero-logo {
-            width: 90px;
-        }
-
-        .hero-title {
-            font-size: 2.25rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1.25rem;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-
-        .action-card {
-            flex-direction: column;
-            text-align: center;
-            padding: 2.5rem 1.5rem;
-        }
-
-        .action-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .icon-box {
-            margin-right: 0;
-            margin-bottom: 1.5rem;
-            width: 85px;
-            height: 85px;
-            font-size: 3.5rem;
-            border-radius: 1.25rem;
-        }
-
-        .card-label {
-            font-size: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .card-desc {
-            font-size: 1.1rem;
-        }
-
-        .arrow-icon {
-            display: none; /* ซ่อนลูกศรในโหมด desktop เพราะการจัดเรียงเปลี่ยนไป */
-        }
+    /* Login Button - Azure Elite */
+    .btn-premium {
+        background: white;
+        color: #1e40af;
+        padding: 10px 32px;
+        border-radius: 100px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        z-index: 3;
     }
 
-    @media (min-width: 1024px) {
-        .main-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2rem;
-        }
+    .btn-premium:hover {
+        transform: scale(1.1) translateY(-3px);
+        color: #1d4ed8;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
     }
 </style>
 
-<div class="welcome-hero">
-    <div class="hero-bg-shape"></div>
-    <div class="hero-bg-shape-2"></div>
-    <div class="hero-content">
-        <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="Logo" class="hero-logo">
-        <h1 class="hero-title">ยินดีต้อนรับสู่ระบบงานบุคคล</h1>
-        <p class="hero-subtitle">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
+<div class="shape-blob" style="top: 5%; right: 5%;"></div>
+<div class="shape-blob" style="bottom: 5%; left: 5%; background: var(--accent-cyan);"></div>
+
+<div class="container-xxl">
+    <div class="bento-grid">
+        <!-- Hero Section - CSS Animated -->
+        <div class="hero-glass">
+            <div class="hero-logo-box">
+                <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" style="width: 100%; height: auto;">
+            </div>
+            <h1 class="hero-title">ยินดีต้อนรับสู่ระบบงานบุคคล</h1>
+            <p class="hero-desc">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
+            
+            <a href="<?= base_url('LoginOfficerPersonnel') ?>" class="btn-premium no-decoration">
+                <i class='bx bxs-lock-alt'></i> เข้าสู่ระบบ
+            </a>
+        </div>
+
+        <!-- Directory -->
+        <a href="<?= base_url('directory') ?>" class="glass-card card-large reveal reveal-delay-1">
+            <div>
+                <div class="card-icon bg-blue-soft">
+                    <i class='bx bx-group'></i>
+                </div>
+                <h3 class="card-title">ทำเนียบครูและบุคลากร</h3>
+                <p class="card-text">ค้นหารายชื่อและข้อมูลพื้นฐานของบุคลากรภายในโรงเรียน แยกตามกลุ่มสาระการเรียนรู้และฝ่ายบริหาร</p>
+            </div>
+            <div class="mt-4 text-end">
+                <span class="fw-bold" style="color: #1e40af;">สำรวจข้อมูล <i class='bx bx-right-arrow-alt'></i></span>
+            </div>
+        </a>
+
+        <!-- PA Form -->
+        <a href="<?= base_url('pa-login') ?>" class="glass-card card-small reveal reveal-delay-2">
+            <div>
+                <div class="card-icon bg-cyan-soft">
+                    <i class='bx bx-task'></i>
+                </div>
+                <h3 class="card-title">ระบบประเมิน PA</h3>
+                <p class="card-text">จัดทำข้อตกลงและพัฒนางานออนไลน์</p>
+            </div>
+            <div class="mt-3">
+                <span class="badge bg-soft-cyan" style="background: #cffafe; color: #0891b2;">Smart System</span>
+            </div>
+        </a>
+
+        <!-- Booking -->
+        <a href="https://documentcenter.skj.ac.th/category/dictation-person" target="_blank" class="glass-card card-small reveal reveal-delay-3">
+            <div>
+                <div class="card-icon bg-sky-soft">
+                    <i class='bx bx-file-find'></i>
+                </div>
+                <h3 class="card-title">คลังคำสั่ง</h3>
+                <p class="card-text">รวบรวมคำสั่งโรงเรียนย้อนหลัง</p>
+            </div>
+            <div class="mt-3">
+                <i class='bx bx-link-external text-muted'></i>
+            </div>
+        </a>
+
+        <!-- Forms -->
+        <a href="https://documentcenter.skj.ac.th/category/form-person" target="_blank" class="glass-card card-large reveal reveal-delay-4">
+            <div>
+                <div class="card-icon bg-indigo-soft">
+                    <i class='bx bx-folder-open'></i>
+                </div>
+                <h3 class="card-title">แบบฟอร์มเอกสารบุคคล</h3>
+                <p class="card-text">ดาวน์โหลดแบบฟอร์มใบลา, เอกสารการขออนุญาตต่างๆ และไฟล์สารสนเทศบุคลากรสำหรับนำไปใช้ภายนอก</p>
+            </div>
+            <div class="mt-4 text-end">
+                <span class="fw-bold" style="color: #3730a3;">ดาวน์โหลด <i class='bx bx-download'></i></span>
+            </div>
+        </a>
     </div>
-</div>
-
-<div class="main-grid">
-    <!-- Directory -->
-    <a href="<?= base_url('directory') ?>" class="action-card card-purple">
-        <div class="icon-box">
-            <i class='bx bxs-user-detail'></i>
-        </div>
-        <div class="text-box">
-            <div class="card-label">ทำเนียบครู</div>
-            <div class="card-desc">ค้นหาและดูข้อมูลบุคลากร แยกตามกลุ่มสาระฯ</div>
-        </div>
-        <i class='bx bx-chevron-right arrow-icon'></i>
-    </a>
-
-    <!-- PA Form -->
-    <a href="<?= base_url('pa-login') ?>" class="action-card card-blue">
-        <div class="icon-box">
-            <i class='bx bxs-file-blank'></i>
-        </div>
-        <div class="text-box">
-            <div class="card-label">ระบบประเมิน PA</div>
-            <div class="card-desc">จัดทำและส่งแบบข้อตกลงในการพัฒนางาน</div>
-        </div>
-        <i class='bx bx-chevron-right arrow-icon'></i>
-    </a>
-
-    <!-- Orders -->
-    <a href="https://documentcenter.skj.ac.th/category/dictation-person" target="_blank" class="action-card card-orange">
-        <div class="icon-box">
-            <i class='bx bxs-file-archive'></i>
-        </div>
-        <div class="text-box">
-            <div class="card-label">คลังคำสั่ง</div>
-            <div class="card-desc">ค้นหาและดาวน์โหลดคำสั่งโรงเรียน</div>
-        </div>
-        <i class='bx bx-chevron-right arrow-icon'></i>
-    </a>
-
-    <!-- Forms -->
-    <a href="https://documentcenter.skj.ac.th/category/form-person" target="_blank" class="action-card card-green">
-        <div class="icon-box">
-            <i class='bx bxs-collection'></i>
-        </div>
-        <div class="text-box">
-            <div class="card-label">แบบฟอร์มต่างๆ</div>
-            <div class="card-desc">ดาวน์โหลดไฟล์เอกสารและแบบฟอร์ม</div>
-        </div>
-        <i class='bx bx-chevron-right arrow-icon'></i>
-    </a>
 </div>
 
 <div class="py-5"></div>
@@ -388,26 +320,36 @@
 
 <?= $this->section('scripts') ?>
 <script>
-$(document).ready(function() {
-    // Add simple entrance animation for cards
-    $('.action-card').each(function(index) {
-        $(this).css({
-            'opacity': '0',
-            'transform': 'translateY(15px)'
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        const reveals = document.querySelectorAll('.reveal');
         
-        setTimeout(() => {
-            $(this).css({
-                'transition': 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                'opacity': '1',
-                'transform': 'translateY(0)'
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
             });
-            // Reset transition after animation so hover works properly
-            setTimeout(() => {
-                $(this).css('transition', 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)');
-            }, 500);
-        }, 100 * (index + 1));
+        }, { threshold: 0.1 });
+
+        reveals.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+            revealObserver.observe(el);
+        });
+
+        // Simple helper to add active class
+        window.addEventListener('scroll', () => {
+             reveals.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if(rect.top < window.innerHeight - 100) {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }
+             });
+        });
+        // Trigger once for initial view
+        window.dispatchEvent(new Event('scroll'));
     });
-});
 </script>
-<?= $this->endSection() ?>
+<?= $this->endSection() ?>

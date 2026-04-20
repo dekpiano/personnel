@@ -5,12 +5,13 @@
     "homepage": "https://codeigniter.com",
     "license": "MIT",
     "require": {
-        "php": "^7.4 || ^8.0",
-        "codeigniter4/framework": "^4.0",
-        "google/apiclient": "^2.12.1"
+        "php": "^8.3",
+        "codeigniter4/framework": "^4.5",
+        "firebase/php-jwt": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
+        "kint-php/kint": "*",
         "mikey179/vfsstream": "^1.6",
         "phpunit/phpunit": "^9.1"
     },

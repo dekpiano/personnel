@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.3-apache
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -25,25 +25,27 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mysqli mbstring exif pcntl bcmath gd intl zip opcache
 
-# Configure Opcache
+# Configure Opcache for better performance
 RUN { \
     echo 'opcache.memory_consumption=256'; \
     echo 'opcache.interned_strings_buffer=16'; \
     echo 'opcache.max_accelerated_files=20000'; \
-    echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.revalidate_freq=2'; \
     echo 'opcache.validate_timestamps=1'; \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-# PHP Configuration
+# PHP Configuration & Performance Optimization
 RUN { \
     echo 'upload_max_filesize=512M'; \
     echo 'post_max_size=512M'; \
-    echo 'memory_limit=512M'; \
+    echo 'memory_limit=1024M'; \
     echo 'max_execution_time=300'; \
     echo 'max_input_time=300'; \
     echo 'date.timezone=Asia/Bangkok'; \
+    echo 'realpath_cache_size=4096K'; \
+    echo 'realpath_cache_ttl=600'; \
     } > /usr/local/etc/php/conf.d/custom-php-config.ini
 
 # Enable Apache mod_rewrite and mod_ssl

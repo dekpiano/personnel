@@ -1,0 +1,47 @@
+# CodeIgniter 4 gitignore
+# --------------------------------------------------------------------
+
+# User-specific
+.env
+user.php
+
+# Writable directory - Ignore everything EXCEPT .gitkeep files
+writable/*
+!writable/.gitkeep
+!writable/index.html
+!writable/cache/index.html
+!writable/debugbar/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/uploads/index.html
+
+# Vendor
+/vendor/
+
+# PHPUnit
+.phpunit.result.cache
+tests/_output/
+tests/_support/_generated/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build and Backups
+*.bak
+*.sql
+builds
+preload.php
+
+# Local uploads (if you don't want your uploaded files in the repo)
+uploads/*
+!uploads/.gitkeep
+!uploads/index.html
+
+vendor/

@@ -4,7 +4,10 @@ namespace App\Controllers;
 
 class ConAdminHome extends BaseController
 {
-    public function __construct(){
+    public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
+    {
+        parent::initController($request, $response, $logger);
+
         $session = session();
         if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "manager"])){
             header("Location:".base_url()); exit();

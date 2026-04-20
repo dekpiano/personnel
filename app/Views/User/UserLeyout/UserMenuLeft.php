@@ -1,19 +1,88 @@
+<style>
+    /* Custom Sidebar Animations & Blue Theme */
+    #layout-menu {
+        background: #ffffff !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .menu-inner .menu-item {
+        opacity: 0;
+        transform: translateX(-20px);
+        animation: menuItemSlideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    @keyframes menuItemSlideIn {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Staggered animation for menu items */
+    .menu-inner .menu-item:nth-child(1) { animation-delay: 0.1s; }
+    .menu-inner .menu-item:nth-child(2) { animation-delay: 0.15s; }
+    .menu-inner .menu-item:nth-child(3) { animation-delay: 0.2s; }
+    .menu-inner .menu-item:nth-child(4) { animation-delay: 0.25s; }
+    .menu-inner .menu-item:nth-child(5) { animation-delay: 0.3s; }
+    .menu-inner .menu-item:nth-child(6) { animation-delay: 0.35s; }
+    .menu-inner .menu-item:nth-child(7) { animation-delay: 0.4s; }
+
+    .menu-inner .menu-item.active > .menu-link {
+        background: linear-gradient(90deg, #3b82f6 0%, #60efff 100%) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        border-radius: 0 50px 50px 0;
+        margin-right: 1rem;
+    }
+
+    .menu-inner .menu-item.active .menu-icon {
+        color: #fff !important;
+    }
+
+    .menu-link {
+        transition: all 0.3s ease !important;
+    }
+
+    .menu-item:not(.active) .menu-link:hover {
+        background-color: #f0f7ff !important;
+        color: #2563eb !important;
+        transform: translateX(5px);
+    }
+
+    .menu-item:not(.active) .menu-link:hover .menu-icon {
+        color: #2563eb !important;
+        animation: pulseBlue 1.5s infinite;
+    }
+
+    @keyframes pulseBlue {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .app-brand {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        margin-bottom: 0.5rem;
+    }
+
+    .menu-header-text {
+        color: #94a3b8 !important;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
+</style>
+
 <!-- Layout wrapper -->
 <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
         <!-- Menu -->
-
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
             <div class="app-brand demo">
                 <a href="<?=base_url()?>" class="app-brand-link">
                     <span class="app-brand-logo demo">
                         <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="" width="40">
                     </span>
-                    <span class="app-brand-text menu-text fw-bolder ms-2">สกจ.บริหารงานบุคคล</span>
-                </a>
-
-                <a href="<?=base_url()?>" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
-                    <i class="bx bx-chevron-left bx-sm align-middle"></i>
+                    <span class="app-brand-text menu-text fw-bolder ms-2" style="color: #1e293b;">สกจ. บริหารงานบุคคล</span>
                 </a>
             </div>
 
