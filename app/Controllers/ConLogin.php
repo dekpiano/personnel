@@ -165,11 +165,7 @@ class ConLogin extends BaseController
                 return redirect()->to(base_url('LoginOfficerPersonnel'));
             }
         }
-        
-        return view('User/UserLeyout/UserHeader', $data)
-        .view('User/UserLeyout/UserMenuLeft')
-        .view('Login/LoginGoogle')
-        .view('User/UserLeyout/UserFooter');
+        return view('Login/AdminLogin', $data);
     }
 
     public function LogoutOfficerPersonnel(){
@@ -195,9 +191,7 @@ class ConLogin extends BaseController
             session()->set('Return', $this->request->getVar("return_to"));
         }
 
-        return view('User/UserLeyout/UserHeader',$data)
-        .view('User/UserLeyout/UserMenuLeft')
-        .view('User/UserPA/PaLogin');
+        return view('Login/ModernLogin', $data);
     }
 
     public function processTraditionalLogin(){

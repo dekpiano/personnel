@@ -37,7 +37,7 @@
                       <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานทะเบียนครูและบุคลากร</span>
                 </li>
-                <li class="menu-item <?php echo $uri->getSegment(2) == "WorkPerson"?"active open":""?>">
+                <li class="menu-item <?php echo ($uri->getSegment(2) == "WorkPerson" || $uri->getSegment(2) == "Board")?"active open":""?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-layout"></i>
                         <div data-i18n="Layouts">จัดการบุคคลกร</div>
@@ -49,7 +49,11 @@
                                 <div data-i18n="Without menu">ทะเบียนครูและบุคลากรทางการศึกษา</div>
                             </a>
                         </li>
-
+                        <li class="menu-item <?php echo $uri->getSegment(2) == "Board"?"active":""?>">
+                            <a href="<?=base_url('Admin/Board')?>" class="menu-link">
+                                <div data-i18n="Without menu">คณะกรรมการสถานศึกษา</div>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="menu-item <?php echo $uri->getSegment(2) == 'SaveAttendance' ? 'active open' : '' ?>">

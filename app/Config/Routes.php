@@ -82,6 +82,21 @@ $routes->group('Admin', function ($routes) {
     $routes->post('Leave/SaveYear', 'ConAdminLeave::SaveLeaveYear');
     $routes->get('Leave/SetActiveYear/(:num)', 'ConAdminLeave::SetActiveLeaveYear/$1');
     $routes->get('Leave/DeleteYear/(:num)', 'ConAdminLeave::DeleteLeaveYear/$1');
+
+    // Admin Board Management
+    $routes->group('Board', ['namespace' => 'App\Controllers'], function ($routes) {
+        $routes->get('/', 'ConAdminBoard::index');
+        $routes->post('Save', 'ConAdminBoard::save');
+        $routes->get('Get/(:num)', 'ConAdminBoard::get/$1');
+        $routes->post('Delete', 'ConAdminBoard::delete');
+        $routes->post('UpdateOrder', 'ConAdminBoard::updateOrder');
+
+        // Row Management
+        $routes->post('SaveRow', 'ConAdminBoard::saveRow');
+        $routes->get('GetRow/(:num)', 'ConAdminBoard::getRow/$1');
+        $routes->post('DeleteRow', 'ConAdminBoard::deleteRow');
+        $routes->post('UpdateRowOrder', 'ConAdminBoard::updateRowOrder');
+    });
 });
 //Admin Person
 $routes->get('Admin/WorkPerson/Personnel', 'ConAdminWorkPerson::index');
