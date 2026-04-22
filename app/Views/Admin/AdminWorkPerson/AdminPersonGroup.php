@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <style>
     :root {
-        --primary-accent: #007bff;
+        --primary-accent: #03c3ec;
         --secondary-accent: #0056b3;
         --soft-bg: #f8faff;
     }
@@ -138,7 +138,7 @@
 
     /* Profile Preview Modal */
     .profile-header-preview {
-        background: linear-gradient(135deg, #007bff, #6610f2);
+        background: linear-gradient(135deg, #03c3ec, #6610f2);
         color: white;
         border-radius: 20px 20px 0 0;
         padding: 1.5rem;

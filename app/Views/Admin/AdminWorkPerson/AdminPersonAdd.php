@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <style>
     :root {
-        --primary-blue: #007bff;
+        --primary-blue: #03c3ec;
         --soft-blue: rgba(0, 123, 255, 0.05);
         --glass-border: rgba(255, 255, 255, 0.5);
     }

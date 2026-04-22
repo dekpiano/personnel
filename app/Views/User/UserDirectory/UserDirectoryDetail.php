@@ -16,7 +16,7 @@ function getInitials($name) {
 
 <style>
     :root {
-        --premium-blue: #007bff;
+        --premium-blue: #03c3ec;
         --premium-blue-light: #e7f3ff;
         --text-heading: #32475c;
         --text-body: #566a7f;
@@ -61,7 +61,7 @@ function getInitials($name) {
 
     /* --- Luxury Page Header (Hero) --- */
     .detail-hero-section {
-        background: linear-gradient(135deg, #007bff 0%, #005dab 100%);
+        background: linear-gradient(135deg, #03c3ec 0%, #029dbd 100%);
         border-radius: 40px;
         padding: 5rem 2.5rem 8rem;
         position: relative;

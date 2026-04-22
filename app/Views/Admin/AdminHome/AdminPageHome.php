@@ -47,7 +47,7 @@
 
     /* Hero Banner Premium */
     .hero-banner {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #4376eeff 0%, #1e293b 100%);
         border-radius: 32px;
         padding: 3.5rem;
         position: relative;

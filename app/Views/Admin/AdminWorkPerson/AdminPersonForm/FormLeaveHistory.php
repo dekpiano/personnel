@@ -137,11 +137,7 @@
 // Initialize Flatpickr for Leave Date Range
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof flatpickr !== 'undefined') {
-        flatpickr(".selectorLeave", {
-            dateFormat: "d/m/Y",
-            locale: "th",
-            allowInput: true
-        });
+        flatpickr(".selectorLeave");
     }
 });
 </script>

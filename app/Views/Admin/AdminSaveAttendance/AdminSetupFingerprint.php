@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <style>
     :root {
-        --primary: #007bff;
+        --primary: #03c3ec;
         --success: #28a745;
         --card-shadow: 0 4px 20px rgba(0, 123, 255, 0.08);
     }

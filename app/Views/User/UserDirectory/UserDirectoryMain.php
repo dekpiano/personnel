@@ -27,7 +27,7 @@ foreach ($AllTeachers ?? [] as $teacher) {
 
 <style>
     :root {
-        --premium-blue: #007bff;
+        --premium-blue: #03c3ec;
         --leader-gold: #ffab00;
         --premium-shadow: 0 10px 30px -12px rgba(0, 123, 255, 0.3);
     }
@@ -40,7 +40,7 @@ foreach ($AllTeachers ?? [] as $teacher) {
 
     /* --- Hero Section --- */
     .hero-organized {
-        background: linear-gradient(135deg, #007bff 0%, #005dab 100%);
+        background: linear-gradient(135deg, #03c3ec 0%, #029dbd 100%);
         border-radius: 32px;
         padding: 3rem 2rem;
         color: white;

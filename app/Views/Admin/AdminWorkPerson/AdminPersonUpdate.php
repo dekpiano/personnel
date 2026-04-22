@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 <style>
     :root {
-        --primary-blue: #007bff;
-        --secondary-blue: #0056b3;
+        --primary-blue: #03c3ec;
+        --secondary-blue: #029dbd;
         --soft-bg: #f8faff;
         --card-sh: 0 10px 40px rgba(0,0,0,0.03);
     }
@@ -587,6 +587,6 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=16.3"></script>
+<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=16.4"></script>
 <script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1.2"></script>
 <?= $this->endSection() ?>

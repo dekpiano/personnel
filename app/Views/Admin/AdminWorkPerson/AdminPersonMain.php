@@ -5,10 +5,10 @@
     :root {
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(255, 255, 255, 0.4);
-        --header-gradient: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        --primary-gradient: linear-gradient(135deg, #007bff 0%, #00d2ff 100%);
+        --header-gradient: linear-gradient(135deg, #03c3ec 0%, #029dbd 100%);
+        --primary-gradient: linear-gradient(135deg, #03c3ec 0%, #00d2ff 100%);
         --accent-pink: #FF4B91;
-        --accent-blue: #007bff;
+        --accent-blue: #03c3ec;
         --accent-teal: #41C9E2;
     }
 
@@ -152,7 +152,7 @@
     }
     .btn-add-personnel {
         background: white;
-        color: #4e54c8;
+        color: #03c3ec;
         border: none;
     }
     .btn-add-personnel:hover {

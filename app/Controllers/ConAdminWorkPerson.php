@@ -1786,16 +1786,29 @@ class ConAdminWorkPerson extends BaseController
         $data = ['p' => $personnel, 'title' => 'แบบ ก.พ. 7 - ' . $personnel->fullname];
         $html = view('Admin/AdminWorkPerson/AdminPersonPDF', $data);
 
-        $mpdfPath = SHARED_LIB_PATH . DIRECTORY_SEPARATOR . 'mpdf' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-        if (file_exists($mpdfPath)) { 
-            require_once $mpdfPath; 
-        } else { 
-            return "ระบบแจ้งเตือน: ไม่พบไลบารี่ mPDF ในตำแหน่งที่ระบุ ($mpdfPath)"; 
-        }
+        // mPDF will be loaded automatically by Composer's autoloader
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
 
         $mpdf = new \Mpdf\Mpdf([
-            'mode' => 'utf-8', 'format' => 'A4',
+            'mode' => 'utf-8', 
+            'format' => 'A4',
             'margin_left' => 15, 'margin_right' => 15, 'margin_top' => 15, 'margin_bottom' => 15,
+            'tempDir' => WRITEPATH . 'cache', // กำหนดโฟลเดอร์พักไฟล์ชั่วคราว
+            'fontDir' => array_merge($fontDirs, [
+                // Path to our fonts (already copied to vendor)
+            ]),
+            'fontdata' => $fontData + [
+                'thsarabun' => [
+                    'R' => 'THSarabunNew.ttf',
+                    'I' => 'THSarabunNew Italic.ttf',
+                    'B' => 'THSarabunNew Bold.ttf',
+                    'BI' => 'THSarabunNew BoldItalic.ttf',
+                ]
+            ],
             'default_font' => 'thsarabun'
         ]);
 

@@ -4,12 +4,57 @@ $(".select2Personnel").select2({
   dropdownParent: $(".content-wrapper"), // Ensure it works in modals/tabs if needed
 });
 
-// Flatpickr initialization
-$(".selectorEdit").flatpickr({
-  dateFormat: "d/m/Y",
-  locale: "th",
-  allowInput: true,
-});
+// Flatpickr initialization for B.E. (พ.ศ.)
+const flatpickrConfigBE = {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d-m-Y",
+    allowInput: true,
+    formatDate: (date, format, locale) => {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        let y = date.getFullYear();
+        if (format === "d-m-Y") {
+            y += 543;
+            return `${d}-${m}-${y}`;
+        }
+        return `${y}-${m}-${d}`;
+    },
+    parseDate: (dateStr) => {
+        if (!dateStr) return null;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
+        const p = dateStr.split(/[-/]/);
+        if (p.length === 3) {
+            let y = parseInt(p[2]);
+            let m = parseInt(p[1]) - 1;
+            let d = parseInt(p[0]);
+            if (y > 2400) y -= 543;
+            return new Date(y, m, d);
+        }
+        return new Date(dateStr);
+    },
+    onReady: (d, s, i) => window.applyThaiBE && window.applyThaiBE(i),
+    onOpen: (d, s, i) => window.applyThaiBE && window.applyThaiBE(i),
+    onMonthChange: (d, s, i) => window.applyThaiBE && window.applyThaiBE(i),
+    onYearChange: (d, s, i) => window.applyThaiBE && window.applyThaiBE(i)
+};
+
+$(".selectorEdit").flatpickr(flatpickrConfigBE);
+
+// Function to safely set date for flatpickr from AJAX
+function setFlatpickrDate(selector, value) {
+    if (!value || value === "0000-00-00" || value === "00/00/0000" || value === "-") return;
+    
+    setTimeout(() => {
+        const el = document.querySelector(selector);
+        if (el && el._flatpickr) {
+            el._flatpickr.setDate(value, true);
+        } else {
+            $(selector).val(value);
+        }
+    }, 50);
+}
+
 
 // Input Mask initialization
 $("#pers_id_card").inputmask("9-9999-99999-99-9");
@@ -306,7 +351,7 @@ function loadPersonnelData(id) {
       $(".pers_firstname").val(data[0].pers_firstname);
       $(".pers_lastname").val(data[0].pers_lastname);
       $(".pers_id_card").val(data[0].pers_id_card);
-      $(".pers_britday").val(data[0].pers_britday);
+      setFlatpickrDate("#pers_britday", data[0].pers_britday);
       $(".pers_nationality").val(data[0].pers_nationality);
       $(".pers_race").val(data[0].pers_race);
       $(".pers_religion").val(data[0].pers_religion);
@@ -386,8 +431,8 @@ function loadPersonnelData(id) {
 
       // Load License Data
       $("#pers_license_no").val(data[0].pers_license_no);
-      $("#pers_license_issue").val(data[0].pers_license_issue);
-      $("#pers_license_exp").val(data[0].pers_license_exp);
+      setFlatpickrDate("#pers_license_issue", data[0].pers_license_issue);
+      setFlatpickrDate("#pers_license_exp", data[0].pers_license_exp);
 
       // Load Education Data
       const eduTable = $("#educationTable tbody");
@@ -1207,7 +1252,7 @@ $(document).on("click", ".edit-work-history", function () {
 
   // Populate Modal
   $("#work_id").val(data.id);
-  $("#work_date").val(data.work_date_display);
+  setFlatpickrDate("#work_date", data.work_date);
 
   $("#work_change_type").val(data.work_change_type).trigger("change");
   $("#work_position").val(data.work_position).trigger("change");
@@ -1218,20 +1263,7 @@ $(document).on("click", ".edit-work-history", function () {
   $("#work_note").val(data.work_note);
 
   // Command Date logic
-  if (data.work_command_date) {
-    const d = new Date(data.work_command_date);
-    if (!isNaN(d.getTime())) {
-      const thYear = d.getFullYear() + 543;
-      const thDate = `${d.getDate().toString().padStart(2, "0")}/${(
-        d.getMonth() + 1
-      )
-        .toString()
-        .padStart(2, "0")}/${thYear}`;
-      $("#work_command_date").val(thDate);
-    }
-  } else {
-    $("#work_command_date").val("");
-  }
+  setFlatpickrDate("#work_command_date", data.work_command_date);
 
   $("#workHistoryTitle").text("แก้ไขประวัติการทำงาน");
   new bootstrap.Modal(document.getElementById("workHistoryModal")).show();
@@ -1368,6 +1400,7 @@ const items = document.querySelector(".sortable");
 if (items) {
   Sortable.create(items, {
     animation: 150,
+    handle: ".drag-handle",
     chosenClass: "selected",
     ghostClass: "ghost",
     dragClass: "drag",
@@ -1483,6 +1516,8 @@ $(document).on("submit", "#decorationForm", function (e) {
       if (res.status === "success") {
         $("#decorationModal").modal("hide");
         loadPersonnelData(pid);
+        setFlatpickrDate("#deco_date", ""); // Reset for next add
+        setFlatpickrDate("#deco_gazette_date", "");
         Swal.fire("สำเร็จ", "บันทึกข้อมูลเครื่องราชฯ เรียบร้อยแล้ว", "success");
         $("#decorationForm")[0].reset();
       } else {

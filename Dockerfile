@@ -44,8 +44,13 @@ RUN { \
     echo 'max_execution_time=300'; \
     echo 'max_input_time=300'; \
     echo 'date.timezone=Asia/Bangkok'; \
-    echo 'realpath_cache_size=4096K'; \
-    echo 'realpath_cache_ttl=600'; \
+    echo 'realpath_cache_size=16M'; \
+    echo 'realpath_cache_ttl=1200'; \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.memory_consumption=512'; \
+    echo 'opcache.interned_strings_buffer=64'; \
+    echo 'opcache.max_accelerated_files=32531'; \
+    echo 'opcache.revalidate_freq=0'; \
     } > /usr/local/etc/php/conf.d/custom-php-config.ini
 
 # Enable Apache mod_rewrite and mod_ssl

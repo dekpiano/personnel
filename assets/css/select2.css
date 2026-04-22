@@ -201,8 +201,8 @@ html:not([dir=rtl]) .select2-container--default .select2-selection--single .sele
 }
 
 .select2-container--default .select2-results__option[aria-selected=true] {
-    background-color: rgba(0, 123, 255, .08) !important;
-    color: #007bff !important
+    background-color: rgba(3, 195, 236, .08) !important;
+    color: #03c3ec !important
 }
 
 /* Select2 Floating Label Support for Sneat Admin */
@@ -216,7 +216,7 @@ html:not([dir=rtl]) .select2-container--default .select2-selection--single .sele
 
 .form-floating .select2-container--default.select2-container--open .select2-selection--single,
 .form-floating .select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: #007bff !important;
+    border-color: #03c3ec !important;
 }
 
 .form-floating .select2-container--default .select2-selection--single .select2-selection__rendered {

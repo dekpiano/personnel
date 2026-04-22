@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <style>
     :root {
-        --primary: #007bff;
+        --primary: #03c3ec;
         --primary-dark: #0056b3;
         --primary-light: #e7f3ff;
         --secondary: #6c757d;

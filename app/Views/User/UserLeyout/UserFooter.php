@@ -137,40 +137,87 @@ $(function() {
 });
     </script>
 
+    <style>
+        /* บังคับแสดงลูกศรเปลี่ยนปีเสมอ ไม่ต้องรอเอาเมาส์ชี้ (Hover) */
+        .flatpickr-current-month .numInputWrapper span.arrowUp,
+        .flatpickr-current-month .numInputWrapper span.arrowDown {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
     <script>
-flatpickr.localize(flatpickr.l10ns.th);
+    (function() {
+        if (typeof flatpickr === 'undefined') return;
+        flatpickr.localize(flatpickr.l10ns.th);
 
-$(".selector").flatpickr({
-    dateFormat: "Y-m-d",
-    altInput: true,
-    onChange: (selectedDates, dateStr, instance) => {
-        moment.locale('th');
-        thai_DM = moment(selectedDates[0]).format('Do MMMM');
-        thai_Y = parseInt(moment(selectedDates[0]).format('YYYY')) + 543;
-        instance.altInput.value = thai_DM + " " + thai_Y;
-    }
-});
+        // ฟังก์ชันหลักสำหรับแปลงปีเป็น พ.ศ. (Global Standard)
+        window.applyThaiBE = function(instance) {
+            if (!instance || !instance.calendarContainer) return;
+            const yearInput = instance.calendarContainer.querySelector(".cur-year");
+            if (!yearInput) return;
+            
+            yearInput.style.color = "transparent";
+            let beWrap = yearInput.parentElement.querySelector(".be-year-display");
+            if (!beWrap) {
+                beWrap = document.createElement("span");
+                beWrap.className = "be-year-display";
+                beWrap.style.cssText = "position:absolute; left:0; width:100%; top:50%; transform:translateY(-50%); text-align:center; padding-right:15px; box-sizing:border-box; pointer-events:none; color:inherit; font-family:inherit; font-weight:bold;";
+                yearInput.parentElement.appendChild(beWrap);
+                yearInput.parentElement.style.position = "relative";
+            }
+            
+            let y = instance.currentYear;
+            beWrap.innerText = (y > 2400) ? y : (y + 543);
+        };
 
-$(".selectorEdit").flatpickr({
-    //dateFormat: "Y-m-d",
-    altFormat: "j F Y",
-    altInput: true,
-    onReady: function (selectedDates, dateStr, instance) {
-    // ปรับปีในวันที่ที่ถูกเลือก
-    const selectedDate = instance.selectedDates[0];
-    if (selectedDate) {
-      selectedDate.setFullYear(selectedDate.getFullYear() + 543);
-      instance.setDate(selectedDate);
-    }
-}
-});
+        flatpickr.setDefaults({
+            dateFormat: "Y-m-d", // ลง DB
+            altInput: true,
+            altFormat: "d-m-Y", // พ.ศ. โชว์กรอก
+            allowInput: true,
+            formatDate: (date) => {
+                const d = date.getDate().toString().padStart(2, '0');
+                const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                const y = date.getFullYear() + 543;
+                return `${d}-${m}-${y}`;
+            },
+            parseDate: (dateStr) => {
+                if (!dateStr || /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
+                const p = dateStr.split('-');
+                if (p.length === 3) {
+                    let y = parseInt(p[2]);
+                    if (y > 2400) y -= 543;
+                    return new Date(y, parseInt(p[1]) - 1, parseInt(p[0]));
+                }
+                return new Date(dateStr);
+            },
+            onReady: (d, s, i) => window.applyThaiBE(i),
+            onMonthChange: (d, s, i) => window.applyThaiBE(i),
+            onYearChange: (d, s, i) => window.applyThaiBE(i),
+            onOpen: (d, s, i) => window.applyThaiBE(i)
+        });
 
-$(".selectorTime").flatpickr({
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    time_24hr: true
-});
+        // MutationObserver: ช่วยดักทุกครั้งที่ปฏิทินถูกสร้างหรือเปิดใหม่
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.classList && node.classList.contains('flatpickr-calendar')) {
+                        const instance = node._flatpickr;
+                        if (instance) window.applyThaiBE(instance);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        $(".selector").flatpickr();
+        $(".selectorEdit").flatpickr();
+        $(".selectorTime").flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i"
+        });
+    })();
     </script>
 
 <script>

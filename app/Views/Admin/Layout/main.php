@@ -26,11 +26,11 @@
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/theme-blue.css?v=1"
+    <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/theme-blue.css?v=1.1"
         class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=3" />
+    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=3.1" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/css/demo.css?v=1" />
+    <link rel="stylesheet" href="<?=base_url()?>/assets/css/demo.css?v=1.1" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Vendors CSS -->
@@ -74,6 +74,107 @@
             margin-left: auto;
             margin-right: auto;
         }
+
+        /* PREMIUM THEME OVERRIDE WITH BRAND COLOR #03c3ec */
+        :root {
+            --bs-primary: #03c3ec;
+            --primary-brand: #03c3ec;
+            --primary-brand-dark: #029dbd;
+        }
+
+        #layout-menu {
+            background: linear-gradient(180deg, #4778ebff 0%, #1e293b 100%) !important;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+        }
+        #layout-menu .menu-link, #layout-menu .menu-header-text {
+            color: rgba(255,255,255,0.7) !important;
+        }
+        #layout-menu .menu-item.active > .menu-link {
+            background-color: rgba(3, 195, 236, 0.2) !important;
+            color: #fff !important;
+            font-weight: 800;
+            border-right: 4px solid var(--primary-brand);
+            box-shadow: inset 0 0 15px rgba(3, 195, 236, 0.2);
+        }
+        #layout-menu .menu-item.active > .menu-link i {
+            color: var(--primary-brand) !important;
+            filter: drop-shadow(0 0 5px var(--primary-brand));
+        }
+        #layout-menu .menu-item.open > .menu-link {
+            background-color: rgba(255,255,255,0.05) !important;
+        }
+        #layout-menu .menu-sub > .menu-item.active > .menu-link::before {
+            background-color: var(--primary-brand) !important;
+            box-shadow: 0 0 12px var(--primary-brand);
+        }
+        #layout-menu .app-brand {
+            background: rgba(0,0,0,0.25);
+            padding: 2.5rem 1rem !important;
+            border-bottom: 2px solid rgba(3, 195, 236, 0.3);
+        }
+        #layout-menu .app-brand-text {
+            color: var(--primary-brand) !important;
+            text-transform: none !important;
+            letter-spacing: 0.5px;
+        }
+        #layout-menu .menu-icon {
+            color: var(--primary-brand) !important;
+            opacity: 0.8;
+        }
+        #layout-menu .menu-header-text {
+            color: rgba(255,255,255,0.4) !important;
+            font-weight: 700;
+            padding-top: 1.5rem;
+        }
+
+        /* Navbar Enhancement */
+        .layout-navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-top: 3px solid var(--primary-brand);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05) !important;
+        }
+        .layout-navbar .bx-search, .layout-navbar .bx-menu {
+            color: var(--primary-brand) !important;
+        }
+        
+        /* Global Hero Gradient */
+        .hero-premium, .personnel-header {
+            background: linear-gradient(135deg, var(--primary-brand) 0%, #1e293b 100%) !important;
+        }
+
+        /* Override Bootstrap Primary Buttons */
+        .btn-primary {
+            background-color: var(--primary-brand) !important;
+            border-color: var(--primary-brand) !important;
+            color: white !important;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-brand-dark) !important;
+            border-color: var(--primary-brand-dark) !important;
+        }
+        .text-primary {
+            color: var(--primary-brand) !important;
+        }
+        .bg-label-primary {
+            background-color: rgba(3, 195, 236, 0.12) !important;
+            color: var(--primary-brand) !important;
+        }
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+            background-color: var(--primary-brand) !important;
+        }
+
+        /* BODY BACKGROUND */
+        body {
+            background-color: #f5f7fb !important;
+        }
+        .content-wrapper {
+            background-color: #f5f7fb !important;
+        }
+        .container-xxl, .container-fluid {
+            background-color: transparent !important;
+        }
+        
     </style>
 
     <!-- Helpers -->
@@ -196,6 +297,95 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+    <style>
+        /* บังคับแสดงลูกศรปีตลอดเวลา */
+        .flatpickr-current-month .numInputWrapper span.arrowUp,
+        .flatpickr-current-month .numInputWrapper span.arrowDown {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
+    <script>
+        (function() {
+            if (typeof flatpickr === 'undefined') return;
+            flatpickr.localize(flatpickr.l10ns.th);
+
+            // ฟังก์ชันหลักสำหรับแปลงปีเป็น พ.ศ. (Global Standard)
+            window.applyThaiBE = function(instance) {
+                if (!instance || !instance.calendarContainer) return;
+                const yearInput = instance.calendarContainer.querySelector(".cur-year");
+                if (!yearInput) return;
+                
+                yearInput.style.color = "transparent";
+                let beWrap = yearInput.parentElement.querySelector(".be-year-display");
+                if (!beWrap) {
+                    beWrap = document.createElement("span");
+                    beWrap.className = "be-year-display";
+                    beWrap.style.cssText = "position:absolute; left:0; width:100%; top:50%; transform:translateY(-50%); text-align:center; padding-right:15px; box-sizing:border-box; pointer-events:none; color:inherit; font-family:inherit; font-weight:bold;";
+                    yearInput.parentElement.appendChild(beWrap);
+                    yearInput.parentElement.style.position = "relative";
+                }
+                
+                let y = instance.currentYear;
+                beWrap.innerText = (y > 2400) ? y : (y + 543);
+            };
+
+            // ตั้งค่าค่าเริ่มต้น (Defaults)
+            flatpickr.setDefaults({
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d-m-Y",
+                allowInput: true,
+                formatDate: (date, format, locale) => {
+                    const d = date.getDate().toString().padStart(2, '0');
+                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    let y = date.getFullYear();
+                    
+                    // ถ้า format เป็น d-m-Y (ที่ใช้โชว์) ให้บวก 543
+                    if (format === "d-m-Y") {
+                        y += 543;
+                        return `${d}-${m}-${y}`;
+                    }
+                    
+                    // สำหรับ dateFormat (Y-m-d) ให้คืนค่า ค.ศ. ปกติ
+                    return `${y}-${m}-${d}`;
+                },
+                parseDate: (dateStr, format) => {
+                    if (!dateStr) return null;
+                    // รองรับ YYYY-MM-DD
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
+                    
+                    // รองรับ DD-MM-YYYY (ทั้ง พ.ศ. และ ค.ศ.)
+                    const p = dateStr.split(/[-/]/);
+                    if (p.length === 3) {
+                        let y = parseInt(p[2]);
+                        let m = parseInt(p[1]) - 1;
+                        let d = parseInt(p[0]);
+                        if (y > 2400) y -= 543; // ถ้าเป็น พ.ศ. ให้แปลงเป็น ค.ศ.
+                        return new Date(y, m, d);
+                    }
+                    return new Date(dateStr);
+                },
+                onReady: (d, s, i) => window.applyThaiBE(i),
+                onMonthChange: (d, s, i) => window.applyThaiBE(i),
+                onYearChange: (d, s, i) => window.applyThaiBE(i),
+                onOpen: (d, s, i) => window.applyThaiBE(i)
+            });
+
+            // MutationObserver: ช่วยดักทุกครั้งที่ปฏิทินถูกสร้างหรือเปิดใหม่ (กันเหนียวสำหรับ AJAX/Tabs)
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.classList && node.classList.contains('flatpickr-calendar')) {
+                            const instance = node._flatpickr;
+                            if (instance) window.applyThaiBE(instance);
+                        }
+                    });
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>

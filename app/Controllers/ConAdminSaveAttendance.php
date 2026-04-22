@@ -311,9 +311,7 @@ class ConAdminSaveAttendance extends BaseController
         $data = $this->DataMain();
         $DBPers = $data['database']->table('tb_personnel');
 
-        if (defined('SHARED_LIB_PATH')) {
-            require_once SHARED_LIB_PATH .DIRECTORY_SEPARATOR. 'spreadsheet'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
-        }
+        // PhpSpreadsheet will be loaded automatically by Composer's autoloader
 
         $file = $this->request->getFile('excel_file');
         if (!$file || !$file->isValid() || $file->hasMoved()) {
