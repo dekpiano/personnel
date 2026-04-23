@@ -16,8 +16,18 @@ class ConAdminSaveAttendance extends BaseController
         $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         
         $data['uri'] = service('uri'); 
-        $data['database'] = \Config\Database::connect();
-        $data['databaseSKJ'] = \Config\Database::connect('skj');
+        try {
+            $data['database'] = \Config\Database::connect();
+        } catch (\Throwable $e) {
+            $data['database'] = null;
+        }
+
+        try {
+            $data['databaseSKJ'] = \Config\Database::connect('skj');
+        } catch (\Throwable $e) {
+            $data['databaseSKJ'] = null;
+        }
+        
         return $data;
     }
 
@@ -308,24 +318,50 @@ class ConAdminSaveAttendance extends BaseController
 
     public function UploadExcel()
     {
-        $data = $this->DataMain();
-        $DBPers = $data['database']->table('tb_personnel');
-
-        // PhpSpreadsheet will be loaded automatically by Composer's autoloader
-
-        $file = $this->request->getFile('excel_file');
-        if (!$file || !$file->isValid() || $file->hasMoved()) {
-            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์']);
-        }
-
         try {
+            $data = $this->DataMain();
+            if (!$data['database'] || !$data['databaseSKJ']) {
+                throw new \RuntimeException('ไม่สามารถเชื่อมต่อฐานข้อมูลได้ (ตรวจสอบ Config/Database.php)');
+            }
+
+            $DBPers = $data['database']->table('tb_personnel');
+            
+            $file = $this->request->getFile('excel_file');
+            if (!$file || !$file->isValid() || $file->hasMoved()) {
+                return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์']);
+            }
+
+            // Check if class exists to avoid fatal error
+            if (!class_exists('\PhpOffice\PhpSpreadsheet\IOFactory')) {
+                throw new \RuntimeException('Library PhpSpreadsheet ไม่ได้ถูกติดตั้งบน Server (ตรวจสอบโฟลเดอร์ vendor)');
+            }
+
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getTempName());
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
             
+            // Optimization: Fetch all personnel with finger_id once
+            try {
+                $dbSKJ_name = $data['databaseSKJ']->getDatabase();
+            } catch (\Throwable $e) {
+                throw new \RuntimeException('ไม่สามารถเข้าถึงฐานข้อมูล SKJ ได้: ' . $e->getMessage());
+            }
+            $allPersonnel = $DBPers->select('tb_personnel.pers_id, tb_personnel.pers_finger_id, COALESCE('.$dbSKJ_name.'.tb_position.late_time, "08:00:00") as late_time')
+                                ->join($dbSKJ_name.'.tb_position', $dbSKJ_name.'.tb_position.posi_id = tb_personnel.pers_position', 'left')
+                                ->where('tb_personnel.pers_finger_id IS NOT NULL')
+                                ->get()->getResultArray();
+            $personnelMap = [];
+            foreach ($allPersonnel as $p) {
+                $finger_id = trim($p['pers_finger_id']);
+                $personnelMap[$finger_id] = $p;
+                // Add padded/int variations for better matching
+                $personnelMap[(string)(int)$finger_id] = $p;
+                $personnelMap[str_pad($finger_id, 5, "0", STR_PAD_LEFT)] = $p;
+            }
+
             $headerSkipped = false;
             $parsedData = [];
-            $debugRows = []; // To help debug
+            $debugRows = [];
 
             foreach ($rows as $index => $row) {
                 if (!$headerSkipped) {
@@ -340,66 +376,44 @@ class ConAdminSaveAttendance extends BaseController
                     continue;
                 }
 
-                $finger_id_clean = trim($finger_id);
-                $finger_id_int = (string)(int)$finger_id_clean;
-                $finger_id_padded = str_pad($finger_id_clean, 5, "0", STR_PAD_LEFT);
-
-                // Find user by trying exact, int matched (no leading zeros), and padded (5 digits with leading zeros)
-                // Also join tb_position from databaseSKJ to get late_time
-                $databaseSKJ_name = clone $data['databaseSKJ'];
-                $dbSKJ_name = $databaseSKJ_name->getDatabase();
-
-                $personnel = $DBPers->select('tb_personnel.pers_id, COALESCE('.$dbSKJ_name.'.tb_position.late_time, "08:00:00") as late_time')
-                                    ->join($dbSKJ_name.'.tb_position', $dbSKJ_name.'.tb_position.posi_id = tb_personnel.pers_position', 'left')
-                                    ->groupStart()
-                                        ->where('tb_personnel.pers_finger_id', $finger_id_clean)
-                                        ->orWhere('tb_personnel.pers_finger_id', $finger_id_int)
-                                        ->orWhere('tb_personnel.pers_finger_id', $finger_id_padded)
-                                    ->groupEnd()
-                                    ->get()->getRow();
+                $personnel = $personnelMap[$finger_id] ?? null;
                 
-                $debugRows[] = [
-                    'scan_row' => $index,
-                    'excel_finger_id' => $finger_id,
-                    'excel_datetime' => $datetime_str,
-                    'found_pers_id' => $personnel ? $personnel->pers_id : null,
-                    'found_late_time' => $personnel ? $personnel->late_time : null,
-                    'searched_for' => [$finger_id_clean, $finger_id_int, $finger_id_padded]
-                ];
-
                 if ($personnel) {
                     $dateParts = explode(' ', $datetime_str);
                     $timePortion = $dateParts[1] ?? '00:00';
 
-                    $isLate = false;
                     $scanTime = strtotime($timePortion);
-                    // use position's late_time
-                    $lateTime = strtotime($personnel->late_time);
+                    $lateTime = strtotime($personnel['late_time']);
 
-                    if ($scanTime > $lateTime) {
-                         $isLate = true;
-                    }
-
-                    $status = $isLate ? 'สาย' : 'มา';
+                    $status = ($scanTime > $lateTime) ? 'สาย' : 'มา';
                     $remark = "สแกนเมื่อ ".$timePortion;
 
-                    $parsedData[$personnel->pers_id] = [
+                    $parsedData[$personnel['pers_id']] = [
                         'status' => $status,
                         'remark' => $remark
                     ];
                 }
+
+                $debugRows[] = [
+                    'row' => $index,
+                    'finger_id' => $finger_id,
+                    'found' => $personnel ? true : false
+                ];
             }
 
+            // die('Reached the end of processing');
             return $this->response->setJSON([
                 'status' => 'success', 
                 'data' => $parsedData,
-                'debug' => $debugRows
+                'count' => count($parsedData)
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'status' => 'error', 
-                'message' => 'เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel: ' . $e->getMessage()
+                'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine()
             ]);
         }
     }
