@@ -56,13 +56,14 @@
                         </li>
                     </ul>
                 </li>
-                <li class="menu-item <?php echo $uri->getSegment(2) == 'SaveAttendance' ? 'active open' : '' ?>">
+                <!-- ระบบเวลาทำงาน (ปกติ) -->
+                <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) != 'SetupLocation') ? 'active open' : '' ?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-time-five"></i>
-                        <div data-i18n="Layouts">ระบบเวลาทำงาน</div>
+                        <div data-i18n="Layouts">บันทึกเวลาทำงาน (ปกติ/นิ้วมือ)</div>
                     </a>
                     <ul class="menu-sub">
-                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) != 'SetupFingerprint') ? 'active' : '' ?>">
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) != 'SetupFingerprint' && $uri->getSegment(3) != 'SetupTime' && $uri->getSegment(3) != 'SetupLocation') ? 'active' : '' ?>">
                             <a href="<?=base_url('Admin/SaveAttendance')?>" class="menu-link">
                                 <div data-i18n="Without menu">บันทึกการมาทำงาน</div>
                             </a>
@@ -75,6 +76,26 @@
                         <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) == 'SetupTime') ? 'active' : '' ?>">
                             <a href="<?=base_url('Admin/SaveAttendance/SetupTime')?>" class="menu-link">
                                 <div data-i18n="Without menu">ตั้งค่าเวลามาทำงาน</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- ระบบเวลาทำงาน (ออนไลน์) -->
+                <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && ($uri->getSegment(3) == 'SetupLocation' || $uri->getSegment(3) == 'OnlineHistory')) ? 'active open' : '' ?>">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bi bi-globe"></i>
+                        <div data-i18n="Layouts">บันทึกเวลาทำงาน (SKJ Check-In)</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) == 'SetupLocation') ? 'active' : '' ?>">
+                            <a href="<?=base_url('Admin/SaveAttendance/SetupLocation')?>" class="menu-link">
+                                <div data-i18n="Without menu">ตั้งค่าพิกัดเช็คชื่อ</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?php echo ($uri->getSegment(2) == 'SaveAttendance' && $uri->getSegment(3) == 'OnlineHistory') ? 'active' : '' ?>">
+                            <a href="<?=base_url('Admin/SaveAttendance/OnlineHistory')?>" class="menu-link">
+                                <div data-i18n="Without menu">รายละเอียดการเช็คชื่อ (SKJ Check-In)</div>
                             </a>
                         </li>
                     </ul>

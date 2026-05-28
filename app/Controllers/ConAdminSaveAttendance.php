@@ -104,6 +104,131 @@ class ConAdminSaveAttendance extends BaseController
         return view('Admin/AdminSaveAttendance/AdminSetupTime', $data);
     }
 
+    public function SetupLocation()
+    {
+        $data = $this->DataMain();        
+        $data['title'] = "ตั้งค่าพิกัดและเวลาเช็คชื่อ";        
+        
+        $db = $data['database'];
+        
+        // Auto-create table if not exists
+        $db->query("CREATE TABLE IF NOT EXISTS tb_attendance_location (
+            loc_id INT(11) AUTO_INCREMENT PRIMARY KEY,
+            loc_name VARCHAR(255) DEFAULT 'โรงเรียน',
+            lat DECIMAL(10, 7) DEFAULT 15.7060,
+            lng DECIMAL(10, 7) DEFAULT 100.1280,
+            radius_m INT(11) DEFAULT 200,
+            check_in_start TIME DEFAULT '06:00:00',
+            check_in_end TIME DEFAULT '08:00:00',
+            check_out_start TIME DEFAULT '16:00:00',
+            check_out_end TIME DEFAULT '18:30:00',
+            is_active TINYINT(1) DEFAULT 1
+        )");
+
+        // Make sure column exists if table was already created
+        $columns = $db->getFieldNames('tb_attendance_location');
+        if (!in_array('is_active', $columns)) {
+            $db->query("ALTER TABLE tb_attendance_location ADD COLUMN is_active TINYINT(1) DEFAULT 1");
+        }
+
+        // Check if row 1 exists, if not insert default
+        $exists = $db->table('tb_attendance_location')->where('loc_id', 1)->get()->getRow();
+        if (!$exists) {
+            $db->table('tb_attendance_location')->insert([
+                'loc_id' => 1,
+                'loc_name' => 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์',
+                'lat' => 15.7060416,
+                'lng' => 100.1280556,
+                'radius_m' => 200,
+                'check_in_start' => '06:00:00',
+                'check_in_end' => '08:00:00',
+                'check_out_start' => '16:00:00',
+                'check_out_end' => '18:30:00',
+                'is_active' => 1
+            ]);
+        }
+
+        $data['location'] = $db->table('tb_attendance_location')->where('loc_id', 1)->get()->getRow();
+
+        return view('Admin/AdminSaveAttendance/AdminSetupLocation', $data);
+    }
+
+    public function SaveLocationConfig()
+    {
+        $data = $this->DataMain();
+        $db = $data['database'];
+
+        $updateData = [
+            'lat'             => $this->request->getPost('lat'),
+            'lng'             => $this->request->getPost('lng'),
+            'radius_m'        => $this->request->getPost('radius_m'),
+            'check_in_start'  => $this->request->getPost('check_in_start'),
+            'check_in_end'    => $this->request->getPost('check_in_end'),
+            'check_out_start' => $this->request->getPost('check_out_start'),
+            'check_out_end'   => $this->request->getPost('check_out_end'),
+            'is_active'       => $this->request->getPost('is_active') ? 1 : 0,
+        ];
+
+        if ($db->table('tb_attendance_location')->where('loc_id', 1)->update($updateData)) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'บันทึกตั้งค่าพิกัดเช็คชื่อสำเร็จ']);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล']);
+        }
+    }
+
+    public function ToggleActive()
+    {
+        $data = $this->DataMain();
+        $db = $data['database'];
+        
+        $is_active = $this->request->getPost('is_active') ? 1 : 0;
+        
+        if ($db->table('tb_attendance_location')->where('loc_id', 1)->update(['is_active' => $is_active])) {
+            return $this->response->setJSON(['status' => 'success', 'is_active' => $is_active]);
+        } else {
+            return $this->response->setStatusCode(500)->setJSON(['status' => 'error']);
+        }
+    }
+
+    public function OnlineHistory()
+    {
+        $data = $this->DataMain();
+        $data['title'] = "รายละเอียดการเช็คชื่อ (SKJ Check-In)";
+        
+        $db = $data['database'];
+        
+        // Auto-create table if not exists (in case it wasn't visited before)
+        $db->query("CREATE TABLE IF NOT EXISTS tb_attendance (
+            att_id INT(11) AUTO_INCREMENT PRIMARY KEY,
+            pers_id VARCHAR(20) NOT NULL,
+            att_date DATE NOT NULL,
+            check_in TIME DEFAULT NULL,
+            check_in_lat DECIMAL(10, 7) DEFAULT NULL,
+            check_in_lng DECIMAL(10, 7) DEFAULT NULL,
+            check_in_photo TEXT DEFAULT NULL,
+            check_out TIME DEFAULT NULL,
+            check_out_lat DECIMAL(10, 7) DEFAULT NULL,
+            check_out_lng DECIMAL(10, 7) DEFAULT NULL,
+            check_out_photo TEXT DEFAULT NULL,
+            status VARCHAR(20) DEFAULT 'ปกติ'
+        )");
+
+        $date = $this->request->getGet('date') ?? date('Y-m-d');
+        $data['selectedDate'] = $date;
+
+        $builder = $db->table('tb_attendance a');
+        $builder->select('a.*, p.pers_prefix, p.pers_firstname, p.pers_lastname, pos.posi_name');
+        $builder->join('tb_personnel p', 'a.pers_id = p.pers_id', 'left');
+        $dbSKJName = $data['databaseSKJ']->getDatabase();
+        $builder->join($dbSKJName . '.tb_position pos', 'p.pers_position = pos.posi_id', 'left');
+        $builder->where('a.att_date', $date);
+        $builder->orderBy('a.check_in', 'ASC');
+        
+        $data['records'] = $builder->get()->getResultArray();
+
+        return view('Admin/AdminSaveAttendance/AdminOnlineAttendance', $data);
+    }
+
     public function GetTimeConfigs()
     {
         $data = $this->DataMain();    

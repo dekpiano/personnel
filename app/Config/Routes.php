@@ -155,6 +155,10 @@ $routes->post('Admin/SaveAttendance/SetupFingerprint/Save', 'ConAdminSaveAttenda
 $routes->get('Admin/SaveAttendance/SetupTime', 'ConAdminSaveAttendance::SetupTime');
 $routes->post('Admin/SaveAttendance/SetupTime/Save', 'ConAdminSaveAttendance::SaveTimeConfig');
 $routes->get('Admin/SaveAttendance/DB/Select/GetTimeConfigs', 'ConAdminSaveAttendance::GetTimeConfigs');
+$routes->get('Admin/SaveAttendance/SetupLocation', 'ConAdminSaveAttendance::SetupLocation');
+$routes->post('Admin/SaveAttendance/SetupLocation/Save', 'ConAdminSaveAttendance::SaveLocationConfig');
+$routes->post('Admin/SaveAttendance/SetupLocation/ToggleActive', 'ConAdminSaveAttendance::ToggleActive');
+$routes->get('Admin/SaveAttendance/OnlineHistory', 'ConAdminSaveAttendance::OnlineHistory');
 
 // Admin PA Config routes
 $routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
