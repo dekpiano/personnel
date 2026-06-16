@@ -35,7 +35,15 @@ class ConAdminSaveAttendance extends BaseController
     {
         $data = $this->DataMain();        
         $data['title']="บันทึกการมาทำงาน";        
-        $DBPers = $data['database']->table('tb_personnel');
+        
+        // Auto-create/modify columns if not exist
+        $columns = $data['database']->getFieldNames('tb_personnel_attendance');
+        if (!in_array('att_time_in', $columns)) {
+            $data['database']->query("ALTER TABLE tb_personnel_attendance ADD COLUMN att_time_in TIME DEFAULT NULL");
+        }
+        if (!in_array('att_time_out', $columns)) {
+            $data['database']->query("ALTER TABLE tb_personnel_attendance ADD COLUMN att_time_out TIME DEFAULT NULL");
+        }
 
         return view('Admin/AdminSaveAttendance/AdminSaveAttendanceHome', $data);
     }
@@ -264,7 +272,7 @@ class ConAdminSaveAttendance extends BaseController
         $DBPers = $data['database']->table('tb_personnel_attendance');
         $date = $this->request->getGet('date');
         $data = $DBPers->where('att_date', $date)
-            ->select('att_person_id as person_id, att_status as status, att_reason as remark')
+            ->select('att_person_id as person_id, att_status as status, att_reason as remark, att_time_in as time_in, att_time_out as time_out')
             ->get()->getResultArray();
         return $this->response->setJSON($data);
     }
@@ -277,14 +285,23 @@ class ConAdminSaveAttendance extends BaseController
         $date = $this->request->getPost('att_date');
         $status = $this->request->getPost('status');
         $remark = $this->request->getPost('remark');
-
+        $time_in = $this->request->getPost('time_in');
+        $time_out = $this->request->getPost('time_out');
 
         foreach ($status as $person_id => $val) {
+            $t_in = !empty($time_in[$person_id]) ? str_replace('.', ':', trim($time_in[$person_id])) : null;
+            $t_out = !empty($time_out[$person_id]) ? str_replace('.', ':', trim($time_out[$person_id])) : null;
+
+            if ($t_in && strlen($t_in) <= 5) $t_in .= ':00';
+            if ($t_out && strlen($t_out) <= 5) $t_out .= ':00';
+
             $data = [
                 'att_person_id' => $person_id,
                 'att_date' => $date,
                 'att_status' => $val,
                 'att_reason' => $remark[$person_id] ?? null,
+                'att_time_in' => $t_in,
+                'att_time_out' => $t_out,
                 'att_adminid' => session()->get('id')
             ];
             $DBPers->replace($data);
@@ -456,6 +473,8 @@ class ConAdminSaveAttendance extends BaseController
                 return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์']);
             }
 
+            $att_date = $this->request->getPost('att_date');
+
             // Check if class exists to avoid fatal error
             if (!class_exists('\PhpOffice\PhpSpreadsheet\IOFactory')) {
                 throw new \RuntimeException('Library PhpSpreadsheet ไม่ได้ถูกติดตั้งบน Server (ตรวจสอบโฟลเดอร์ vendor)');
@@ -495,27 +514,51 @@ class ConAdminSaveAttendance extends BaseController
                 }
 
                 $finger_id = trim($row['A'] ?? '');
-                $datetime_str = trim($row['E'] ?? '');
+                $row_date = trim($row['C'] ?? '');
+                $time_in_str = trim($row['D'] ?? '');
+                $time_out_str = trim($row['E'] ?? '');
 
-                if (empty($finger_id) || empty($datetime_str)) {
+                if (empty($finger_id) || empty($row_date) || empty($time_in_str)) {
                     continue;
+                }
+
+                // If a selected date was passed, filter by it
+                if (!empty($att_date)) {
+                    $norm_row_date = date('Y-m-d', strtotime(str_replace('/', '-', $row_date)));
+                    $norm_att_date = date('Y-m-d', strtotime($att_date));
+                    if ($norm_row_date !== $norm_att_date) {
+                        continue;
+                    }
                 }
 
                 $personnel = $personnelMap[$finger_id] ?? null;
                 
                 if ($personnel) {
-                    $dateParts = explode(' ', $datetime_str);
-                    $timePortion = $dateParts[1] ?? '00:00';
+                    // Replace dot with colon if format is 07.55 instead of 07:55
+                    $time_in_normalized = str_replace('.', ':', $time_in_str);
+                    if (strlen($time_in_normalized) == 4 || strlen($time_in_normalized) == 5) {
+                        $time_in_normalized = date('H:i:s', strtotime($time_in_normalized));
+                    }
 
-                    $scanTime = strtotime($timePortion);
+                    $scanTime = strtotime($time_in_normalized);
                     $lateTime = strtotime($personnel['late_time']);
 
-                    $status = ($scanTime > $lateTime) ? 'สาย' : 'มา';
-                    $remark = "สแกนเมื่อ ".$timePortion;
+                    $status = ($scanTime > $lateTime) ? 'สาย' : 'ma';
+                    if ($status === 'ma') {
+                        $status = 'มา';
+                    }
+                    
+                    $time_out_val = '';
+                    if (!empty($time_out_str)) {
+                        $time_out_normalized = str_replace('.', ':', $time_out_str);
+                        $time_out_val = date('H:i', strtotime($time_out_normalized));
+                    }
 
                     $parsedData[$personnel['pers_id']] = [
                         'status' => $status,
-                        'remark' => $remark
+                        'remark' => '',
+                        'time_in' => date('H:i', $scanTime),
+                        'time_out' => $time_out_val
                     ];
                 }
 
@@ -541,5 +584,66 @@ class ConAdminSaveAttendance extends BaseController
                 'line' => $e->getLine()
             ]);
         }
+    }
+
+    public function DownloadTemplate()
+    {
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+            return $this->response->setBody("ไม่พบโมดูล PhpSpreadsheet กรุณาติดต่อผู้พัฒนาระบบ");
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set Headers
+        $sheet->setCellValue('A1', 'เลขสแกนนิ้ว/รหัสพนักงาน (Finger ID)');
+        $sheet->setCellValue('B1', 'ชื่อ - นามสกุล');
+        $sheet->setCellValue('C1', 'วันที่บันทึก (YYYY-MM-DD)');
+        $sheet->setCellValue('D1', 'เวลาสแกนเข้างาน (HH.MM)');
+        $sheet->setCellValue('E1', 'เวลาสแกนออกงาน (HH.MM)');
+
+        // Add Sample Data
+        $sheet->setCellValue('A2', '120');
+        $sheet->setCellValue('B2', 'สมชาย ใจดี');
+        $sheet->setCellValue('C2', date('Y-m-d'));
+        $sheet->setCellValue('D2', '07.45');
+        $sheet->setCellValue('E2', '16.30');
+
+        $sheet->setCellValue('A3', '121');
+        $sheet->setCellValue('B3', 'สมศรี รักเรียน');
+        $sheet->setCellValue('C3', date('Y-m-d'));
+        $sheet->setCellValue('D3', '08.15');
+        $sheet->setCellValue('E3', '16.45');
+
+        // Style the headers
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '1e40af'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ]
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+        // Auto size columns
+        foreach (range('A', 'E') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Output to response
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="template_attendance.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit();
     }
 }

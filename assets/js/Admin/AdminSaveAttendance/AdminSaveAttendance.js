@@ -32,11 +32,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 attendance.find((a) => a.person_id == p.pers_id) || {};
               const status = att.status || "มา";
               const remark = att.remark || "";
+              const time_in = att.time_in ? att.time_in.slice(0, 5) : "";
+              const time_out = att.time_out ? att.time_out.slice(0, 5) : "";
               html += `<tr>
                                 <td>
                                     <div class="fw-bold">${p.pers_prefix}${p.pers_firstname} ${p.pers_lastname}</div>
                                     <small class="text-muted">${p.posi_name}</small>
                                 </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">${p.pers_finger_id || '-'}</span></td>
+                                <td><input type="text" class="form-control form-control-sm text-center px-1" name="time_in[${p.pers_id}]" value="${time_in}" placeholder="--:--" style="max-width: 80px; margin: 0 auto;"></td>
+                                <td><input type="text" class="form-control form-control-sm text-center px-1" name="time_out[${p.pers_id}]" value="${time_out}" placeholder="--:--" style="max-width: 80px; margin: 0 auto;"></td>
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="มา" ${status == "มา" ? "checked" : ""}></td>
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="สาย" ${status == "สาย" ? "checked" : ""}></td>
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="ขาด" ${status == "ขาด" ? "checked" : ""}></td>
@@ -85,8 +90,15 @@ document.addEventListener("DOMContentLoaded", function () {
       allRows.forEach(function (row) {
         let radios = row.querySelectorAll('input[type="radio"]:checked');
         radios.forEach((input) => formData.append(input.name, input.value));
+        
         let remark = row.querySelector('input[name^="remark"]');
         if (remark) formData.append(remark.name, remark.value);
+        
+        let timeIn = row.querySelector('input[name^="time_in"]');
+        if (timeIn) formData.append(timeIn.name, timeIn.value);
+        
+        let timeOut = row.querySelector('input[name^="time_out"]');
+        if (timeOut) formData.append(timeOut.name, timeOut.value);
       });
 
       const btn = document.getElementById("btn-save-attendance");
@@ -341,8 +353,10 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    let attDate = document.getElementById("att_date").value;
     let formData = new FormData();
     formData.append("excel_file", fileInput.files[0]);
+    formData.append("att_date", attDate);
 
     const btn = document.getElementById("btn-parse-excel");
     btn.disabled = true;
@@ -390,6 +404,17 @@ document.addEventListener("DOMContentLoaded", function () {
                   if (remarkInput) {
                      remarkInput.value = data.remark;
                   }
+
+                  let timeInInput = row.querySelector(`input[name="time_in[${pId}]"]`);
+                  if (timeInInput) {
+                     timeInInput.value = data.time_in;
+                  }
+
+                  let timeOutInput = row.querySelector(`input[name="time_out[${pId}]"]`);
+                  if (timeOutInput) {
+                     timeOutInput.value = data.time_out;
+                  }
+
                   foundCount++;
                 } else {
                   // User not found in Excel data, default to "ขาด"
@@ -400,8 +425,19 @@ document.addEventListener("DOMContentLoaded", function () {
                   
                   let remarkInput = row.querySelector(`input[name="remark[${pId}]"]`);
                   if (remarkInput) {
-                     remarkInput.value = "ไม่มีข้อมูลการสแกน";
+                     remarkInput.value = "";
                   }
+
+                  let timeInInput = row.querySelector(`input[name="time_in[${pId}]"]`);
+                  if (timeInInput) {
+                     timeInInput.value = "";
+                  }
+
+                  let timeOutInput = row.querySelector(`input[name="time_out[${pId}]"]`);
+                  if (timeOutInput) {
+                     timeOutInput.value = "";
+                  }
+
                   notFoundCount++;
                 }
               }

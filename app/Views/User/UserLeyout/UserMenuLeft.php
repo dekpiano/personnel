@@ -70,6 +70,29 @@
         font-weight: 600;
         letter-spacing: 0.05em;
     }
+
+    /* Sidebar Animated Background SVG */
+    .sidebar-bg-decor {
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 140px;
+        height: 140px;
+        opacity: 0.12;
+        pointer-events: none;
+        z-index: 1;
+        animation: float-sidebar 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes float-sidebar {
+        0% {
+            transform: translateX(-50%) translateY(0) rotate(0deg);
+        }
+        100% {
+            transform: translateX(-50%) translateY(-12px) rotate(4deg);
+        }
+    }
 </style>
 
 <!-- Layout wrapper -->
@@ -162,6 +185,27 @@
                 </ul>
                 <?php endif; ?>
             </div>
+
+            <!-- Sidebar bottom animated SVG decoration -->
+            <svg class="sidebar-bg-decor" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer Ring -->
+                <circle cx="50" cy="50" r="45" stroke="#2563eb" stroke-width="0.8" fill="none" stroke-dasharray="3 3"/>
+                <!-- Inner Tech Rings -->
+                <circle cx="50" cy="50" r="35" stroke="#3b82f6" stroke-width="0.5" fill="none"/>
+                <circle cx="50" cy="50" r="28" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="10 5" fill="none"/>
+                <circle cx="50" cy="50" r="20" stroke="#6366f1" stroke-width="0.8" fill="none"/>
+                <!-- Tech lines/nodes -->
+                <line x1="50" y1="5" x2="50" y2="95" stroke="#3b82f6" stroke-width="0.5" opacity="0.5"/>
+                <line x1="5" y1="50" x2="95" y2="50" stroke="#3b82f6" stroke-width="0.5" opacity="0.5"/>
+                <!-- Pulsing Core -->
+                <circle cx="50" cy="50" r="8" fill="#60efff" opacity="0.8"/>
+                <circle cx="50" cy="50" r="4" fill="#2563eb"/>
+                <!-- Orbiting Nodes -->
+                <circle cx="50" cy="15" r="3.5" fill="#3b82f6"/>
+                <circle cx="85" cy="50" r="2.5" fill="#06b6d4"/>
+                <circle cx="50" cy="85" r="3.5" fill="#6366f1"/>
+                <circle cx="15" cy="50" r="2.5" fill="#3b82f6"/>
+            </svg>
         </aside>
         <!-- / Menu -->
 

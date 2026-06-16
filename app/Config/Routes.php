@@ -148,6 +148,7 @@ $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/DashboardAttendan
 $routes->match(['get', 'post'],'Admin/SaveAttendance/DB/Select/LeaveSummary', 'ConAdminSaveAttendance::GetLeaveSummary');
 $routes->get('Admin/SaveAttendance/DB/Select/leaveSummaryByPositionDay', 'ConAdminSaveAttendance::leaveSummaryByPositionDay');
 $routes->post('Admin/SaveAttendance/UploadExcel', 'ConAdminSaveAttendance::UploadExcel');
+$routes->get('Admin/SaveAttendance/DownloadTemplate', 'ConAdminSaveAttendance::DownloadTemplate');
 
 $routes->get('Admin/SaveAttendance/SetupFingerprint', 'ConAdminSaveAttendance::SetupFingerprint');
 $routes->post('Admin/SaveAttendance/SetupFingerprint/Save', 'ConAdminSaveAttendance::SaveFingerprint');

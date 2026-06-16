@@ -363,16 +363,40 @@
                             <input type="date" id="att_date" name="att_date" class="form-control filter-input" value="<?=date('Y-m-d')?>">
                         </div>
                         <div class="col-md-5">
-                            <label class="filter-label">ดึงข้อมูลจากไฟล์ Excel สแกนนิ้ว</label>
+                            <label class="filter-label d-flex justify-content-between align-items-center">
+                                <span>ดึงข้อมูลจากไฟล์ Excel สแกนนิ้ว</span>
+                                <a href="javascript:void(0);" class="text-info small fw-bold" data-bs-toggle="collapse" data-bs-target="#excelFormatGuide">
+                                    <i class="bi bi-question-circle-fill me-1"></i>รูปแบบไฟล์ Excel
+                                </a>
+                            </label>
                             <div class="input-group">
                                 <input type="file" id="excel_file" class="form-control" accept=".xlsx, .xls">
                                 <button type="button" class="btn btn-success" id="btn-parse-excel">ดึงข้อมูล</button>
+                            </div>
+                            <div class="collapse mt-2" id="excelFormatGuide">
+                                <div class="card card-body bg-light border-0 p-3 rounded-3 small">
+                                    <h6 class="fw-bold mb-2 text-primary" style="font-size: 0.85rem;"><i class="bi bi-info-circle-fill me-1"></i>รายละเอียดข้อกำหนดไฟล์ Excel (รูปแบบใหม่)</h6>
+                                    <ul class="mb-3 ps-3 text-muted" style="line-height: 1.5; font-size: 0.8rem;">
+                                        <li>ต้องมีคอลัมน์ทั้งหมดอย่างน้อย <strong>5 คอลัมน์ (A ถึง E)</strong></li>
+                                        <li><strong>คอลัมน์ A:</strong> เลขสแกนนิ้ว/รหัสพนักงาน (Finger ID)</li>
+                                        <li><strong>คอลัมน์ B:</strong> ชื่อ - นามสกุล</li>
+                                        <li><strong>คอลัมน์ C:</strong> วันที่บันทึก (รูปแบบ <code>YYYY-MM-DD</code> เช่น <code>2026-06-16</code>)</li>
+                                        <li><strong>คอลัมน์ D:</strong> เวลาสแกนเข้างาน (รูปแบบ <code>HH:MM</code> หรือ <code>HH.MM</code> เช่น <code>07.55</code>)</li>
+                                        <li><strong>คอลัมน์ E:</strong> เวลาสแกนออกงาน (รูปแบบ <code>HH:MM</code> หรือ <code>HH.MM</code> เช่น <code>16.44</code>)</li>
+                                        <li>ระบบจะเริ่มอ่านข้อมูลตั้งแต่ <strong>แถวที่ 2 เป็นต้นไป</strong> (แถวแรกจะข้ามเป็นหัวตาราง)</li>
+                                    </ul>
+                                    <div class="text-center mt-2">
+                                        <a href="<?= base_url('Admin/SaveAttendance/DownloadTemplate') ?>" class="btn btn-sm btn-success rounded-pill px-3">
+                                            <i class="bi bi-file-earmark-excel me-1"></i> ดาวน์โหลดไฟล์ตัวอย่าง (.xlsx)
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-4 text-md-end">
                             <div class="alert alert-info border-0 mb-0 py-2 px-3 d-inline-flex align-items-center rounded-3">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <span class="small">บันทึกซ้ำจะนำสถานะล่าสุดทบทับข้อมูลเดิม</span>
+                                <span class="small">บันทึกซ้ำจะนำสถานะล่าสุดทดทับข้อมูลเดิม</span>
                             </div>
                         </div>
                     </div>
@@ -392,6 +416,9 @@
                                 <thead class="sticky-top bg-white">
                                     <tr class="text-center">
                                         <th class="text-start" style="min-width: 200px;">บุคลากร/สังกัด</th>
+                                        <th style="width: 100px;">เลขสแกนนิ้ว</th>
+                                        <th style="width: 90px;">เวลาเข้า</th>
+                                        <th style="width: 90px;">เวลาออก</th>
                                         <th style="width: 50px;">มา</th>
                                         <th style="width: 50px;">สาย</th>
                                         <th style="width: 50px;">ขาด</th>
@@ -516,7 +543,7 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=2.0"></script>
+<script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminSaveAttendance.js?v=2.1"></script>
 <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminStaffLeaveReport.js?v=1.1"></script>
 <script src="<?=base_url()?>/assets/js/Admin/AdminSaveAttendance/AdminReportPositionLeave.js?v=1.2"></script>
 <?= $this->endSection() ?>
