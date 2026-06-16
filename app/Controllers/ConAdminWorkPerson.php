@@ -81,6 +81,7 @@ class ConAdminWorkPerson extends BaseController
 
         $data['position'] = $DBPosi->get()->getResult();
         $data['learning'] = $DBLear->get()->getResult();
+        $this->checkFactionColumn($DB_Personnel);
        
 		$data['pers'] =	$DBPers->orderBy('pers_id','DESC')->get()->getResult();		
 		$num = @explode("_", $data['pers'][0]->pers_id);
@@ -97,6 +98,9 @@ class ConAdminWorkPerson extends BaseController
 
         $image = $this->request->getFile('pers_img');
         
+        $faction = $this->request->getPost('pers_faction');
+        $factionStr = is_array($faction) ? implode(',', $faction) : ($faction ?? "");
+
         if (!empty($image) && $image->isValid() && !$image->hasMoved()) {
             $newName = $image->getRandomName();
             $image->move(ROOTPATH . 'uploads/admin/Personnal/', $newName);
@@ -116,6 +120,7 @@ class ConAdminWorkPerson extends BaseController
                 'pers_learning' => $this->request->getPost('pers_learning'),
                 'pers_academic' => $this->request->getPost('pers_academic'),
                 'pers_groupleade' => $this->request->getPost('pers_groupleade'),
+                'pers_faction' => $factionStr,
                 'pers_img'  => $newName,
                 'pers_dataUpdate' => date('Y-m-d H:i:s'),
                 'pers_userEdit' => $session->get('id')
@@ -134,6 +139,7 @@ class ConAdminWorkPerson extends BaseController
                 'pers_learning' => $this->request->getPost('pers_learning'),
                 'pers_academic' => $this->request->getPost('pers_academic'),
                 'pers_groupleade' => $this->request->getPost('pers_groupleade'),
+                'pers_faction' => $factionStr,
                 'pers_dataUpdate' => date('Y-m-d H:i:s'),
                 'pers_userEdit' => $session->get('id')
             ];
@@ -155,14 +161,17 @@ class ConAdminWorkPerson extends BaseController
         $DBPers = $DB_Personnel->table('tb_personnel');
         $sub = explode("_",$Key);
         if($sub[0] == "posi"){
-            $Where = ['pers_position'=>$Key];
+            $DBPers->where('pers_position',$Key);
             $data['Teach'] = false;
         }elseif($Key === "Executive"){
-            $Where = 'pers_position = "posi_001" || pers_position= "posi_002"';
+            $DBPers->groupStart()
+                   ->where('pers_position', 'posi_001')
+                   ->orWhere('pers_position', 'posi_002')
+                   ->groupEnd();
             $data['Teach'] = true;
         }
         else{
-            $Where = ['pers_learning'=>$Key];
+            $DBPers->where('pers_learning',$Key);
             $data['Teach'] = true;
         }
 
@@ -170,7 +179,6 @@ class ConAdminWorkPerson extends BaseController
         ->select('pers_id,pers_prefix,pers_firstname,pers_lastname,pers_img,posi_name,pers_academic')
         ->join('skjacth_skj.tb_position','skjacth_skj.tb_position.posi_id = skjacth_personnel.tb_personnel.pers_position')
         ->where('pers_status',"กำลังใช้งาน")
-        ->where($Where)
         ->orderBy('pers_numberGroup','ASC')
         ->get()->getResult();
 
@@ -209,6 +217,7 @@ class ConAdminWorkPerson extends BaseController
 
         $data['position'] = $DBPosi->get()->getResult();
         $data['learning'] = $DBLear->get()->getResult();
+        $this->checkFactionColumn($DB_Personnel);
        
 
         $data['Pers'] = $DBPers->where('pers_id',$IDPres)->get()->getRow();
@@ -259,6 +268,10 @@ class ConAdminWorkPerson extends BaseController
         $session = session();
         $DB_Personnel = \Config\Database::connect('personnel');
         $DBPers = $DB_Personnel->table('tb_personnel');
+        
+        $faction = $this->request->getVar('pers_faction');
+        $factionStr = is_array($faction) ? implode(',', $faction) : ($faction ?? "");
+
         $data = [
             'pers_status' => $this->request->getVar('pers_status'),
             'pers_prefix' => $this->request->getVar('pers_prefix'),
@@ -270,6 +283,7 @@ class ConAdminWorkPerson extends BaseController
             'pers_learning' => $this->request->getVar('pers_learning'),
             'pers_academic' => $this->request->getVar('pers_academic'),
             'pers_groupleade' => $this->request->getVar('pers_groupleade'),
+            'pers_faction' => $factionStr,
             'pers_workother_id' => $this->request->getVar('pers_workother_id') ?? "",
         ];
         $DBPers->where('pers_id', $this->request->getVar('pers_id'));
@@ -2177,6 +2191,23 @@ class ConAdminWorkPerson extends BaseController
             ],
             'records' => $leaveRecords
         ]);
+    }
+
+    /**
+     * Helper: ตรวจสอบและสร้างคอลัมน์ pers_faction ใน tb_personnel
+     */
+    private function checkFactionColumn($db) {
+        if (!$db->fieldExists('pers_faction', 'tb_personnel')) {
+            $forge = \Config\Database::forge('personnel');
+            $forge->addColumn('tb_personnel', [
+                'pers_faction' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => '100',
+                    'null'       => true,
+                    'after'      => 'pers_academic'
+                ]
+            ]);
+        }
     }
 
 }

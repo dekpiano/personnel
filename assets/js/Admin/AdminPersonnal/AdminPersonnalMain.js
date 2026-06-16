@@ -323,29 +323,53 @@ $(document).on("cropped", 'input[name="pers_img"]', function (e, blob) {
   }
 });
 
+function adjustFieldsByPosition(positionId) {
+  if (positionId === "posi_001") { // ผอ.รร
+    $("#show_academic").show();
+    $("#show_learning").hide();
+    $("#show_groupleade").hide();
+    $("#show_faction").hide();
+    $("#show_position").hide();
+  } else if (positionId === "posi_002") { // รอง ผอ.
+    $("#show_academic").show();
+    $("#show_faction").show();
+    $("#show_learning").hide();
+    $("#show_groupleade").hide();
+    $("#show_position").hide();
+  } else {
+    var option = $("#pers_position option[value='" + positionId + "']");
+    var index = $("#pers_position option").index(option);
+    
+    if (index > 0 && index <= 6) { // Teachers (posi_003 to posi_006)
+      $("#show_learning").show();
+      $("#show_academic").show();
+      $("#show_groupleade").show();
+      $("#show_faction").hide();
+      $("#show_position").hide();
+    } else if (index >= 7) { // Support/Other
+      $("#show_position").show();
+      $("#show_learning").hide();
+      $("#show_academic").hide();
+      $("#show_groupleade").hide();
+      $("#show_faction").hide();
+    } else { // None
+      $("#show_learning").hide();
+      $("#show_academic").hide();
+      $("#show_groupleade").hide();
+      $("#show_faction").hide();
+      $("#show_position").hide();
+    }
+  }
+}
+
 function loadPersonnelData(id) {
   $.ajax({
     url: "../../../../Admin/WorkPerson/Personnel/DB/Get/" + id,
     type: "GET",
     dataType: "json",
     success: function (data) {
-      $("#pers_position").val(data[0].pers_position); // ทำให้ "ผู้จัดการ" ถูกเลือก
-
-      var index = $("#pers_position").prop("selectedIndex"); // รับลำดับที่เลือก (0-based)
-
-      if ($("#key_update").val() === "Update") {
-        if (index > 0 && index <= 6) {
-          // แสดง select ถัดไป
-          $("#show_learning").show();
-          $("#show_position").hide();
-          $("#pers_workother_id").removeAttr("required");
-          $("#pers_workother_id").val("");
-        } else if (index >= 7) {
-          $("#show_position").show();
-          $("#show_learning").hide();
-          $("#pers_learning").val("");
-        }
-      }
+      window.pendingWorkOtherId = data[0].pers_workother_id;
+      $("#pers_position").val(data[0].pers_position).trigger("change");
 
       $(".pers_prefix").val(data[0].pers_prefix);
       $(".pers_firstname").val(data[0].pers_firstname);
@@ -372,10 +396,21 @@ function loadPersonnelData(id) {
       $(".pers_username").val(data[0].pers_username);
       $(".pers_position").val(data[0].pers_position);
       $(".pers_department").val(data[0].pers_department);
-      $(".pers_learning").val(data[0].pers_learning);
-      $(".pers_academic").val(data[0].pers_academic);
-      $(".pers_groupleade").val(data[0].pers_groupleade);
-      $("#pers_workother_id").val(data[0].work_id).trigger("change");
+      
+      $("#pers_learning").val(data[0].pers_learning).trigger("change");
+      $("#pers_academic").val(data[0].pers_academic).trigger("change");
+      $("#pers_groupleade").val(data[0].pers_groupleade).trigger("change");
+      
+      if (data[0].pers_faction) {
+        var selectedFactions = data[0].pers_faction.split(',');
+        $("#pers_faction").val(selectedFactions).trigger("change");
+      } else {
+        $("#pers_faction").val(null).trigger("change");
+      }
+      
+      if (window.pendingWorkOtherId) {
+        $("#pers_workother_id").val(window.pendingWorkOtherId).trigger("change");
+      }
 
       //$('#pers_workother_id').append(new Option(data[0].work_name, data[0].work_name, true, true)).trigger('change');
       //console.log(data[0].pers_workother_id);
@@ -1332,8 +1367,11 @@ $(document).ready(function () {
 
 // เมื่อมีการเปลี่ยนแปลงค่าของ select แรก
 $("#pers_position").on("change", function () {
-  // ถ้าเลือก "แสดง Select ถัดไป"
-  var index = $(this).prop("selectedIndex"); // รับลำดับที่เลือก (0-based)
+  var selectedPosition = $(this).val();
+  adjustFieldsByPosition(selectedPosition);
+
+  var option = $(this).find("option[value='" + selectedPosition + "']");
+  var index = $(this).find("option").index(option);
 
   if ($("#key_update").val() === "Update") {
     var urlUpdate =
@@ -1343,32 +1381,18 @@ $("#pers_position").on("change", function () {
       "../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData";
   }
 
-  if (index > 0 && index <= 6) {
-    // แสดง select ถัดไป
-    $("#show_learning").show();
-    $("#show_position").hide();
-    $("#pers_workother_id").removeAttr("required");
-    $("#pers_workother_id").val("");
-  } else if (index >= 7) {
-    $("#show_position").show();
-    $("#show_learning").hide();
-    $("#pers_learning").val("");
-
+  if (index >= 7) {
     if (selectedPosition !== "") {
-      var selectedPosition = $(this).val();
-      // alert(selectedPosition);
       $.ajax({
-        url: urlUpdate, // URL ที่จะส่งคำขอไปยัง controller
+        url: urlUpdate,
         type: "POST",
         data: { position_id: selectedPosition },
         success: function (response) {
           var data = response;
-
           var secondSelect = $("#pers_workother_id");
-          secondSelect.empty(); // ล้างค่าเก่า
+          secondSelect.empty();
 
           if (data.length > 0) {
-            // เพิ่มข้อมูลใน select
             secondSelect.append('<option value="">--เลือกข้อมูล--</option>');
             $.each(data, function (index, item) {
               secondSelect.append(
@@ -1379,6 +1403,10 @@ $("#pers_position").on("change", function () {
                   "</option>"
               );
             });
+            if (window.pendingWorkOtherId) {
+              secondSelect.val(window.pendingWorkOtherId).trigger("change");
+              window.pendingWorkOtherId = null;
+            }
           } else {
             secondSelect.append('<option value="">ไม่มีข้อมูล</option>');
           }
@@ -1390,9 +1418,7 @@ $("#pers_position").on("change", function () {
         .append('<option value="">--กรุณาเลือกตำแหน่งก่อน--</option>');
     }
   } else {
-    // ซ่อน select ถัดไป
-    $("#show_learning").hide();
-    $("#show_position").hide();
+    $("#pers_workother_id").removeAttr("required").val("").trigger("change");
   }
 });
 

@@ -160,8 +160,8 @@
         </div>
     </div>
 
-    <div class="row g-4 mt-1" style="display: <?= ($Pers->pers_learning) ? 'flex' : 'none' ?>" id="show_learning">
-        <div class="col-md-4">
+    <div class="row g-4 mt-1">
+        <div class="col-md-4" style="display: <?= ($Pers->pers_learning && !in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_learning">
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_learning" name="pers_learning">
                     <option value="">เลือกกลุ่มสาระ...</option>
@@ -174,7 +174,7 @@
                 <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4" style="display: <?= ($Pers->pers_academic || in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_academic">
             <?php $degee = array('ชำนาญการ', 'ชำนาญการพิเศษ', 'เชี่ยวชาญ', 'เชี่ยวชาญพิเศษ'); ?>
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_academic" name="pers_academic">
@@ -186,7 +186,7 @@
                 <label for="pers_academic">วิทยฐานะ</label>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4" style="display: <?= ($Pers->pers_groupleade && !in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_groupleade">
             <?php $grouplead = array('หัวหน้ากลุ่มสาระ', 'รองหัวหน้ากลุ่มสาระ'); ?>
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_groupleade" name="pers_groupleade">
@@ -196,6 +196,20 @@
                     <?php endforeach; ?>
                 </select>
                 <label for="pers_groupleade">หัวหน้า/รองหัวหน้า</label>
+            </div>
+        </div>
+        <div class="col-md-4" style="display: <?= ($Pers->pers_position == 'posi_002') ? 'block' : 'none' ?>" id="show_faction">
+            <?php 
+            $factions = array('กลุ่มบริหารวิชาการ', 'กลุ่มบริหารงบประมาณ', 'กลุ่มบริหารงานบุคคล', 'กลุ่มบริหารทั่วไป'); 
+            $selectedFactions = isset($Pers->pers_faction) ? explode(',', $Pers->pers_faction) : [];
+            ?>
+            <div class="form-floating">
+                <select class="form-select select2Personnel" id="pers_faction" name="pers_faction[]" multiple="multiple" data-placeholder="ระบุกลุ่มงานฝ่าย...">
+                    <?php foreach ($factions as $value) : ?>
+                    <option value="<?= $value; ?>" <?= in_array($value, $selectedFactions) ? 'selected' : '' ?>><?= $value ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <label for="pers_faction">กลุ่มงานฝ่าย</label>
             </div>
         </div>
     </div>

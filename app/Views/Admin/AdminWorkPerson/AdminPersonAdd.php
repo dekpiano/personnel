@@ -232,40 +232,49 @@
                         </div>
                     </div>
 
-                    <div id="show_learning" style="display:none;" class="mt-4">
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <div class="form-floating mb-1">
-                                    <select class="form-select select2Personnel" id="pers_learning" name="pers_learning">
-                                        <option value="">เลือกกลุ่มสาระ...</option>
-                                        <?php foreach ($learning as $key => $value) : ?>
-                                        <option value="<?= $value->lear_id; ?>"><?= $value->lear_namethai; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
-                                </div>
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-4" style="display:none;" id="show_learning">
+                            <div class="form-floating mb-1">
+                                <select class="form-select select2Personnel" id="pers_learning" name="pers_learning">
+                                    <option value="">เลือกกลุ่มสาระ...</option>
+                                    <?php foreach ($learning as $key => $value) : ?>
+                                    <option value="<?= $value->lear_id; ?>"><?= $value->lear_namethai; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
                             </div>
-                            <div class="col-md-4">
-                                <?php $degee = array('ชำนาญการ', 'ชำนาญการพิเศษ', 'เชี่ยวชาญ', 'เชี่ยวชาญพิเศษ'); ?>
-                                <div class="form-floating mb-1">
-                                    <select class="form-select select2Personnel" id="pers_academic" name="pers_academic">
-                                        <option value="">ระบุวิทยฐานะ (ถ้ามี)</option>
-                                        <?php foreach ($degee as $key => $value) : ?>
-                                        <option value="<?= $value; ?>"><?= $value; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <label for="pers_academic">วิทยฐานะ</label>
-                                </div>
+                        </div>
+                        <div class="col-md-4" style="display:none;" id="show_academic">
+                            <?php $degee = array('ชำนาญการ', 'ชำนาญการพิเศษ', 'เชี่ยวชาญ', 'เชี่ยวชาญพิเศษ'); ?>
+                            <div class="form-floating mb-1">
+                                <select class="form-select select2Personnel" id="pers_academic" name="pers_academic">
+                                    <option value="">ระบุวิทยฐานะ (ถ้ามี)</option>
+                                    <?php foreach ($degee as $key => $value) : ?>
+                                    <option value="<?= $value; ?>"><?= $value; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="pers_academic">วิทยฐานะ</label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-floating mb-1">
-                                    <select class="form-select select2Personnel" id="pers_groupleade" name="pers_groupleade">
-                                        <option value="">ระบุตำแหน่งภายใน...</option>
-                                        <option value="หัวหน้ากลุ่มสาระ">หัวหน้ากลุ่มสาระ</option>
-                                        <option value="รองหัวหน้ากลุ่มสาระ">รองหัวหน้ากลุ่มสาระ</option>
-                                    </select>
-                                    <label for="pers_groupleade">หัวหน้า/รองหัวหน้า</label>
-                                </div>
+                        </div>
+                        <div class="col-md-4" style="display:none;" id="show_groupleade">
+                            <div class="form-floating mb-1">
+                                <select class="form-select select2Personnel" id="pers_groupleade" name="pers_groupleade">
+                                    <option value="">ระบุตำแหน่งภายใน...</option>
+                                    <option value="หัวหน้ากลุ่มสาระ">หัวหน้ากลุ่มสาระ</option>
+                                    <option value="รองหัวหน้ากลุ่มสาระ">รองหัวหน้ากลุ่มสาระ</option>
+                                </select>
+                                <label for="pers_groupleade">หัวหน้า/รองหัวหน้า</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="display:none;" id="show_faction">
+                            <?php $factions = array('กลุ่มบริหารวิชาการ', 'กลุ่มบริหารงบประมาณ', 'กลุ่มบริหารงานบุคคล', 'กลุ่มบริหารทั่วไป'); ?>
+                            <div class="form-floating mb-1">
+                                <select class="form-select select2Personnel" id="pers_faction" name="pers_faction[]" multiple="multiple" data-placeholder="ระบุกลุ่มงานฝ่าย...">
+                                    <?php foreach ($factions as $value) : ?>
+                                    <option value="<?= $value; ?>"><?= $value; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="pers_faction">กลุ่มงานฝ่าย</label>
                             </div>
                         </div>
                     </div>

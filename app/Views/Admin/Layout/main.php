@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/theme-blue.css?v=1.1"
         class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=3.1" />
+    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=3.2" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
     <link rel="stylesheet" href="<?=base_url()?>/assets/css/demo.css?v=1.1" />
 
