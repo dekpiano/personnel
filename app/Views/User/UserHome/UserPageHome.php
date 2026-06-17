@@ -48,17 +48,17 @@
 
     .bento-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: 1fr;
         grid-template-rows: auto;
         gap: 1.25rem;
         margin-top: 1.5rem;
     }
 
     .hero-glass {
-        grid-column: span 4;
+        grid-column: span 1;
         background: var(--primary-gradient);
         border-radius: 30px;
-        padding: 3rem 1.5rem;
+        padding: 2.5rem 1.25rem;
         position: relative;
         overflow: hidden;
         display: flex;
@@ -144,7 +144,7 @@
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         border-radius: 24px;
-        padding: 1.75rem;
+        padding: 1.5rem;
         transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
         text-decoration: none !important;
         display: flex;
@@ -178,9 +178,9 @@
         opacity: 1;
     }
 
-    /* Card sizing for Bento effect */
+    /* Card sizing for Bento effect - Mobile first defaults (1 column spans) */
     .card-large {
-        grid-column: span 2;
+        grid-column: span 1;
         grid-row: span 1;
     }
 
@@ -239,39 +239,7 @@
         line-height: 1.5;
     }
 
-    /* Mobile Responsive */
-    @media (max-width: 1024px) {
-        .bento-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .hero-glass {
-            grid-column: span 2;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .bento-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .hero-glass {
-            grid-column: span 1;
-            padding: 3rem 1.5rem;
-        }
-
-        .card-large {
-            grid-column: span 1;
-        }
-
-        .glass-card {
-            padding: 1.75rem;
-        }
-
-        .hero-title {
-            font-size: 2.2rem;
-        }
-    }
+    /* Media Queries moved below to prevent cascading override issues */
 
     /* Login Button - Azure Elite */
     .btn-premium {
@@ -298,10 +266,10 @@
 
     /* Stats Section */
     .stats-container {
-        grid-column: span 4;
+        grid-column: span 1;
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
     }
@@ -354,9 +322,17 @@
     }
 
     .grid-title-row {
-        grid-column: span 4;
+        grid-column: span 1;
         margin-top: 1.5rem;
         margin-bottom: -0.25rem;
+    }
+
+    .contact-banner {
+        grid-column: span 1;
+        background: rgba(255, 255, 255, 0.4);
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border-style: dashed;
     }
 
     .section-title {
@@ -371,6 +347,71 @@
     .section-title i {
         font-size: 1.5rem;
         color: #2563eb;
+    }
+
+    /* Mobile First Media Queries (Scaling up from Mobile) */
+    @media (min-width: 640px) {
+        .bento-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .hero-glass {
+            grid-column: span 2;
+            padding: 3rem 1.5rem;
+        }
+
+        .card-large {
+            grid-column: span 2;
+        }
+
+        .grid-title-row {
+            grid-column: span 2;
+        }
+
+        .stats-container {
+            grid-column: span 2;
+        }
+
+        .contact-banner {
+            grid-column: span 2;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .bento-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .hero-glass {
+            grid-column: span 4;
+            padding: 3.5rem 1.5rem;
+        }
+
+        .glass-card {
+            padding: 1.75rem;
+        }
+
+        .card-large {
+            grid-column: span 2;
+        }
+
+        .card-small {
+            grid-column: span 1;
+        }
+
+        .grid-title-row {
+            grid-column: span 4;
+        }
+
+        .stats-container {
+            grid-column: span 4;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        .contact-banner {
+            grid-column: span 4;
+        }
     }
 
     /* Floating SVG backgrounds */
@@ -642,8 +683,7 @@
         </a>
 
         <!-- Contact/Info Banner -->
-        <div class="glass-card card-large reveal reveal-delay-5"
-            style="grid-column: span 4; background: rgba(255, 255, 255, 0.4); padding: 1.5rem; margin-top: 1rem; border-style: dashed;">
+        <div class="glass-card contact-banner reveal reveal-delay-5">
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h4 class="mb-2" style="font-weight: 600; color: #1e293b; font-size: 1.1rem;"><i

@@ -56,20 +56,29 @@ foreach ($AllTeachers ?? [] as $teacher) {
         margin-bottom: 2rem;
         position: relative;
         z-index: 10;
+        padding: 0 1rem;
+        width: 100%;
     }
     .switcher-container {
         background: white;
-        padding: 0.6rem;
+        padding: 0.4rem;
         border-radius: 100px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         display: flex;
         border: 1px solid #eceef1;
-        gap: 5px;
+        gap: 3px;
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .switcher-container::-webkit-scrollbar {
+        display: none;
     }
     .switch-btn {
         border: none;
         background: transparent;
-        padding: 0.8rem 2rem;
+        padding: 0.6rem 1rem;
         border-radius: 100px;
         font-weight: 700;
         color: #697a8d;
@@ -77,7 +86,9 @@ foreach ($AllTeachers ?? [] as $teacher) {
         transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
+        font-size: 0.85rem;
+        white-space: nowrap;
     }
     .switch-btn.active {
         background: var(--premium-blue);
@@ -88,19 +99,18 @@ foreach ($AllTeachers ?? [] as $teacher) {
     /* --- Filter Groups --- */
     .learning-filter-container {
         display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
         gap: 8px;
-        margin-bottom: 3rem;
-        padding: 0.5rem;
-        background: rgba(255,255,255,0.5);
-        border-radius: 50px;
+        margin-bottom: 2rem;
+        padding: 0.6rem;
+        background: rgba(255,255,255,0.8);
+        border-radius: 16px;
         border: 1px solid #eceef1;
-        max-width: 900px;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 100%;
         overflow-x: auto;
         scrollbar-width: none;
+        -ms-overflow-style: none;
     }
     .learning-filter-container::-webkit-scrollbar { display: none; }
 
@@ -147,13 +157,13 @@ foreach ($AllTeachers ?? [] as $teacher) {
     
     .leader-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 10px;
+        right: 10px;
         background: linear-gradient(135deg, #ffab00 0%, #ffcf33 100%);
         color: white;
-        padding: 4px 10px;
+        padding: 4px 8px;
         border-radius: 50px;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         font-weight: 700;
         z-index: 5;
         box-shadow: 0 4px 10px rgba(255, 171, 0, 0.4);
@@ -163,30 +173,77 @@ foreach ($AllTeachers ?? [] as $teacher) {
     .p-img-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
     
     /* Slightly bigger font for leaders but same card size */
-    .leader-card .p-name { font-size: 1.1rem; color: #b8860b; }
+    .leader-card .p-name { font-size: 0.95rem; color: #b8860b; }
 
-    .p-info { padding: 1.25rem; text-align: center; }
-    .p-name { font-weight: 700; color: #32475c; font-size: 0.95rem; line-height: 1.3; }
-    .p-role { font-size: 0.8rem; color: #8e94a9; font-weight: 500; margin-top: 5px; }
+    .p-info { padding: 1rem; text-align: center; }
+    .p-name { font-weight: 700; color: #32475c; font-size: 0.85rem; line-height: 1.3; }
+    .p-role { font-size: 0.75rem; color: #8e94a9; font-weight: 500; margin-top: 5px; }
 
-    /* --- Grid Layout (Fixed 4 Columns) --- */
+    /* --- Grid Layout (Mobile First Defaults: 2 Columns) --- */
     .p-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
     }
 
-    @media (max-width: 1200px) {
-        .p-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    /* Scaling Up Media Queries */
+    @media (min-width: 576px) {
+        .p-grid {
+            gap: 1.25rem;
+        }
+        .p-name {
+            font-size: 0.9rem;
+        }
+        .p-role {
+            font-size: 0.8rem;
+        }
+        .leader-card .p-name {
+            font-size: 1.05rem;
+        }
+        .switch-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+        .switcher-container {
+            padding: 0.5rem;
+            gap: 5px;
+        }
     }
 
-    @media (max-width: 992px) {
-        .p-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (min-width: 768px) {
+        .p-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .learning-filter-container {
+            flex-wrap: wrap;
+            justify-content: center;
+            border-radius: 50px;
+            padding: 0.5rem;
+            margin-bottom: 3rem;
+        }
     }
 
-    @media (max-width: 576px) {
-        .p-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
-        .p-name { font-size: 0.85rem; }
+    @media (min-width: 992px) {
+        .p-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+        .p-name {
+            font-size: 0.95rem;
+        }
+        .leader-card .p-name {
+            font-size: 1.1rem;
+        }
+        .p-info {
+            padding: 1.25rem;
+        }
+        .switch-btn {
+            padding: 0.8rem 2rem;
+        }
+        .switcher-container {
+            padding: 0.6rem;
+        }
     }
 </style>
 
