@@ -331,7 +331,7 @@ class ConAdminSaveAttendance extends BaseController
 
         $builder = $DBPersAttendance
             ->join('tb_personnel p', 'a.att_person_id = p.pers_id')
-            ->select('a.att_date, p.pers_prefix,p.pers_firstname,p.pers_lastname, a.att_status, a.att_reason')
+            ->select('a.att_date, p.pers_prefix,p.pers_firstname,p.pers_lastname, a.att_status, a.att_reason, a.att_time_in, a.att_time_out')
             ->where('a.att_date >=', $start)
             ->where('a.att_date <=', $end)
             ->orderBy('a.att_date', 'asc')
@@ -343,10 +343,12 @@ class ConAdminSaveAttendance extends BaseController
         $table = [];
         foreach ($rows as $r) {
             $table[] = [
-                'date'   => $r['att_date'],
-                'name'   => $r['pers_prefix'] . $r['pers_firstname'] . ' ' . $r['pers_lastname'],
-                'status' => $r['att_status'],
-                'remark' => $r['att_reason']
+                'date'     => $r['att_date'],
+                'name'     => $r['pers_prefix'] . $r['pers_firstname'] . ' ' . $r['pers_lastname'],
+                'status'   => $r['att_status'],
+                'time_in'  => $r['att_time_in'] ? substr($r['att_time_in'], 0, 5) : '-',
+                'time_out' => $r['att_time_out'] ? substr($r['att_time_out'], 0, 5) : '-',
+                'remark'   => $r['att_reason']
             ];
         }
 
@@ -458,6 +460,265 @@ class ConAdminSaveAttendance extends BaseController
 
     }
 
+    public function ExportAttendanceExcel()
+    {
+        $data = $this->DataMain();
+        $db = $data['database'];
+        $dbSKJ = $data['databaseSKJ'];
+        $dbSKJName = $dbSKJ->getDatabase();
+
+        $date = $this->request->getGet('date') ?: date('Y-m-d');
+
+        // Thai date helper
+        $thaiMonths = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+        $thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+        $ts = strtotime($date);
+        $dayName = $thaiDays[(int)date('w', $ts)];
+        $day = (int)date('j', $ts);
+        $month = $thaiMonths[(int)date('n', $ts)];
+        $year = (int)date('Y', $ts) + 543;
+        $thaiDate = "วัน{$dayName}ที่ {$day} {$month} พ.ศ.{$year}";
+
+        // --- Query attendance data for the date ---
+        $builder = $db->table('tb_personnel_attendance a');
+        $builder->select('a.att_status, a.att_reason, a.att_time_in, a.att_time_out, p.pers_prefix, p.pers_firstname, p.pers_lastname, pos.posi_name');
+        $builder->join('tb_personnel p', 'a.att_person_id = p.pers_id', 'left');
+        $builder->join($dbSKJName . '.tb_position pos', 'p.pers_position = pos.posi_id', 'left');
+        $builder->where('a.att_date', $date);
+        $builder->orderBy('pos.posi_name', 'asc');
+        $builder->orderBy('p.pers_learning', 'asc');
+        $rows = $builder->get()->getResultArray();
+
+        // --- Query position summary ---
+        $posiBuilder = $db->table('tb_personnel p');
+        $posiBuilder->select(
+            'pos.posi_name,
+             COUNT(DISTINCT p.pers_id) AS total_person,
+             COUNT(DISTINCT CASE WHEN a.att_status IN ("มา", "สาย") AND a.att_date = "' . $date . '" THEN p.pers_id END) AS attend_person,
+             SUM(CASE WHEN a.att_status = "ลากิจ" AND a.att_date = "' . $date . '" THEN 1 ELSE 0 END) AS personal_leave,
+             SUM(CASE WHEN a.att_status = "ลาป่วย" AND a.att_date = "' . $date . '" THEN 1 ELSE 0 END) AS sick_leave,
+             SUM(CASE WHEN a.att_status = "ไปราชการ" AND a.att_date = "' . $date . '" THEN 1 ELSE 0 END) AS official_leave,
+             SUM(CASE WHEN a.att_status IN ("อื่นๆ", "ขาด") AND a.att_date = "' . $date . '" THEN 1 ELSE 0 END) AS other_leave'
+        );
+        $posiBuilder->join($dbSKJName . '.tb_position pos', 'p.pers_position = pos.posi_id', 'left');
+        $posiBuilder->join('tb_personnel_attendance a', 'p.pers_id = a.att_person_id', 'left');
+        $posiBuilder->where('p.pers_status', 'กำลังใช้งาน');
+        $posiBuilder->groupBy('pos.posi_name');
+        $posiBuilder->orderBy('pos.posi_name', 'asc');
+        $posiRows = $posiBuilder->get()->getResultArray();
+
+        // --- Build Excel ---
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        
+        // --- Set Global Default Font at the beginning ---
+        $spreadsheet->getDefaultStyle()->getFont()->setName('TH Sarabun New')->setSize(16);
+
+        // =============================================
+        // Sheet 1: สรุปการลงเวลาปฏิบัติงาน
+        // =============================================
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('สรุปการลงเวลา');
+
+        $sheet1->mergeCells('A1:F1');
+        $sheet1->setCellValue('A1', 'สรุปการลงเวลาปฏิบัติงานข้าราชการครูและบุคลากรทางการศึกษา');
+        $sheet1->getStyle('A1')->applyFromArray([
+            'font' => ['name' => 'TH Sarabun New', 'bold' => true, 'size' => 18],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+
+        $sheet1->mergeCells('A2:F2');
+        $sheet1->setCellValue('A2', 'ประจำ' . $thaiDate);
+        $sheet1->getStyle('A2')->applyFromArray([
+            'font' => ['size' => 13],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+
+        $headers = ['ชื่อ-นามสกุล', 'ตำแหน่ง', 'เวลาเข้า', 'เวลาออก', 'สถานะ', 'หมายเหตุ'];
+        $col = 'A';
+        foreach ($headers as $h) {
+            $sheet1->setCellValue($col . '4', $h);
+            $col++;
+        }
+        $sheet1->getStyle('A4:F4')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '1e40af']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ]);
+
+        $r = 5;
+        foreach ($rows as $row) {
+            $fullname = $row['pers_prefix'] . $row['pers_firstname'] . ' ' . $row['pers_lastname'];
+            $timeIn = $row['att_time_in'] ? substr($row['att_time_in'], 0, 5) : '-';
+            $timeOut = $row['att_time_out'] ? substr($row['att_time_out'], 0, 5) : '-';
+            $status = $row['att_status'];
+            $remark = !empty($row['att_reason']) ? $row['att_reason'] : '';
+
+            $sheet1->setCellValue("A{$r}", $fullname);
+            $sheet1->setCellValue("B{$r}", $row['posi_name'] ?? '-');
+            $sheet1->setCellValue("C{$r}", $timeIn);
+            $sheet1->setCellValue("D{$r}", $timeOut);
+            $sheet1->setCellValue("E{$r}", $status);
+            $sheet1->setCellValue("F{$r}", $remark);
+            $sheet1->getStyle("C{$r}:E{$r}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $r++;
+        }
+
+        $lastRow = $r - 1;
+        if ($lastRow >= 5) {
+            $sheet1->getStyle("A4:F{$lastRow}")->applyFromArray([
+                'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+            ]);
+        }
+        foreach (range('A', 'F') as $c) {
+            $sheet1->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        // =============================================
+        // Sheet 2: ไม่ลงเวลากลับ & ไปราชการ
+        // =============================================
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('ไม่ลงเวลากลับ-ไปราชการ');
+
+        $sheet2->mergeCells('A1:B1');
+        $sheet2->setCellValue('A1', 'สรุปบุคลากรที่ไม่ลงเวลากลับ และ ไปราชการ — ' . $thaiDate);
+        $sheet2->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 13],
+        ]);
+
+        $sheet2->setCellValue('A3', 'ไม่ลงเวลากลับ');
+        $sheet2->setCellValue('B3', 'ไปราชการ');
+        $sheet2->getStyle('A3:B3')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'dc3545']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ]);
+
+        $noCheckout = [];
+        $officialBiz = [];
+        foreach ($rows as $row) {
+            $name = $row['pers_prefix'] . $row['pers_firstname'] . ' ' . $row['pers_lastname'];
+            if (in_array($row['att_status'], ['มา', 'สาย']) && (empty($row['att_time_out']) || $row['att_time_out'] === null)) {
+                $noCheckout[] = $name;
+            }
+            if ($row['att_status'] === 'ไปราชการ') {
+                $officialBiz[] = $name;
+            }
+        }
+
+        $maxRows2 = max(count($noCheckout), count($officialBiz), 1);
+        for ($i = 0; $i < $maxRows2; $i++) {
+            $rr = $i + 4;
+            $sheet2->setCellValue("A{$rr}", $noCheckout[$i] ?? '');
+            $sheet2->setCellValue("B{$rr}", $officialBiz[$i] ?? '');
+        }
+        $lastRow2 = $maxRows2 + 3;
+        $sheet2->getStyle("A3:B{$lastRow2}")->applyFromArray([
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ]);
+        $sheet2->getColumnDimension('A')->setAutoSize(true);
+        $sheet2->getColumnDimension('B')->setAutoSize(true);
+
+        // =============================================
+        // Sheet 3: สรุปวันลาแยกตามตำแหน่ง
+        // =============================================
+        $sheet3 = $spreadsheet->createSheet();
+        $sheet3->setTitle('สรุปตามตำแหน่ง');
+
+        $sheet3->mergeCells('A1:G1');
+        $sheet3->setCellValue('A1', 'รายงานสรุปวันลาแยกตามตำแหน่ง — ' . $thaiDate);
+        $sheet3->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 13],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+
+        $posiHeaders = ['กลุ่มตำแหน่ง/สังกัด', 'จำนวนบุคลากร', 'มาปฏิบัติหน้าที่', 'ลาป่วย', 'ลากิจ', 'ไปราชการ', 'อื่นๆ/ขาด'];
+        $col = 'A';
+        foreach ($posiHeaders as $h) {
+            $sheet3->setCellValue($col . '3', $h);
+            $col++;
+        }
+        $sheet3->getStyle('A3:G3')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '0d6efd']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ]);
+
+        $r3 = 4;
+        $totals = ['total_person' => 0, 'attend_person' => 0, 'sick_leave' => 0, 'personal_leave' => 0, 'official_leave' => 0, 'other_leave' => 0];
+        foreach ($posiRows as $pr) {
+            $sheet3->setCellValue("A{$r3}", $pr['posi_name'] ?? '-');
+            $sheet3->setCellValue("B{$r3}", (int)$pr['total_person']);
+            $sheet3->setCellValue("C{$r3}", (int)$pr['attend_person']);
+            $sheet3->setCellValue("D{$r3}", (int)$pr['sick_leave']);
+            $sheet3->setCellValue("E{$r3}", (int)$pr['personal_leave']);
+            $sheet3->setCellValue("F{$r3}", (int)$pr['official_leave']);
+            $sheet3->setCellValue("G{$r3}", (int)$pr['other_leave']);
+            $sheet3->getStyle("B{$r3}:G{$r3}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            $totals['total_person'] += (int)$pr['total_person'];
+            $totals['attend_person'] += (int)$pr['attend_person'];
+            $totals['sick_leave'] += (int)$pr['sick_leave'];
+            $totals['personal_leave'] += (int)$pr['personal_leave'];
+            $totals['official_leave'] += (int)$pr['official_leave'];
+            $totals['other_leave'] += (int)$pr['other_leave'];
+            $r3++;
+        }
+
+        // Total row
+        $sheet3->setCellValue("A{$r3}", 'รวมทั้งหมด');
+        $sheet3->setCellValue("B{$r3}", $totals['total_person']);
+        $sheet3->setCellValue("C{$r3}", $totals['attend_person']);
+        $sheet3->setCellValue("D{$r3}", $totals['sick_leave']);
+        $sheet3->setCellValue("E{$r3}", $totals['personal_leave']);
+        $sheet3->setCellValue("F{$r3}", $totals['official_leave']);
+        $sheet3->setCellValue("G{$r3}", $totals['other_leave']);
+        $sheet3->getStyle("A{$r3}:G{$r3}")->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'e9ecef']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        $sheet3->getStyle("A3:G{$r3}")->applyFromArray([
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ]);
+        foreach (range('A', 'G') as $c) {
+            $sheet3->getColumnDimension($c)->setAutoSize(true);
+        }
+        // --- Page Setup: A4 for all sheets ---
+        $allSheets = [$sheet1, $sheet2, $sheet3];
+        foreach ($allSheets as $sh) {
+            $sh->getPageSetup()
+                ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4)
+                ->setFitToWidth(1)
+                ->setFitToHeight(0); // Only fit columns to 1 page width, rows can spill over to page 2/3 naturally
+            $sh->getPageMargins()
+                ->setTop(0.5)
+                ->setBottom(0.5)
+                ->setLeft(0.4)
+                ->setRight(0.4);
+        }
+        // Sheet 1: Portrait (5 columns พอดี A4 แนวตั้ง)
+        $sheet1->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        // Sheet 2: Portrait
+        $sheet2->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        // Sheet 3: Landscape (7 columns ใช้แนวนอนจะพอดีกว่า)
+        $sheet3->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+
+        // --- Output ---
+        $spreadsheet->setActiveSheetIndex(0);
+        $filename = 'สรุปการลงเวลา_' . $date . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit();
+    }
+
     public function UploadExcel()
     {
         try {
@@ -514,19 +775,66 @@ class ConAdminSaveAttendance extends BaseController
                 }
 
                 $finger_id = trim($row['A'] ?? '');
-                $row_date = trim($row['C'] ?? '');
-                $time_in_str = trim($row['D'] ?? '');
-                $time_out_str = trim($row['E'] ?? '');
+                $row_date_raw = $row['C'] ?? '';
+                $time_in_raw = $row['D'] ?? '';
+                $time_out_raw = $row['E'] ?? '';
 
-                if (empty($finger_id) || empty($row_date) || empty($time_in_str)) {
+                // --- Helper: Parse date from Excel (serial number or string) ---
+                $row_date = '';
+                if (is_numeric($row_date_raw) && (int)$row_date_raw > 30000) {
+                    // Excel serial number (e.g. 46186 for 2026-06-18)
+                    $row_date = date('Y-m-d', \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp((float)$row_date_raw));
+                } else {
+                    $row_date_str = trim((string)$row_date_raw);
+                    // Try DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+                    if (preg_match('#^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$#', $row_date_str, $m)) {
+                        $row_date = sprintf('%04d-%02d-%02d', (int)$m[3], (int)$m[2], (int)$m[1]);
+                    }
+                    // Try YYYY-MM-DD (standard)
+                    elseif (preg_match('#^(\d{4})-(\d{1,2})-(\d{1,2})$#', $row_date_str, $m)) {
+                        $row_date = sprintf('%04d-%02d-%02d', (int)$m[1], (int)$m[2], (int)$m[3]);
+                    }
+                    // Try DD/MM/YY or DD-MM-YY or DD.MM.YY
+                    elseif (preg_match('#^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2})$#', $row_date_str, $m)) {
+                        $year = (int)$m[3];
+                        $year = $year + ($year > 50 ? 1900 : 2000);
+                        $row_date = sprintf('%04d-%02d-%02d', $year, (int)$m[2], (int)$m[1]);
+                    }
+                    // Fallback: let PHP try to parse it
+                    else {
+                        $ts = strtotime($row_date_str);
+                        if ($ts !== false) {
+                            $row_date = date('Y-m-d', $ts);
+                        }
+                    }
+                }
+
+                // --- Helper: Parse time from Excel (decimal or string) ---
+                $time_in_str = '';
+                if (is_numeric($time_in_raw) && (float)$time_in_raw < 1) {
+                    // Excel time fraction (e.g. 0.33125 = 07:57)
+                    $totalSeconds = round((float)$time_in_raw * 86400);
+                    $time_in_str = sprintf('%02d:%02d', intdiv((int)$totalSeconds, 3600), intdiv((int)$totalSeconds % 3600, 60));
+                } else {
+                    $time_in_str = trim((string)$time_in_raw);
+                }
+
+                $time_out_str = '';
+                if (is_numeric($time_out_raw) && (float)$time_out_raw < 1) {
+                    $totalSeconds = round((float)$time_out_raw * 86400);
+                    $time_out_str = sprintf('%02d:%02d', intdiv((int)$totalSeconds, 3600), intdiv((int)$totalSeconds % 3600, 60));
+                } else {
+                    $time_out_str = trim((string)$time_out_raw);
+                }
+
+                if (empty($finger_id) || empty($row_date)) {
                     continue;
                 }
 
                 // If a selected date was passed, filter by it
                 if (!empty($att_date)) {
-                    $norm_row_date = date('Y-m-d', strtotime(str_replace('/', '-', $row_date)));
                     $norm_att_date = date('Y-m-d', strtotime($att_date));
-                    if ($norm_row_date !== $norm_att_date) {
+                    if ($row_date !== $norm_att_date) {
                         continue;
                     }
                 }
@@ -536,35 +844,55 @@ class ConAdminSaveAttendance extends BaseController
                 if ($personnel) {
                     // Replace dot with colon if format is 07.55 instead of 07:55
                     $time_in_normalized = str_replace('.', ':', $time_in_str);
-                    if (strlen($time_in_normalized) == 4 || strlen($time_in_normalized) == 5) {
-                        $time_in_normalized = date('H:i:s', strtotime($time_in_normalized));
-                    }
-
-                    $scanTime = strtotime($time_in_normalized);
-                    $lateTime = strtotime($personnel['late_time']);
-
-                    $status = ($scanTime > $lateTime) ? 'สาย' : 'ma';
-                    if ($status === 'ma') {
-                        $status = 'มา';
-                    }
                     
-                    $time_out_val = '';
-                    if (!empty($time_out_str)) {
-                        $time_out_normalized = str_replace('.', ':', $time_out_str);
-                        $time_out_val = date('H:i', strtotime($time_out_normalized));
-                    }
+                    // Validate: check if time_in is a valid time format (must contain digits and : or .)
+                    $isValidTime = preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_in_str));
+                    
+                    if ($isValidTime) {
+                        if (strlen($time_in_normalized) <= 5) {
+                            $time_in_normalized = date('H:i:s', strtotime($time_in_normalized));
+                        }
 
-                    $parsedData[$personnel['pers_id']] = [
-                        'status' => $status,
-                        'remark' => '',
-                        'time_in' => date('H:i', $scanTime),
-                        'time_out' => $time_out_val
-                    ];
+                        $scanTime = strtotime($time_in_normalized);
+                        $lateTime = strtotime($personnel['late_time']);
+
+                        $status = ($scanTime > $lateTime) ? 'สาย' : 'มา';
+                        
+                        $time_out_val = '';
+                        if (!empty($time_out_str) && preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_out_str))) {
+                            $time_out_normalized = str_replace('.', ':', $time_out_str);
+                            $time_out_val = date('H:i', strtotime($time_out_normalized));
+                        }
+
+                        $parsedData[$personnel['pers_id']] = [
+                            'status' => $status,
+                            'remark' => '',
+                            'time_in' => date('H:i', $scanTime),
+                            'time_out' => $time_out_val
+                        ];
+                    } else {
+                        // Invalid time format (e.g. "-----") → mark as ขาด (absent)
+                        $parsedData[$personnel['pers_id']] = [
+                            'status' => 'ขาด',
+                            'remark' => '',
+                            'time_in' => '',
+                            'time_out' => ''
+                        ];
+                    }
                 }
 
                 $debugRows[] = [
                     'row' => $index,
                     'finger_id' => $finger_id,
+                    'date_raw' => $row_date_raw,
+                    'date_raw_type' => gettype($row_date_raw),
+                    'date_parsed' => $row_date,
+                    'time_in_raw' => $time_in_raw,
+                    'time_in_raw_type' => gettype($time_in_raw),
+                    'time_in_parsed' => $time_in_str,
+                    'time_out_raw' => $time_out_raw,
+                    'time_out_raw_type' => gettype($time_out_raw),
+                    'time_out_parsed' => $time_out_str,
                     'found' => $personnel ? true : false
                 ];
             }
@@ -573,7 +901,10 @@ class ConAdminSaveAttendance extends BaseController
             return $this->response->setJSON([
                 'status' => 'success', 
                 'data' => $parsedData,
-                'count' => count($parsedData)
+                'count' => count($parsedData),
+                'debug' => array_slice($debugRows, 0, 5),
+                'total_rows' => count($debugRows),
+                'att_date_sent' => $att_date ?? 'NOT SET'
             ]);
 
         } catch (\Throwable $e) {

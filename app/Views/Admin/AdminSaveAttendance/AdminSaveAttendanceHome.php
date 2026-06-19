@@ -320,8 +320,8 @@
                     <h5 class="section-title mb-0">
                         <i class="bi bi-table"></i> รายละเอียดการมาทำงาน
                     </h5>
-                    <button class="btn btn-sm btn-light rounded-pill px-3" onclick="window.print()">
-                        <i class="bi bi-printer me-1"></i> พิมพ์รายงาน
+                    <button class="btn btn-sm btn-success rounded-pill px-3" id="btn-export-excel">
+                        <i class="bi bi-file-earmark-excel me-1"></i> ส่งออก Excel
                     </button>
                 </div>
                 <div class="table-responsive">
@@ -331,6 +331,8 @@
                                 <th>วันที่</th>
                                 <th>ชื่อ-นามสกุล</th>
                                 <th>สถานะ</th>
+                                <th>เวลามา</th>
+                                <th>เวลากลับ</th>
                                 <th>หมายเหตุ</th>
                             </tr>
                         </thead>

@@ -273,6 +273,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td class="text-nowrap">${row.date}</td>
                             <td class="fw-bold">${row.name}</td>
                             <td><span class="badge-status ${badgeClass}">${row.status}</span></td>
+                            <td class="text-center text-nowrap">${row.time_in || "-"}</td>
+                            <td class="text-center text-nowrap">${row.time_out || "-"}</td>
                             <td class="text-muted">${row.remark || "-"}</td>
                         </tr>`;
           });
@@ -297,6 +299,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         <tr>
                             <td class="text-center py-4 text-muted">-</td>
                             <td class="text-center py-4 text-muted">ไม่พบข้อมูลการมาทำงานในช่วงเวลานี้</td>
+                            <td class="text-center py-4 text-muted">-</td>
+                            <td class="text-center py-4 text-muted">-</td>
                             <td class="text-center py-4 text-muted">-</td>
                             <td class="text-center py-4 text-muted">-</td>
                         </tr>`);
@@ -341,6 +345,24 @@ document.addEventListener("DOMContentLoaded", function () {
     initialDateInput.addEventListener("change", updateDashboard);
   updateDashboard();
 
+  // Handle Export Excel Button
+  document.getElementById("btn-export-excel").addEventListener("click", function () {
+    const type = document.getElementById("dateType").value;
+    const inputEl = document.getElementById("dateInput");
+    if (!inputEl || !inputEl.value) {
+      Swal.fire({ icon: "warning", title: "กรุณาเลือกวันที่ก่อน" });
+      return;
+    }
+    let dateValue = inputEl.value;
+    // For day type, use the date directly. For month/year, use the first day
+    if (type === "month") {
+      dateValue = dateValue + "-01";
+    } else if (type === "year") {
+      dateValue = dateValue + "-01-01";
+    }
+    window.open("../Admin/SaveAttendance/ExportExcel?date=" + dateValue, "_blank");
+  });
+
   // Handle Parse Excel Button
   document.getElementById("btn-parse-excel").addEventListener("click", function () {
     let fileInput = document.getElementById("excel_file");
@@ -375,6 +397,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((result) => {
+        console.log('=== Excel Upload Debug ===', result);
+        if (result.debug) {
+          console.table(result.debug);
+        }
         if (result.status === "success") {
           const parsedData = result.data || {};
           let foundCount = 0;
