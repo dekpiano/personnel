@@ -754,6 +754,7 @@ class ConAdminSaveAttendance extends BaseController
             $allPersonnel = $DBPers->select('tb_personnel.pers_id, tb_personnel.pers_finger_id, COALESCE('.$dbSKJ_name.'.tb_position.late_time, "08:00:00") as late_time')
                                 ->join($dbSKJ_name.'.tb_position', $dbSKJ_name.'.tb_position.posi_id = tb_personnel.pers_position', 'left')
                                 ->where('tb_personnel.pers_finger_id IS NOT NULL')
+                                ->where('tb_personnel.pers_status', 'กำลังใช้งาน')
                                 ->get()->getResultArray();
             $personnelMap = [];
             foreach ($allPersonnel as $p) {
@@ -826,6 +827,13 @@ class ConAdminSaveAttendance extends BaseController
                 } else {
                     $time_out_str = trim((string)$time_out_raw);
                 }
+                if ($row_date) {
+                    $parts = explode('-', $row_date);
+                    if (count($parts) === 3 && (int)$parts[0] > 2400) {
+                        $parts[0] = (int)$parts[0] - 543;
+                        $row_date = implode('-', $parts);
+                    }
+                }
 
                 if (empty($finger_id) || empty($row_date)) {
                     continue;
@@ -842,42 +850,50 @@ class ConAdminSaveAttendance extends BaseController
                 $personnel = $personnelMap[$finger_id] ?? null;
                 
                 if ($personnel) {
+                    $pId = $personnel['pers_id'];
+
                     // Replace dot with colon if format is 07.55 instead of 07:55
                     $time_in_normalized = str_replace('.', ':', $time_in_str);
-                    
-                    // Validate: check if time_in is a valid time format (must contain digits and : or .)
-                    $isValidTime = preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_in_str));
-                    
-                    if ($isValidTime) {
-                        if (strlen($time_in_normalized) <= 5) {
-                            $time_in_normalized = date('H:i:s', strtotime($time_in_normalized));
-                        }
+                    $time_out_normalized = str_replace('.', ':', $time_out_str);
 
-                        $scanTime = strtotime($time_in_normalized);
-                        $lateTime = strtotime($personnel['late_time']);
+                    // Validate: check if times are valid formats (digits and : or .)
+                    $isValidTimeIn = preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_in_str));
+                    $isValidTimeOut = preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_out_str));
 
-                        $status = ($scanTime > $lateTime) ? 'สาย' : 'มา';
-                        
-                        $time_out_val = '';
-                        if (!empty($time_out_str) && preg_match('/^\d{1,2}[:.]\d{2}(:\d{2})?$/', str_replace(':', '.', $time_out_str))) {
-                            $time_out_normalized = str_replace('.', ':', $time_out_str);
-                            $time_out_val = date('H:i', strtotime($time_out_normalized));
-                        }
-
-                        $parsedData[$personnel['pers_id']] = [
-                            'status' => $status,
-                            'remark' => '',
-                            'time_in' => date('H:i', $scanTime),
-                            'time_out' => $time_out_val
-                        ];
-                    } else {
-                        // Invalid time format (e.g. "-----") → mark as ขาด (absent)
-                        $parsedData[$personnel['pers_id']] = [
+                    // Initialize person if not exists yet
+                    if (!isset($parsedData[$pId])) {
+                        $parsedData[$pId] = [
                             'status' => 'ขาด',
                             'remark' => '',
                             'time_in' => '',
                             'time_out' => ''
                         ];
+                    }
+
+                    // Update check-in and status if we have a valid time in
+                    if ($isValidTimeIn) {
+                        if (strlen($time_in_normalized) <= 5) {
+                            $time_in_normalized = date('H:i:s', strtotime($time_in_normalized));
+                        }
+                        $scanTime = strtotime($time_in_normalized);
+                        $lateTime = strtotime($personnel['late_time']);
+                        $status = ($scanTime > $lateTime) ? 'สาย' : 'มา';
+
+                        $parsedData[$pId]['status'] = $status;
+                        $parsedData[$pId]['time_in'] = date('H:i', $scanTime);
+                    }
+
+                    // Update check-out if we have a valid time out
+                    if ($isValidTimeOut) {
+                        if (strlen($time_out_normalized) <= 5) {
+                            $time_out_normalized = date('H:i:s', strtotime($time_out_normalized));
+                        }
+                        $parsedData[$pId]['time_out'] = date('H:i', strtotime($time_out_normalized));
+                        
+                        // If they have a valid check-out time but status is still 'ขาด', mark as 'มา'
+                        if ($parsedData[$pId]['status'] === 'ขาด') {
+                            $parsedData[$pId]['status'] = 'มา';
+                        }
                     }
                 }
 
