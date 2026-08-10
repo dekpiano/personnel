@@ -21,48 +21,71 @@ class ConAdminPaConfig extends BaseController
     public function index()
     {
         $session = session();
-        // Check if user is admin (using 'rloes' session variable)
         if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้!');
         }
 
-        $data = $this->DataMain(); // Call DataMain to get common data like full_url
-
+        $data = $this->DataMain();
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
-        // Fetch all evaluators (potential assessors)
+        // คำนวณปีการศึกษาปัจจุบัน
+        $current_month = (int)date('m');
+        $current_year_ad = (int)date('Y');
+        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+
+        // ดึงปีการศึกษาที่มีในระบบ
+        $years_raw = $db_pa_evaluation->table('tb_evaluations')
+            ->select('ev_fiscal_year')
+            ->distinct()
+            ->get()->getResultArray();
+        $available_years = array_column($years_raw, 'ev_fiscal_year');
+        if (!in_array($current_fiscal_year_be, $available_years)) {
+            array_unshift($available_years, $current_fiscal_year_be);
+        }
+        rsort($available_years);
+
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+
+        // Fetch all evaluators
         $evaluators = $db_pa_evaluation->table('tb_evaluators')
                                   ->orderBy('e_first_name', 'ASC')
                                   ->get()->getResultArray();
 
-        $db_skj = \Config\Database::connect('skj'); // Added missing connection
+        $db_skj = \Config\Database::connect('skj');
 
-        // Fetch all positions
+        // Fetch positions & learning groups
         $positions = $db_skj->table('tb_position')
                             ->select('posi_id, posi_name')
                             ->orderBy('posi_id', 'ASC')
                             ->get()->getResultArray();
 
-        // Fetch all learning groups
         $learningGroups = $db_skj->table('tb_learning')
                                  ->select('lear_id, lear_namethai')
                                  ->orderBy('lear_namethai', 'ASC')
                                  ->get()->getResultArray();
 
-        // Fetch existing assessor scopes
+        // Fetch assessor scopes filtered by fiscal year
         $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
+                                           ->groupStart()
+                                                ->where('scope_fiscal_year', $fiscal_year_be)
+                                                ->orWhere('scope_fiscal_year IS NULL')
+                                                ->orWhere('scope_fiscal_year', 0)
+                                           ->groupEnd()
                                            ->get()->getResultArray();
 
         $data = [
             'title' => 'ตั้งค่าผู้ประเมิน PA',
-            'description' => 'กำหนดขอบเขตการประเมินสำหรับผู้ประเมินแต่ละคน',
+            'description' => 'กำหนดขอบเขตการประเมินสำหรับผู้ประเมินประจำปี ' . $fiscal_year_be,
             'evaluators' => $evaluators,
             'positions' => $positions,
             'learningGroups' => $learningGroups,
             'assessorScopes' => $assessorScopes,
-            'UrlMenuMain' => 'Admin', // Assuming this is for admin menu highlighting
-            'UrlMenuSub' => 'PaConfig', // Assuming this is for admin menu highlighting
-            'uri' => service('uri'), // Pass uri service to view
+            'fiscal_year' => $fiscal_year_be,
+            'available_years' => $available_years,
+            'UrlMenuMain' => 'Admin',
+            'UrlMenuSub' => 'PaConfig',
+            'uri' => service('uri'),
         ];
 
         return view('Admin/AdminPaEvaluation/index', $data);
@@ -78,11 +101,28 @@ class ConAdminPaConfig extends BaseController
         $db_default = \Config\Database::connect(); // Default connection
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
         $db_skj = \Config\Database::connect('skj');
-        // Get current fiscal year
-        // $current_month = date('m');
-        // $current_year_ad = date('Y');
-        // $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
-        $fiscal_year_be = 2568; // Hardcoded for testing as per user request
+
+        // คำนวณปีงบประมาณ/ปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
+        $current_month = (int)date('m');
+        $current_year_ad = (int)date('Y');
+        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+
+        // ดึงรายการปีการศึกษาทั้งหมดที่มีในระบบ
+        $years_raw = $db_pa_evaluation->table('tb_evaluations')
+            ->select('ev_fiscal_year')
+            ->distinct()
+            ->orderBy('ev_fiscal_year', 'DESC')
+            ->get()->getResultArray();
+
+        $available_years = array_column($years_raw, 'ev_fiscal_year');
+        if (!in_array($current_fiscal_year_be, $available_years)) {
+            array_unshift($available_years, $current_fiscal_year_be);
+        }
+        rsort($available_years);
+
+        // รับค่าปีการศึกษาจาก GET (ถ้ามี) มิฉะนั้นใช้ปีปัจจุบัน
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
 
         // 1. Fetch all necessary lookup tables at once
         $assessor_scopes = $db_pa_evaluation->table('tb_assessor_scope')->get()->getResultArray();
@@ -187,20 +227,21 @@ class ConAdminPaConfig extends BaseController
         $data['UrlMenuSub'] = 'PaReport';
         $data['personnel'] = $final_personnel_data;
         $data['fiscal_year'] = $fiscal_year_be;
+        $data['available_years'] = $available_years;
 
         return view('Admin/AdminPaEvaluation/report', $data);
     }
 
-    public function getScores($personId, $evaluatorId)
+    public function getScores($personId, $evaluatorId, $fiscal_year_be = null)
     {
         $db_default = \Config\Database::connect();
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
-        // Get current fiscal year
-        // $current_month = date('m');
-        // $current_year_ad = date('Y');
-        // $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
-        $fiscal_year_be = 2568; // Hardcoded for testing to match report()
+        if (empty($fiscal_year_be)) {
+            $current_month = (int)date('m');
+            $current_year_ad = (int)date('Y');
+            $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        }
 
         // 2. Find the main evaluation record (tb_evaluations)
         $evaluation = $db_pa_evaluation->table('tb_evaluations')
@@ -290,22 +331,29 @@ class ConAdminPaConfig extends BaseController
     public function saveScope()
     {
         $session = session();
-         $data = $this->DataMain();
+        $data = $this->DataMain();
         if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
-                $assessor_e_id = $this->request->getPost('assessor_e_id');
+        $assessor_e_id = $this->request->getPost('assessor_e_id');
         $scope_posi_id = $this->request->getPost('scope_posi_id');
         $scope_lear_id = $this->request->getPost('scope_lear_id');
+        $scope_fiscal_year = $this->request->getPost('scope_fiscal_year');
+
+        if (empty($scope_fiscal_year)) {
+            $current_month = (int)date('m');
+            $current_year_ad = (int)date('Y');
+            $scope_fiscal_year = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        }
 
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
         $table = $db_pa_evaluation->table('tb_assessor_scope');
 
-        // Check if a similar entry already exists
         $existingScope = $table->where('assessor_e_id', $assessor_e_id)
                                ->where('scope_posi_id', $scope_posi_id === '' ? null : $scope_posi_id)
                                ->where('scope_lear_id', $scope_lear_id === '' ? null : $scope_lear_id)
+                               ->where('scope_fiscal_year', $scope_fiscal_year)
                                ->get()->getRowArray();
 
         if ($existingScope) {
@@ -313,23 +361,24 @@ class ConAdminPaConfig extends BaseController
         } else {
             $data = [
                 'assessor_e_id' => $assessor_e_id,
-                'scope_posi_id' => $scope_posi_id === '' ? null : $scope_posi_id, // Handle empty string for NULL
-                'scope_lear_id' => $scope_lear_id === '' ? null : $scope_lear_id, // Handle empty string for NULL
+                'scope_posi_id' => $scope_posi_id === '' ? null : $scope_posi_id,
+                'scope_lear_id' => $scope_lear_id === '' ? null : $scope_lear_id,
+                'scope_fiscal_year' => $scope_fiscal_year,
             ];
             if ($table->insert($data)) {
-                $session->setFlashdata('Success', 'บันทึกการตั้งค่าสำเร็จ!');
+                $session->setFlashdata('Success', 'บันทึกการตั้งค่าสำเร็จประจำปี ' . $scope_fiscal_year . '!');
             } else {
                 $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการบันทึก!');
             }
         }
 
-        return redirect()->to(base_url('Admin/PaConfig'));
+        return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
     }
 
     public function deleteScope($id)
     {
         $session = session();
-         $data = $this->DataMain();
+        $data = $this->DataMain();
         if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
@@ -337,11 +386,14 @@ class ConAdminPaConfig extends BaseController
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
         $table = $db_pa_evaluation->table('tb_assessor_scope');
 
+        $scope = $table->where('id', $id)->get()->getRowArray();
+        $redirectYear = !empty($scope['scope_fiscal_year']) ? $scope['scope_fiscal_year'] : '';
+
         if ($table->delete(['id' => $id])) {
             $session->setFlashdata('Success', 'ลบการตั้งค่าสำเร็จ!');
         }
 
-        return redirect()->to(base_url('Admin/PaConfig'));
+        return redirect()->to(base_url('Admin/PaConfig' . ($redirectYear ? '?fiscal_year=' . $redirectYear : '')));
     }
 
     public function addEvaluator()

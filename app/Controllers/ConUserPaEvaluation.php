@@ -43,9 +43,22 @@ class ConUserPaEvaluation extends BaseController
         // --- Start Assessor Scope Filtering ---
         $loggedInUserId = $session->get('id'); // Get the e_id of the logged-in user (assessor)
 
-        // Fetch scopes for the logged-in assessor
+        // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
+        $current_month = (int)date('m');
+        $current_year_ad = (int)date('Y');
+        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+
+        // Fetch scopes for the logged-in assessor filtered by selected fiscal year
         $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
                                            ->where('assessor_e_id', $loggedInUserId)
+                                           ->groupStart()
+                                                ->where('scope_fiscal_year', $fiscal_year_be)
+                                                ->orWhere('scope_fiscal_year IS NULL')
+                                                ->orWhere('scope_fiscal_year', 0)
+                                           ->groupEnd()
                                            ->get()->getResultArray();
 
         if (!empty($assessorScopes)) {
@@ -63,27 +76,21 @@ class ConUserPaEvaluation extends BaseController
             }
             $builder->groupEnd(); // End the main OR group
         } else {
-            // If no scope is defined for the assessor, they should not see any personnel.
-            // An admin with no scope should see everyone.
+            // If no scope is defined for the assessor in this fiscal year, they see no personnel.
             if ($session->get('status') !== 'admin') {
-                // Any non-admin user (like an assessor) with no scopes should see no one.
                 $builder->where('1=0'); 
             }
-            // If the user IS an admin, we do nothing, so they will see all personnel.
         }
         // --- End Assessor Scope Filtering ---
 
         $query = $builder->get();
         $personnel = $query->getResultArray();
 
-        // เพิ่มสถานะการประเมิน (เฉพาะสำหรับผู้ประเมินที่ล็อกอินอยู่)
-        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
-        $loggedInUserId = $session->get('id'); // e_id from tb_evaluators
-
         foreach ($personnel as &$p) { // ใช้ & เพื่อแก้ไขค่าใน array โดยตรง
             $evaluationExists = $db_pa_evaluation->table('tb_evaluator_scores')
                                                  ->join('tb_evaluations', 'tb_evaluations.ev_id = tb_evaluator_scores.ev_id')
                                                  ->where('tb_evaluations.t_id', $p['pers_id'])
+                                                 ->where('tb_evaluations.ev_fiscal_year', $fiscal_year_be)
                                                  ->where('tb_evaluator_scores.e_id', $loggedInUserId)
                                                  ->countAllResults() > 0;
             $p['has_pa_evaluation'] = $evaluationExists;

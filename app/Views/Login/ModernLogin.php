@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>เข้าสู่ระบบ | SKJ Personnel Hub</title>
-    <meta name="description" content="ระบบบริหารงานบุคคล โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์" />
+    <title>เข้าสู่ระบบประเมิน PA | SKJ Evaluation System</title>
+    <meta name="description" content="ระบบประเมินผลการพัฒนางานตามข้อตกลง (Performance Appraisal - PA) โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์" />
     <link rel="icon" type="image/x-icon" href="<?= base_url() ?>/assets/img/favicon/favicon.ico" />
 
     <!-- Fonts -->
@@ -22,18 +22,18 @@
 
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --accent: #3b82f6;
-            --glass: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --primary: #0288d1;
+            --primary-dark: #01579b;
+            --accent: #03c3ec;
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.5);
         }
 
         body {
             font-family: 'Kanit', 'Outfit', sans-serif;
-            background-color: #f8fafc;
+            background-color: #0f172a;
             overflow-x: hidden;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             display: flex;
             align-items: center;
@@ -50,65 +50,64 @@
             bottom: 0;
             z-index: -1;
             overflow: hidden;
-            background: radial-gradient(circle at 0% 0%, #e0f2fe 0%, #f8fafc 50%, #eff6ff 100%);
+            background: radial-gradient(circle at 50% 30%, #0f172a 0%, #0288d1 60%, #01579b 100%);
         }
 
         .blob {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
+            filter: blur(90px);
+            opacity: 0.35;
             animation: move 20s infinite alternate;
         }
 
         .blob-1 {
-            width: 500px;
-            height: 500px;
-            background: #3b82f6;
-            top: -10%;
+            width: 550px;
+            height: 550px;
+            background: #03c3ec;
+            top: -15%;
             left: -10%;
         }
 
         .blob-2 {
-            width: 400px;
-            height: 400px;
-            background: #0ea5e9;
-            bottom: -5%;
+            width: 450px;
+            height: 450px;
+            background: #0288d1;
+            bottom: -10%;
             right: -5%;
             animation-duration: 25s;
         }
 
         .blob-3 {
-            width: 300px;
-            height: 300px;
-            background: #6366f1;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: #38bdf8;
+            top: 40%;
+            left: 60%;
             animation-duration: 15s;
         }
 
         @keyframes move {
             from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(5%, 10%) scale(1.1); }
+            to { transform: translate(6%, 12%) scale(1.15); }
         }
 
         /* Modern Login Card */
         .login-container {
             width: 100%;
-            max-width: 440px;
+            max-width: 450px;
             padding: 20px;
             z-index: 10;
         }
 
         .login-card {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
             border-radius: 28px;
-            padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            padding: 40px 35px;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
             animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -119,17 +118,17 @@
 
         .login-header {
             text-align: center;
-            margin-bottom: 35px;
+            margin-bottom: 30px;
         }
 
         .brand-logo {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             background: white;
             padding: 10px;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            margin: 0 auto 20px;
+            border-radius: 22px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            margin: 0 auto 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -140,53 +139,98 @@
             height: auto;
         }
 
-        .login-title {
-            font-size: 1.6rem;
+        .system-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(2, 136, 209, 0.1);
+            color: #0288d1;
+            font-size: 0.75rem;
             font-weight: 700;
-            color: #1e293b;
+            border-radius: 50px;
             margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .login-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
             letter-spacing: -0.5px;
         }
 
         .login-subtitle {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #64748b;
+        }
+
+        /* Role Switcher Pills */
+        .role-switcher {
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 16px;
+            display: flex;
+            margin-bottom: 25px;
+        }
+
+        .role-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            border-radius: 12px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .role-btn.active {
+            background: white;
+            color: #0288d1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         /* Form Styling */
         .form-label {
             font-weight: 600;
-            color: #475569;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #334155;
+            margin-bottom: 6px;
+            font-size: 0.825rem;
+            letter-spacing: 0.3px;
         }
 
         .form-control {
             border-radius: 14px;
-            padding: 12px 18px;
-            border: 1.5px solid #e2e8f0;
-            background: rgba(255, 255, 255, 0.5);
+            padding: 12px 16px;
+            border: 1.5px solid #cbd5e1;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
             transition: all 0.3s;
         }
 
         .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            border-color: #0288d1;
+            box-shadow: 0 0 0 4px rgba(2, 136, 209, 0.15);
             background: white;
         }
 
         .input-group-text {
-            background: rgba(255, 255, 255, 0.5);
-            border: 1.5px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1.5px solid #cbd5e1;
             border-radius: 14px;
+            color: #64748b;
         }
 
         .btn-modern {
             border-radius: 14px;
-            padding: 12px 24px;
+            padding: 13px 24px;
             font-weight: 700;
+            font-size: 1rem;
             transition: all 0.3s;
             display: flex;
             align-items: center;
@@ -196,85 +240,33 @@
         }
 
         .btn-primary-modern {
-            background: var(--primary);
+            background: linear-gradient(135deg, #0288d1 0%, #01579b 100%);
             color: white;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 10px 20px -5px rgba(2, 136, 209, 0.4);
         }
 
         .btn-primary-modern:hover {
-            background: var(--primary-dark);
+            background: linear-gradient(135deg, #01579b 0%, #0f172a 100%);
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 15px 25px -5px rgba(2, 136, 209, 0.5);
+            color: white;
         }
-
-        .btn-google {
-            background: white;
-            color: #1e293b;
-            border: 1.5px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-google:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            transform: translateY(-2px);
-        }
-
-        .divider {
-            margin: 25px 0;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .divider:not(:empty)::before { margin-right: .75rem; }
-        .divider:not(:empty)::after { margin-left: .75rem; }
 
         .footer-text {
             text-align: center;
             margin-top: 25px;
-            font-size: 0.85rem;
-            color: #94a3b8;
+            font-size: 0.825rem;
+            color: #64748b;
         }
 
         .alert-modern {
             border-radius: 14px;
             padding: 12px 18px;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             margin-bottom: 20px;
             border: none;
             background: #fee2e2;
             color: #991b1b;
-        }
-        .google-btn-wrapper a {
-            border-radius: 14px;
-            padding: 12px 24px;
-            font-weight: 700;
-            transition: all 0.3s;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            border: 1.5px solid #e2e8f0 !important;
-            background: white !important;
-            color: #1e293b !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-            width: 100% !important;
-            margin: 0 !important;
-        }
-
-        .google-btn-wrapper a:hover {
-            background: #f8fafc !important;
-            border-color: #cbd5e1 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
         }
     </style>
 </head>
@@ -292,8 +284,9 @@
                 <div class="brand-logo">
                     <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo">
                 </div>
-                <h2 class="login-title">Personnel Hub</h2>
-                <p class="login-subtitle">ระบบบริหารงานบุคคล SKJ</p>
+                <span class="system-badge"><i class="bx bx-award me-1"></i>PA EVALUATION SYSTEM</span>
+                <h2 class="login-title">ระบบประเมินผล PA</h2>
+                <p class="login-subtitle">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
             </div>
 
             <?php if (session()->getFlashdata('Error')): ?>
@@ -302,39 +295,31 @@
                 </div>
             <?php endif; ?>
 
-            <!-- Google Login Section (Staff) -->
-            <div class="mb-2 text-center google-btn-wrapper">
-                <?= $GoogleButton ?>
-            </div>
-
-            <div class="divider">หรือใช้งานสำหรับผู้ประเมิน</div>
-
-            <!-- Traditional Login Section (Assessor) -->
+            <!-- Login Form -->
             <form id="formAuthentication" action="<?= base_url('login-pa-traditional'); ?>" method="POST">
+                <input type="hidden" name="role" value="assessor">
+
                 <div class="mb-3">
-                    <label for="username" class="form-label">ชื่อผู้ใช้งาน</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autofocus>
+                    <label for="username" class="form-label"><i class="bx bx-user me-1 text-primary"></i>ชื่อผู้ใช้งาน</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="กรอกชื่อผู้ใช้งาน" required autofocus>
                 </div>
                 <div class="mb-4 form-password-toggle">
-                    <label class="form-label" for="password">รหัสผ่าน</label>
+                    <label class="form-label" for="password"><i class="bx bx-lock-alt me-1 text-primary"></i>รหัสผ่าน</label>
                     <div class="input-group input-group-merge">
                         <input type="password" id="password" class="form-control" name="password" placeholder="············" aria-describedby="password" required>
                         <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                     </div>
                 </div>
-                
-                <!-- Hidden Role for PA Login (always assessor in this form) -->
-                <input type="hidden" name="role" value="assessor">
 
                 <div class="mb-2">
                     <button class="btn btn-modern btn-primary-modern w-100" type="submit">
-                        <i class='bx bxs-key'></i> เข้าสู่ระบบผู้ประเมิน
+                        <i class='bx bxs-log-in-circle fs-5'></i> เข้าสู่ระบบประเมิน PA
                     </button>
                 </div>
             </form>
 
             <div class="footer-text">
-                &copy; <script>document.write(new Date().getFullYear());</script> SKJ Personnel System
+                &copy; <script>document.write(new Date().getFullYear());</script> SKJ Performance Appraisal System
             </div>
         </div>
     </div>

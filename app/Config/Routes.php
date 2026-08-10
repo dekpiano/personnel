@@ -175,6 +175,7 @@ $routes->post('Admin/PaConfig/updateRubricItem', 'ConAdminPaConfig::updateRubric
 $routes->post('Admin/PaConfig/deleteRubricItem', 'ConAdminPaConfig::deleteRubricItem');
 $routes->get('Admin/PaReport', 'ConAdminPaConfig::report');
 $routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2');
+$routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2/$3');
 $routes->get('Admin/TeacherEvaluation', 'ConAdminTeacherEvaluation::index');
 $routes->post('Admin/TeacherEvaluation/saveConfig', 'ConAdminTeacherEvaluation::saveConfig');
 
