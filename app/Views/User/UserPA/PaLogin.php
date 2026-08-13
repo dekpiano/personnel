@@ -54,7 +54,7 @@
                     <!-- Google Login Section -->
                     <div class="mb-3">
                         <h6 class="text-center">เข้าสู่ระบบสำหรับเจ้าหน้าที่</h6>
-                       <a href="<?=base_url('LoginOfficerPersonnel?return_to='.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);?>"
+                       <a href="<?=base_url('LoginOfficerPersonnel?return_to='.urlencode(uri_string()));?>"
                             class="btn btn-primary w-100">
                         <i class="menu-icon tf-icons bx bxs-key"></i>
                             เข้าสู่ระบบ เจ้าหน้าที่

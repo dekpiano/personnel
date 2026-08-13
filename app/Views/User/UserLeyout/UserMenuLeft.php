@@ -176,7 +176,7 @@
                 <ul class="menu-inner py-1">
                     <li class="menu-item <?php echo $UrlMenuMain == "LoginOfficerPersonnel"?"active":""?>">
                         <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->
-                        <a href="<?=base_url('LoginOfficerPersonnel?return_to='.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);?>"
+                        <a href="<?=base_url('LoginOfficerPersonnel?return_to='.urlencode(uri_string()));?>"
                             class="menu-link">
                         <i class="menu-icon tf-icons bx bxs-key"></i>
                             <div data-i18n="Analytics">เข้าสู่ระบบ </div>

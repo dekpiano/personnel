@@ -28,6 +28,20 @@ class ConAdminPaConfig extends BaseController
         $data = $this->DataMain();
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
+        // Check and auto-add scope_pers_id column if not existing
+        if (!$db_pa_evaluation->fieldExists('scope_pers_id', 'tb_assessor_scope')) {
+            $forge = \Config\Database::forge('pa_evaluation');
+            $fields = [
+                'scope_pers_id' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 50,
+                    'null' => true,
+                    'after' => 'scope_lear_id'
+                ]
+            ];
+            $forge->addColumn('tb_assessor_scope', $fields);
+        }
+
         // คำนวณปีการศึกษาปัจจุบัน
         $current_month = (int)date('m');
         $current_year_ad = (int)date('Y');
@@ -47,16 +61,39 @@ class ConAdminPaConfig extends BaseController
         $selected_fiscal_year = $this->request->getGet('fiscal_year');
         $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
 
-        // Fetch all evaluators
-        $evaluators = $db_pa_evaluation->table('tb_evaluators')
+        // Fetch all registered evaluators
+        $all_evaluators = $db_pa_evaluation->table('tb_evaluators')
                                   ->orderBy('e_first_name', 'ASC')
                                   ->get()->getResultArray();
 
         $db_skj = \Config\Database::connect('skj');
+        $db_default = \Config\Database::connect();
 
-        // Fetch positions & learning groups
+        // Fetch personnel (filtered for civil servant teachers / ครูข้าราชการ, excluding ครูช่วยปฏิบัติงาน)
+        $personnel = $db_default->table('tb_personnel')
+                                ->select('tb_personnel.pers_id, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_learning, tb_position.posi_name')
+                                ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
+                                ->where('pers_status', 'กำลังใช้งาน')
+                                ->groupStart()
+                                    ->whereIn('tb_position.posi_name', ['ครู', 'ครูผู้ช่วย', 'ผู้อำนวยการสถานศึกษา', 'รองผู้อำนวยการสถานศึกษา'])
+                                    ->orLike('tb_position.posi_name', 'ครู')
+                                    ->orWhere("tb_personnel.pers_position BETWEEN 'posi_003' AND 'posi_006'")
+                                ->groupEnd()
+                                ->notLike('tb_position.posi_name', 'ช่วยปฏิบัติงาน')
+                                ->notLike('tb_position.posi_name', 'ช่วยราชการ')
+                                ->orderBy('pers_firstname', 'ASC')
+                                ->get()->getResultArray();
+
+        // Fetch positions (filtered for civil servant teacher positions)
         $positions = $db_skj->table('tb_position')
                             ->select('posi_id, posi_name')
+                            ->groupStart()
+                                ->whereIn('posi_name', ['ครู', 'ครูผู้ช่วย', 'ผู้อำนวยการสถานศึกษา', 'รองผู้อำนวยการสถานศึกษา'])
+                                ->orLike('posi_name', 'ครู')
+                                ->orWhere("posi_id BETWEEN 'posi_003' AND 'posi_006'")
+                            ->groupEnd()
+                            ->notLike('posi_name', 'ช่วยปฏิบัติงาน')
+                            ->notLike('posi_name', 'ช่วยราชการ')
                             ->orderBy('posi_id', 'ASC')
                             ->get()->getResultArray();
 
@@ -65,22 +102,58 @@ class ConAdminPaConfig extends BaseController
                                  ->orderBy('lear_namethai', 'ASC')
                                  ->get()->getResultArray();
 
-        // Fetch assessor scopes filtered by fiscal year
+        // Fetch assessor scopes filtered by fiscal year (matching BE & AD formats)
+        $fiscal_year_ad = $fiscal_year_be - 543;
         $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
                                            ->groupStart()
                                                 ->where('scope_fiscal_year', $fiscal_year_be)
+                                                ->orWhere('scope_fiscal_year', (string)$fiscal_year_be)
+                                                ->orWhere('scope_fiscal_year', $fiscal_year_ad)
+                                                ->orWhere('scope_fiscal_year', (string)$fiscal_year_ad)
                                                 ->orWhere('scope_fiscal_year IS NULL')
+                                                ->orWhere('scope_fiscal_year', '')
                                                 ->orWhere('scope_fiscal_year', 0)
                                            ->groupEnd()
                                            ->get()->getResultArray();
 
+        // Get evaluators assigned to this fiscal year
+        $assigned_e_ids = array_unique(array_column($assessorScopes, 'assessor_e_id'));
+        $year_evaluators = array_values(array_filter($all_evaluators, function($e) use ($assigned_e_ids) {
+            return in_array($e['e_id'], $assigned_e_ids);
+        }));
+
+        // Fetch all personnel with position and academic info for internal evaluator lookup
+        $school_personnel = $db_default->table('tb_personnel')
+                                ->select('tb_personnel.pers_id, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_academic, tb_personnel.pers_username, tb_position.posi_name')
+                                ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
+                                ->where('pers_status', 'กำลังใช้งาน')
+                                ->orderBy('pers_firstname', 'ASC')
+                                ->get()->getResultArray();
+
+        // Count evaluators per teacher and build assessor-teacher mapping for this fiscal year
+        $evaluator_counts = [];
+        $assessor_teacher_map = [];
+        foreach ($assessorScopes as $scope) {
+            if (!empty($scope['scope_pers_id'])) {
+                $pidStr = (string)$scope['scope_pers_id'];
+                $eIdStr = (string)$scope['assessor_e_id'];
+                $evaluator_counts[$pidStr] = ($evaluator_counts[$pidStr] ?? 0) + 1;
+                $assessor_teacher_map[$eIdStr][] = $pidStr;
+            }
+        }
+
         $data = [
             'title' => 'ตั้งค่าผู้ประเมิน PA',
             'description' => 'กำหนดขอบเขตการประเมินสำหรับผู้ประเมินประจำปี ' . $fiscal_year_be,
-            'evaluators' => $evaluators,
+            'evaluators' => $year_evaluators,
+            'all_evaluators' => $all_evaluators,
+            'school_personnel' => $school_personnel,
+            'personnel' => $personnel,
             'positions' => $positions,
             'learningGroups' => $learningGroups,
             'assessorScopes' => $assessorScopes,
+            'evaluator_counts' => $evaluator_counts,
+            'assessor_teacher_map' => $assessor_teacher_map,
             'fiscal_year' => $fiscal_year_be,
             'available_years' => $available_years,
             'UrlMenuMain' => 'Admin',
@@ -181,10 +254,15 @@ class ConAdminPaConfig extends BaseController
             $assigned_evaluator_ids = [];
             foreach ($assessor_scopes as $scope) {
                 $is_match = false;
+                $scope_has_pers = !empty($scope['scope_pers_id']);
                 $scope_has_posi = !empty($scope['scope_posi_id']);
                 $scope_has_lear = !empty($scope['scope_lear_id']);
 
-                if ($scope_has_posi && $scope_has_lear) {
+                if ($scope_has_pers) {
+                    if ($scope['scope_pers_id'] === $person['pers_id']) {
+                        $is_match = true;
+                    }
+                } else if ($scope_has_posi && $scope_has_lear) {
                     if (($scope['scope_posi_id'] === $person['pers_position']) && ($scope['scope_lear_id'] === $person['pers_learning'])) {
                         $is_match = true;
                     }
@@ -339,6 +417,7 @@ class ConAdminPaConfig extends BaseController
         $assessor_e_id = $this->request->getPost('assessor_e_id');
         $scope_posi_id = $this->request->getPost('scope_posi_id');
         $scope_lear_id = $this->request->getPost('scope_lear_id');
+        $scope_pers_id_post = $this->request->getPost('scope_pers_id');
         $scope_fiscal_year = $this->request->getPost('scope_fiscal_year');
 
         if (empty($scope_fiscal_year)) {
@@ -348,28 +427,93 @@ class ConAdminPaConfig extends BaseController
         }
 
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+
+        // Check and auto-add scope_pers_id column if not existing
+        if (!$db_pa_evaluation->fieldExists('scope_pers_id', 'tb_assessor_scope')) {
+            $forge = \Config\Database::forge('pa_evaluation');
+            $fields = [
+                'scope_pers_id' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 50,
+                    'null' => true,
+                    'after' => 'scope_lear_id'
+                ]
+            ];
+            $forge->addColumn('tb_assessor_scope', $fields);
+        }
+
+        // Drop outdated unique index if present (old index lacked scope_pers_id)
+        try {
+            $db_pa_evaluation->query("ALTER TABLE tb_assessor_scope DROP INDEX idx_assessor_scope_unique");
+        } catch (\Throwable $e) {
+            // Ignore if index doesn't exist or already dropped
+        }
+
         $table = $db_pa_evaluation->table('tb_assessor_scope');
 
-        $existingScope = $table->where('assessor_e_id', $assessor_e_id)
-                               ->where('scope_posi_id', $scope_posi_id === '' ? null : $scope_posi_id)
-                               ->where('scope_lear_id', $scope_lear_id === '' ? null : $scope_lear_id)
-                               ->where('scope_fiscal_year', $scope_fiscal_year)
-                               ->get()->getRowArray();
+        $pers_ids = [];
+        if (is_array($scope_pers_id_post)) {
+            $pers_ids = array_filter($scope_pers_id_post);
+        } else if (!empty($scope_pers_id_post)) {
+            $pers_ids = [$scope_pers_id_post];
+        }
 
-        if ($existingScope) {
-            $session->setFlashdata('Error', 'การตั้งค่านี้มีอยู่แล้ว!');
-        } else {
-            $data = [
-                'assessor_e_id' => $assessor_e_id,
-                'scope_posi_id' => $scope_posi_id === '' ? null : $scope_posi_id,
-                'scope_lear_id' => $scope_lear_id === '' ? null : $scope_lear_id,
-                'scope_fiscal_year' => $scope_fiscal_year,
-            ];
-            if ($table->insert($data)) {
-                $session->setFlashdata('Success', 'บันทึกการตั้งค่าสำเร็จประจำปี ' . $scope_fiscal_year . '!');
-            } else {
-                $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการบันทึก!');
+        $insertedCount = 0;
+
+        if (!empty($pers_ids)) {
+            foreach ($pers_ids as $pid) {
+                $existingScope = $table->where('assessor_e_id', $assessor_e_id)
+                                       ->where('scope_posi_id', $scope_posi_id === '' ? null : $scope_posi_id)
+                                       ->where('scope_lear_id', $scope_lear_id === '' ? null : $scope_lear_id)
+                                       ->where('scope_pers_id', $pid)
+                                       ->where('scope_fiscal_year', $scope_fiscal_year)
+                                       ->get()->getRowArray();
+                if (!$existingScope) {
+                    $insertData = [
+                        'assessor_e_id' => $assessor_e_id,
+                        'scope_posi_id' => $scope_posi_id === '' ? null : $scope_posi_id,
+                        'scope_lear_id' => $scope_lear_id === '' ? null : $scope_lear_id,
+                        'scope_pers_id' => $pid,
+                        'scope_fiscal_year' => $scope_fiscal_year,
+                    ];
+                    try {
+                        if ($table->insert($insertData)) {
+                            $insertedCount++;
+                        }
+                    } catch (\Throwable $e) {
+                        log_message('error', 'Failed to insert scope: ' . $e->getMessage());
+                    }
+                }
             }
+        } else {
+            $existingScope = $table->where('assessor_e_id', $assessor_e_id)
+                                   ->where('scope_posi_id', $scope_posi_id === '' ? null : $scope_posi_id)
+                                   ->where('scope_lear_id', $scope_lear_id === '' ? null : $scope_lear_id)
+                                   ->where('scope_pers_id', null)
+                                   ->where('scope_fiscal_year', $scope_fiscal_year)
+                                   ->get()->getRowArray();
+            if (!$existingScope) {
+                $insertData = [
+                    'assessor_e_id' => $assessor_e_id,
+                    'scope_posi_id' => $scope_posi_id === '' ? null : $scope_posi_id,
+                    'scope_lear_id' => $scope_lear_id === '' ? null : $scope_lear_id,
+                    'scope_pers_id' => null,
+                    'scope_fiscal_year' => $scope_fiscal_year,
+                ];
+                try {
+                    if ($table->insert($insertData)) {
+                        $insertedCount++;
+                    }
+                } catch (\Throwable $e) {
+                    log_message('error', 'Failed to insert scope: ' . $e->getMessage());
+                }
+            }
+        }
+
+        if ($insertedCount > 0) {
+            $session->setFlashdata('Success', 'บันทึกขอบเขตการประเมินสำเร็จ (' . $insertedCount . ' รายการ) ประจำปี ' . $scope_fiscal_year . '!');
+        } else {
+            $session->setFlashdata('Error', 'การตั้งค่านี้มีอยู่แล้ว หรือไม่มีรายการใหม่ถูกบันทึก!');
         }
 
         return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
@@ -396,6 +540,27 @@ class ConAdminPaConfig extends BaseController
         return redirect()->to(base_url('Admin/PaConfig' . ($redirectYear ? '?fiscal_year=' . $redirectYear : '')));
     }
 
+    public function deleteGroup()
+    {
+        $session = session();
+        if ($_SESSION['status'] !== 'superadmin' && (!isset($_SESSION['rloes']) || strpos($_SESSION['rloes'], 'งานประเมิน pa') === false)) {
+            return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
+        }
+
+        $ids = $this->request->getGet('ids');
+        $fiscal_year = $this->request->getGet('fiscal_year');
+
+        if (!empty($ids)) {
+            $idArray = explode(',', $ids);
+            $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+            $table = $db_pa_evaluation->table('tb_assessor_scope');
+            $table->whereIn('id', $idArray)->delete();
+            $session->setFlashdata('Success', 'ลบขอบเขตการประเมินทั้งกลุ่มสำเร็จ!');
+        }
+
+        return redirect()->to(base_url('Admin/PaConfig' . ($fiscal_year ? '?fiscal_year=' . $fiscal_year : '')));
+    }
+
     public function addEvaluator()
     {
         $session = session();
@@ -404,25 +569,139 @@ class ConAdminPaConfig extends BaseController
         }
 
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+        $evaluator_type = $this->request->getPost('evaluator_type');
+        $scope_fiscal_year = $this->request->getPost('scope_fiscal_year');
+
+        if (empty($scope_fiscal_year)) {
+            $current_month = (int)date('m');
+            $current_year_ad = (int)date('Y');
+            $scope_fiscal_year = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        }
+
+        if ($evaluator_type === 'school_personnel') {
+            $school_pers_id = $this->request->getPost('school_pers_id');
+            if (empty($school_pers_id)) {
+                $session->setFlashdata('Error', 'กรุณาเลือกครู/บุคลากรในโรงเรียน');
+                $session->setFlashdata('open_evaluator_modal', true);
+                return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
+            }
+
+            // Find personnel from db
+            $db_default = \Config\Database::connect();
+            $db_skj = \Config\Database::connect('skj');
+            $person = $db_default->table('tb_personnel')
+                                 ->select('tb_personnel.*, tb_position.posi_name')
+                                 ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
+                                 ->where('pers_id', $school_pers_id)
+                                 ->get()->getRowArray();
+
+            if (!$person) {
+                $session->setFlashdata('Error', 'ไม่พบข้อมูลบุคลากรที่เลือก');
+                $session->setFlashdata('open_evaluator_modal', true);
+                return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
+            }
+
+            $username = !empty($person['pers_username']) ? $person['pers_username'] : strtolower($person['pers_firstname']);
+            $evaluatorsTable = $db_pa_evaluation->table('tb_evaluators');
+
+            // Check if evaluator account already exists in tb_evaluators
+            $existingEvaluator = $evaluatorsTable->where('e_Username', $username)->get()->getRowArray();
+
+            if ($existingEvaluator) {
+                $e_id = $existingEvaluator['e_id'];
+            } else {
+                // Create evaluator account from personnel info
+                $e_id = uniqid('e');
+                $password = !empty($person['pers_password']) ? $person['pers_password'] : password_hash('123456', PASSWORD_DEFAULT);
+                if (strlen($password) < 40) {
+                    $password = password_hash($password, PASSWORD_DEFAULT);
+                }
+
+                $evaluatorsTable->insert([
+                    'e_id' => $e_id,
+                    'e_first_name' => $person['pers_firstname'],
+                    'e_last_name' => $person['pers_lastname'],
+                    'e_position' => $person['posi_name'] ?: 'ครู',
+                    'e_academic_standing' => !empty($person['pers_academic']) ? $person['pers_academic'] : 'ไม่มีวิทยฐานะ',
+                    'e_organization' => 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์',
+                    'e_Username' => $username,
+                    'e_Password' => $password,
+                ]);
+            }
+
+            // Check if scope entry already exists for this fiscal year
+            $scopeTable = $db_pa_evaluation->table('tb_assessor_scope');
+            $existingScope = $scopeTable->where('assessor_e_id', $e_id)
+                                        ->where('scope_fiscal_year', $scope_fiscal_year)
+                                        ->get()->getRowArray();
+
+            if (!$existingScope) {
+                $scopeTable->insert([
+                    'assessor_e_id' => $e_id,
+                    'scope_posi_id' => null,
+                    'scope_lear_id' => null,
+                    'scope_pers_id' => null,
+                    'scope_fiscal_year' => $scope_fiscal_year,
+                ]);
+            }
+
+            $personName = ($person['pers_prefix'] ?? '') . $person['pers_firstname'] . ' ' . $person['pers_lastname'];
+            $session->setFlashdata('Success', 'เพิ่ม ' . $personName . ' เป็นผู้ประเมินประจำปีการศึกษา ' . $scope_fiscal_year . ' สำเร็จ!');
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
+        }
+
+        if ($evaluator_type === 'existing') {
+            $existing_e_id = $this->request->getPost('existing_e_id');
+            if (empty($existing_e_id)) {
+                $session->setFlashdata('Error', 'กรุณาเลือกผู้ประเมินเดิมที่ต้องการเพิ่ม');
+                return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
+            }
+
+            // Check if scope entry already exists for this fiscal year
+            $scopeTable = $db_pa_evaluation->table('tb_assessor_scope');
+            $existingScope = $scopeTable->where('assessor_e_id', $existing_e_id)
+                                        ->where('scope_fiscal_year', $scope_fiscal_year)
+                                        ->get()->getRowArray();
+
+            if (!$existingScope) {
+                $scopeTable->insert([
+                    'assessor_e_id' => $existing_e_id,
+                    'scope_posi_id' => null,
+                    'scope_lear_id' => null,
+                    'scope_pers_id' => null,
+                    'scope_fiscal_year' => $scope_fiscal_year,
+                ]);
+            }
+
+            $session->setFlashdata('Success', 'เพิ่มผู้ประเมินเดิมเข้าสู่ปีการศึกษา ' . $scope_fiscal_year . ' สำเร็จ!');
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
+        }
+
+        // Otherwise create new evaluator
         $table = $db_pa_evaluation->table('tb_evaluators');
 
         // Basic validation to check if username already exists
         $existingUser = $table->where('e_Username', $this->request->getPost('e_Username'))->get()->getRow();
         if ($existingUser) {
             $session->setFlashdata('Error', 'ชื่อผู้ใช้งานนี้มีอยู่แล้วในระบบ!');
-            return redirect()->to(base_url('Admin/PaConfig'));
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
         }
 
         // Hash the password before saving
         $password = $this->request->getPost('e_Password');
         if (empty($password)) {
             $session->setFlashdata('Error', 'รหัสผ่านห้ามเป็นค่าว่าง');
-            return redirect()->to(base_url('Admin/PaConfig'));
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
         }
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+        $newId = uniqid('e');
         $data = [
-            'e_id' => uniqid('e'), // Generate a unique ID
+            'e_id' => $newId,
             'e_first_name' => $this->request->getPost('e_first_name'),
             'e_last_name' => $this->request->getPost('e_last_name'),
             'e_position' => $this->request->getPost('e_position'),
@@ -433,10 +712,20 @@ class ConAdminPaConfig extends BaseController
         ];
 
         if ($table->insert($data)) {
-            $session->setFlashdata('Success', 'เพิ่มข้อมูลผู้ประเมินสำเร็จ!');
+            // Assign to current fiscal year
+            $scopeTable = $db_pa_evaluation->table('tb_assessor_scope');
+            $scopeTable->insert([
+                'assessor_e_id' => $newId,
+                'scope_posi_id' => null,
+                'scope_lear_id' => null,
+                'scope_pers_id' => null,
+                'scope_fiscal_year' => $scope_fiscal_year,
+            ]);
+            $session->setFlashdata('Success', 'เพิ่มข้อมูลผู้ประเมินใหม่สำเร็จประจำปี ' . $scope_fiscal_year . '!');
         }
 
-        return redirect()->to(base_url('Admin/PaConfig'));
+        $session->setFlashdata('open_evaluator_modal', true);
+        return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $scope_fiscal_year));
     }
 
     public function updateEvaluator()
@@ -458,6 +747,7 @@ class ConAdminPaConfig extends BaseController
                               ->get()->getRow();
         if ($existingUser) {
             $session->setFlashdata('Error', 'ชื่อผู้ใช้งานนี้มีอยู่แล้วในระบบ!');
+            $session->setFlashdata('open_evaluator_modal', true);
             return redirect()->to(base_url('Admin/PaConfig'));
         }
 
@@ -482,6 +772,7 @@ class ConAdminPaConfig extends BaseController
             $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล หรือไม่มีการเปลี่ยนแปลง!');
         }
 
+        $session->setFlashdata('open_evaluator_modal', true);
         return redirect()->to(base_url('Admin/PaConfig'));
     }
 
@@ -492,43 +783,29 @@ class ConAdminPaConfig extends BaseController
             return redirect()->to(base_url('Admin/Home'))->with('Error', 'คุณไม่มีสิทธิ์ดำเนินการนี้!');
         }
 
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+
         $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+        $table = $db_pa_evaluation->table('tb_assessor_scope');
 
-        // Start a transaction
-        $db_pa_evaluation->transStart();
+        if (!empty($selected_fiscal_year)) {
+            $table->where('assessor_e_id', $id)
+                  ->groupStart()
+                       ->where('scope_fiscal_year', $selected_fiscal_year)
+                       ->orWhere('scope_fiscal_year IS NULL')
+                       ->orWhere('scope_fiscal_year', 0)
+                  ->groupEnd()
+                  ->delete();
 
-        // 1. Find all evaluator score IDs (es_id) linked to this evaluator
-        $evaluatorScores = $db_pa_evaluation->table('tb_evaluator_scores')
-                                            ->select('es_id')
-                                            ->where('e_id', $id)
-                                            ->get()->getResultArray();
-
-        if (!empty($evaluatorScores)) {
-            $es_ids = array_column($evaluatorScores, 'es_id');
-
-            // 2. Delete all item scores linked to those evaluator scores
-            $db_pa_evaluation->table('tb_item_scores')->whereIn('es_id', $es_ids)->delete();
-        }
-
-        // 3. Delete the evaluator's score summaries
-        $db_pa_evaluation->table('tb_evaluator_scores')->delete(['e_id' => $id]);
-
-        // 4. Finally, delete the evaluator
-        $db_pa_evaluation->table('tb_evaluators')->delete(['e_id' => $id]);
-
-        // Complete the transaction
-        $db_pa_evaluation->transComplete();
-
-        // Check the transaction status
-        if ($db_pa_evaluation->transStatus() === false) {
-            // Transaction failed
-            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในการลบข้อมูลผู้ประเมินและข้อมูลที่เกี่ยวข้อง');
+            $session->setFlashdata('Success', 'นำผู้ประเมินออกจากปีการศึกษา ' . $selected_fiscal_year . ' เรียบร้อยแล้ว (ข้อมูลประวัติการประเมินย้อนหลังยังคงอยู่ครบถ้วน)');
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig?fiscal_year=' . $selected_fiscal_year));
         } else {
-            // Transaction successful
-            $session->setFlashdata('Success', 'ลบผู้ประเมินและข้อมูลการประเมินที่เกี่ยวข้องทั้งหมดสำเร็จ!');
+            $table->where('assessor_e_id', $id)->delete();
+            $session->setFlashdata('Success', 'นำผู้ประเมินออกจากขอบเขตการประเมินเรียบร้อยแล้ว!');
+            $session->setFlashdata('open_evaluator_modal', true);
+            return redirect()->to(base_url('Admin/PaConfig'));
         }
-
-        return redirect()->to(base_url('Admin/PaConfig'));
     }
 
 

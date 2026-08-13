@@ -41,7 +41,27 @@ class ConUserPaEvaluation extends BaseController
                 $builder->where('tb_personnel.pers_status', "กำลังใช้งาน"); // Note: Assuming pers_status stores string "กำลังใช้งาน", if it's an integer (e.g., 1), this might not work as expected.
 
         // --- Start Assessor Scope Filtering ---
-        $loggedInUserId = $session->get('id'); // Get the e_id of the logged-in user (assessor)
+        $loggedInUserId = $session->get('id'); // Get the id of the logged-in user
+        $loggedInPersId = $session->get('pers_id');
+        $loggedInEmail  = $session->get('email');
+
+        $possibleAssessorIds = array_filter([$loggedInUserId, $loggedInPersId]);
+
+        // Look up matching evaluator record in tb_evaluators by id or username/email
+        if (!empty($loggedInEmail) || !empty($loggedInUserId)) {
+            $evalQuery = $db_pa_evaluation->table('tb_evaluators');
+            if (!empty($loggedInUserId)) {
+                $evalQuery->orWhere('e_id', $loggedInUserId);
+            }
+            if (!empty($loggedInEmail)) {
+                $evalQuery->orWhere('e_Username', $loggedInEmail);
+            }
+            $evalRow = $evalQuery->get()->getRowArray();
+            if ($evalRow) {
+                $possibleAssessorIds[] = $evalRow['e_id'];
+            }
+        }
+        $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
 
         // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
         $current_month = (int)date('m');
@@ -52,32 +72,40 @@ class ConUserPaEvaluation extends BaseController
         $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
 
         // Fetch scopes for the logged-in assessor filtered by selected fiscal year
-        $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
-                                           ->where('assessor_e_id', $loggedInUserId)
-                                           ->groupStart()
-                                                ->where('scope_fiscal_year', $fiscal_year_be)
-                                                ->orWhere('scope_fiscal_year IS NULL')
-                                                ->orWhere('scope_fiscal_year', 0)
-                                           ->groupEnd()
-                                           ->get()->getResultArray();
+        $assessorScopes = [];
+        if (!empty($possibleAssessorIds)) {
+            $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
+                                               ->whereIn('assessor_e_id', $possibleAssessorIds)
+                                               ->groupStart()
+                                                    ->where('scope_fiscal_year', $fiscal_year_be)
+                                                    ->orWhere('scope_fiscal_year IS NULL')
+                                                    ->orWhere('scope_fiscal_year', 0)
+                                               ->groupEnd()
+                                               ->get()->getResultArray();
+        }
 
         if (!empty($assessorScopes)) {
             // Build dynamic WHERE OR conditions based on assessor scopes
             $builder->groupStart(); // Start a group for OR conditions
             foreach ($assessorScopes as $scope) {
                 $builder->orGroupStart(); // Start an OR group for each scope
-                if ($scope['scope_posi_id'] !== null) {
-                    $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
-                }
-                if ($scope['scope_lear_id'] !== null) {
-                    $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
+                if (!empty($scope['scope_pers_id'])) {
+                    $builder->where('tb_personnel.pers_id', $scope['scope_pers_id']);
+                } else {
+                    if ($scope['scope_posi_id'] !== null) {
+                        $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
+                    }
+                    if ($scope['scope_lear_id'] !== null) {
+                        $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
+                    }
                 }
                 $builder->groupEnd(); // End the OR group
             }
             $builder->groupEnd(); // End the main OR group
         } else {
-            // If no scope is defined for the assessor in this fiscal year, they see no personnel.
-            if ($session->get('status') !== 'admin') {
+            // If no specific scope is defined for the assessor in this fiscal year:
+            // Superadmin, Admin, and Manager can view all personnel for testing & evaluation oversight.
+            if (!in_array($session->get('status'), ['superadmin', 'admin', 'manager'])) {
                 $builder->where('1=0'); 
             }
         }

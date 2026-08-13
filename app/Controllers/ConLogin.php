@@ -46,8 +46,12 @@ class ConLogin extends BaseController
         $DBrloes = $DB_Personnel->table('tb_admin_rloes');
         $DBPers = $DB_Personnel->table('tb_personnel');     
         
-        if($this->request->getVar("return_to") != ""){
-            session()->set('Return',$this->request->getVar("return_to"));
+        $returnTo = $this->request->getVar("return_to");
+        if (!empty($returnTo)) {
+            if (!preg_match('#^https?://#i', $returnTo)) {
+                $returnTo = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $returnTo);
+            }
+            session()->set('Return', $returnTo);
         }
         
         $code = $this->request->getVar('code');
@@ -123,6 +127,8 @@ class ConLogin extends BaseController
                             $newdata = [
                                 'username'  => $User['pers_prefix'].$User['pers_firstname'].' '.$User['pers_lastname'],
                                 'id'     => $User['pers_id'],
+                                'pers_id' => $User['pers_id'],
+                                'email'  => $email,
                                 'img'    => $User['pers_img'],
                                 'fname'  => $User['pers_firstname'],
                                 'lname'  => $User['pers_lastname'],
@@ -131,18 +137,47 @@ class ConLogin extends BaseController
                                 'status' => $userStatus
                             ];                
                             $session->set($newdata);  
-                            
-                            if(in_array($userStatus, ["superadmin", "admin", "manager"])){
-                                return redirect()->to(base_url('Admin/Home'));
-                            }else{
-                                $ret = session()->get('Return');
-                                if ($ret) {
-                                    session()->remove('Return');
-                                    if (filter_var($ret, FILTER_VALIDATE_URL)) {
-                                        return redirect()->to($ret);
-                                    }
-                                    return redirect()->to(base_url($ret));
+
+                            $ret = session()->get('Return');
+                            if (!empty($ret)) {
+                                session()->remove('Return');
+
+                                if (!preg_match('#^https?://#i', $ret)) {
+                                    $ret = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $ret);
+                                    $ret = ltrim($ret, '/');
                                 }
+
+                                // Check target PA system access first
+                                if (str_contains($ret, 'pa-personnel') || str_contains($ret, 'pa-form') || str_contains($ret, 'pa-login')) {
+                                    $DB_PA = \Config\Database::connect('pa_evaluation');
+                                    
+                                    $evalRow = $DB_PA->table('tb_evaluators')->where('e_Username', $email)->get()->getRowArray();
+                                    $possibleAssessorIds = array_filter([$User['pers_id'], $evalRow['e_id'] ?? null]);
+                                    $hasScope = $DB_PA->table('tb_assessor_scope')->whereIn('assessor_e_id', $possibleAssessorIds)->countAllResults() > 0;
+                                    
+                                    $isAdmin = in_array($userStatus, ["superadmin", "admin", "manager"]);
+                                    $hasPaRole = isset($User2['admin_rloes_nanetype']) && str_contains($User2['admin_rloes_nanetype'], 'งานประเมิน pa');
+
+                                    if ($evalRow || $hasScope || $isAdmin || $hasPaRole) {
+                                        if (filter_var($ret, FILTER_VALIDATE_URL)) {
+                                            return redirect()->to($ret);
+                                        }
+                                        return redirect()->to(base_url($ret));
+                                    } else {
+                                        session()->setFlashdata('Error', 'ไม่พบชื่อหรือสิทธิ์ผู้ประเมิน (' . $email . ') ในระบบประเมิน PA! กรุณาติดต่อแอดมิน');
+                                        return redirect()->to(base_url('pa-login'));
+                                    }
+                                }
+
+                                if (filter_var($ret, FILTER_VALIDATE_URL)) {
+                                    return redirect()->to($ret);
+                                }
+                                return redirect()->to(base_url($ret));
+                            }
+                            
+                            if (in_array($userStatus, ["superadmin", "admin", "manager"])) {
+                                return redirect()->to(base_url('Admin/Home'));
+                            } else {
                                 return redirect()->to(base_url());
                             }
                         } else {
@@ -186,10 +221,27 @@ class ConLogin extends BaseController
         $data['UrlMenuMain'] = 'pa-login';
         $data['UrlMenuSub'] = '';
 
-        // Store the return_to URL if present
-        if($this->request->getVar("return_to")){
-            session()->set('Return', $this->request->getVar("return_to"));
+        // Store the return_to URL if present, or default to pa-personnel for PA Login page
+        $returnTo = $this->request->getVar("return_to");
+        if (!empty($returnTo)) {
+            if (!preg_match('#^https?://#i', $returnTo)) {
+                $returnTo = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $returnTo);
+            }
+            session()->set('Return', $returnTo);
+        } else {
+            session()->set('Return', 'pa-personnel');
         }
+
+        $config = config('Google');
+        $params = [
+            'client_id'     => $config->clientId,
+            'redirect_uri'  => $config->redirectUri,
+            'response_type' => 'code',
+            'scope'         => 'email profile openid',
+            'access_type'   => 'online',
+            'prompt'        => 'select_account'
+        ];
+        $data['authUrl'] = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
 
         return view('Login/ModernLogin', $data);
     }
@@ -270,9 +322,19 @@ class ConLogin extends BaseController
                 }
 
                 // Fallback for other roles or if no specific redirect
-                $returnUrl = session()->get('Return') ? session()->get('Return') : base_url();
+                $returnUrl = session()->get('Return');
                 session()->remove('Return');
-                return redirect()->to(base_url($returnUrl));
+                if (!empty($returnUrl)) {
+                    if (!preg_match('#^https?://#i', $returnUrl)) {
+                        $returnUrl = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $returnUrl);
+                        $returnUrl = ltrim($returnUrl, '/');
+                    }
+                    if (filter_var($returnUrl, FILTER_VALIDATE_URL)) {
+                        return redirect()->to($returnUrl);
+                    }
+                    return redirect()->to(base_url($returnUrl));
+                }
+                return redirect()->to(base_url());
             } else {
                 $session->setFlashdata('Error', 'บทบาทไม่ถูกต้องสำหรับผู้ใช้นี้!');
             }

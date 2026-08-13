@@ -227,11 +227,11 @@
         }
 
         .btn-modern {
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 13px 24px;
             font-weight: 700;
-            font-size: 1rem;
-            transition: all 0.3s;
+            font-size: 0.975rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -239,17 +239,62 @@
             border: none;
         }
 
+        .btn-google-premium {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 12px 18px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-google-premium:hover {
+            background: #ffffff;
+            color: #0288d1;
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -4px rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-google-premium:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
         .btn-primary-modern {
             background: linear-gradient(135deg, #0288d1 0%, #01579b 100%);
             color: white;
-            box-shadow: 0 10px 20px -5px rgba(2, 136, 209, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(2, 136, 209, 0.4);
         }
 
         .btn-primary-modern:hover {
-            background: linear-gradient(135deg, #01579b 0%, #0f172a 100%);
+            background: linear-gradient(135deg, #039be5 0%, #0277bd 100%);
             transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(2, 136, 209, 0.5);
+            box-shadow: 0 15px 30px -5px rgba(2, 136, 209, 0.55);
             color: white;
+        }
+
+        .login-box-internal {
+            background: linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(224, 242, 254, 0.95) 100%);
+            border: 1.5px solid rgba(186, 230, 253, 0.9);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 4px 20px rgba(2, 136, 209, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .login-box-internal:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 10px 30px rgba(2, 136, 209, 0.15);
         }
 
         .footer-text {
@@ -295,13 +340,34 @@
                 </div>
             <?php endif; ?>
 
-            <!-- Login Form -->
+            <!-- 1. คนในโรงเรียน (Google Login @skj.ac.th) -->
+            <div class="login-box-internal mb-4 text-center">
+                <div class="fw-bold text-dark mb-1 fs-6">
+                    <i class="bx bx-buildings text-primary me-1 fs-5"></i>ครูและบุคลากรภายในโรงเรียน
+                </div>
+                <div class="text-muted small mb-3">เข้าสู่ระบบด้วย Google Account (@skj.ac.th)</div>
+                <?php 
+                    $googleUrl = isset($authUrl) ? $authUrl : (isset($GoogleButton) ? '#' : '#');
+                ?>
+                <a href="<?= $googleUrl; ?>" class="btn-google-premium w-100">
+                    <svg class="flex-shrink-0" width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+                    <span class="fw-bold text-nowrap">เข้าสู่ระบบด้วย Google</span>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 my-0 text-muted" style="opacity: 0.25;">
+                <span class="px-3 text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">หรือ กรรมการผู้ประเมินภายนอก</span>
+                <hr class="flex-grow-1 my-0 text-muted" style="opacity: 0.25;">
+            </div>
+
+            <!-- 2. กรรมการภายนอก (Username & Password) -->
             <form id="formAuthentication" action="<?= base_url('login-pa-traditional'); ?>" method="POST">
                 <input type="hidden" name="role" value="assessor">
 
                 <div class="mb-3">
-                    <label for="username" class="form-label"><i class="bx bx-user me-1 text-primary"></i>ชื่อผู้ใช้งาน</label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="กรอกชื่อผู้ใช้งาน" required autofocus>
+                    <label for="username" class="form-label"><i class="bx bx-user me-1 text-primary"></i>ชื่อผู้ใช้งาน (กรรมการภายนอก)</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="กรอกชื่อผู้ใช้งาน" required>
                 </div>
                 <div class="mb-4 form-password-toggle">
                     <label class="form-label" for="password"><i class="bx bx-lock-alt me-1 text-primary"></i>รหัสผ่าน</label>
@@ -313,7 +379,7 @@
 
                 <div class="mb-2">
                     <button class="btn btn-modern btn-primary-modern w-100" type="submit">
-                        <i class='bx bxs-log-in-circle fs-5'></i> เข้าสู่ระบบประเมิน PA
+                        <i class='bx bxs-log-in-circle fs-5'></i> เข้าสู่ระบบ (กรรมการภายนอก)
                     </button>
                 </div>
             </form>
