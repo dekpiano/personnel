@@ -27,103 +27,140 @@ class ConUserPaEvaluation extends BaseController
         if (!$session->get('logged_in')) {
             return redirect()->to(base_url('pa-login?return_to=pa-personnel'));
         }
-        $db_personnel = \Config\Database::connect('personnel');
-        $builder = $db_personnel->table('tb_personnel');
 
-        // Connect to the second database for joins
-        $db_skj = \Config\Database::connect('skj');
-        $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
+        try {
+            $db_personnel = \Config\Database::connect('personnel');
+            $db_skj = \Config\Database::connect('skj');
+            $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
-        // Perform joins with tables from the second database
-        $builder->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left');
-        $builder->join($db_skj->getDatabase() . '.tb_learning', 'tb_learning.lear_id = tb_personnel.pers_learning', 'left');
+            $builder = $db_personnel->table('tb_personnel');
 
-                $builder->where('tb_personnel.pers_status', "กำลังใช้งาน"); // Note: Assuming pers_status stores string "กำลังใช้งาน", if it's an integer (e.g., 1), this might not work as expected.
+            // Perform joins with tables from the second database
+            $builder->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left');
+            $builder->join($db_skj->getDatabase() . '.tb_learning', 'tb_learning.lear_id = tb_personnel.pers_learning', 'left');
 
-        // --- Start Assessor Scope Filtering ---
-        $loggedInUserId = $session->get('id'); // Get the id of the logged-in user
-        $loggedInPersId = $session->get('pers_id');
-        $loggedInEmail  = $session->get('email');
+            $builder->where('tb_personnel.pers_status', "กำลังใช้งาน");
+            $builder->notLike('tb_position.posi_name', 'ช่วยปฏิบัติงาน');
+            $builder->notLike('tb_position.posi_name', 'ช่วยปฏิบัติการสอน');
+            $builder->notLike('tb_position.posi_name', 'ช่วยสอน');
+            $builder->notLike('tb_position.posi_name', 'ช่วยราชการ');
 
-        $possibleAssessorIds = array_filter([$loggedInUserId, $loggedInPersId]);
+            // --- Start Assessor Scope Filtering ---
+            $loggedInUserId = $session->get('id'); // Get the id of the logged-in user
+            $loggedInPersId = $session->get('pers_id');
+            $loggedInEmail  = $session->get('email');
 
-        // Look up matching evaluator record in tb_evaluators by id or username/email
-        if (!empty($loggedInEmail) || !empty($loggedInUserId)) {
-            $evalQuery = $db_pa_evaluation->table('tb_evaluators');
-            if (!empty($loggedInUserId)) {
-                $evalQuery->orWhere('e_id', $loggedInUserId);
+            $possibleAssessorIds = array_filter([$loggedInUserId, $loggedInPersId]);
+
+            // Look up matching evaluator record in tb_evaluators by id or username/email
+            if (!empty($loggedInEmail) || !empty($loggedInUserId)) {
+                $evalQuery = $db_pa_evaluation->table('tb_evaluators');
+                if (!empty($loggedInUserId)) {
+                    $evalQuery->orWhere('e_id', $loggedInUserId);
+                }
+                if (!empty($loggedInEmail)) {
+                    $evalQuery->orWhere('e_Username', $loggedInEmail);
+                }
+                $evalRow = $evalQuery->get()->getRowArray();
+                if ($evalRow) {
+                    $possibleAssessorIds[] = $evalRow['e_id'];
+                }
             }
-            if (!empty($loggedInEmail)) {
-                $evalQuery->orWhere('e_Username', $loggedInEmail);
-            }
-            $evalRow = $evalQuery->get()->getRowArray();
-            if ($evalRow) {
-                $possibleAssessorIds[] = $evalRow['e_id'];
-            }
-        }
-        $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
+            $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
 
-        // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
-        $current_month = (int)date('m');
-        $current_year_ad = (int)date('Y');
-        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+            // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
+            $current_month = (int)date('m');
+            $current_year_ad = (int)date('Y');
+            $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
 
-        $selected_fiscal_year = $this->request->getGet('fiscal_year');
-        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+            $selected_fiscal_year = $this->request->getGet('fiscal_year');
+            $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+            $fiscal_year_ad = $fiscal_year_be - 543;
 
-        // Fetch scopes for the logged-in assessor filtered by selected fiscal year
-        $assessorScopes = [];
-        if (!empty($possibleAssessorIds)) {
-            $assessorScopes = $db_pa_evaluation->table('tb_assessor_scope')
-                                               ->whereIn('assessor_e_id', $possibleAssessorIds)
-                                               ->groupStart()
-                                                    ->where('scope_fiscal_year', $fiscal_year_be)
-                                                    ->orWhere('scope_fiscal_year IS NULL')
-                                                    ->orWhere('scope_fiscal_year', 0)
-                                               ->groupEnd()
-                                               ->get()->getResultArray();
-        }
+            // Fetch scopes for the logged-in assessor filtered by selected fiscal year
+            $assessorScopes = [];
+            if (!empty($possibleAssessorIds)) {
+                $rawScopes = $db_pa_evaluation->table('tb_assessor_scope')
+                                                   ->whereIn('assessor_e_id', $possibleAssessorIds)
+                                                   ->groupStart()
+                                                        ->where('scope_fiscal_year', $fiscal_year_be)
+                                                        ->orWhere('scope_fiscal_year', (string)$fiscal_year_be)
+                                                        ->orWhere('scope_fiscal_year', $fiscal_year_ad)
+                                                        ->orWhere('scope_fiscal_year', (string)$fiscal_year_ad)
+                                                        ->orWhere('scope_fiscal_year IS NULL')
+                                                        ->orWhere('scope_fiscal_year', '')
+                                                        ->orWhere('scope_fiscal_year', 0)
+                                                   ->groupEnd()
+                                                   ->get()->getResultArray();
 
-        if (!empty($assessorScopes)) {
-            // Build dynamic WHERE OR conditions based on assessor scopes
-            $builder->groupStart(); // Start a group for OR conditions
-            foreach ($assessorScopes as $scope) {
-                $builder->orGroupStart(); // Start an OR group for each scope
-                if (!empty($scope['scope_pers_id'])) {
-                    $builder->where('tb_personnel.pers_id', $scope['scope_pers_id']);
-                } else {
-                    if ($scope['scope_posi_id'] !== null) {
-                        $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
-                    }
-                    if ($scope['scope_lear_id'] !== null) {
-                        $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
+                // กรองเอาเฉพาะ scope ที่มีการผูกครู/ตำแหน่ง/กลุ่มสาระจริง ๆ
+                foreach ($rawScopes as $s) {
+                    if (!empty($s['scope_pers_id']) || !empty($s['scope_posi_id']) || !empty($s['scope_lear_id'])) {
+                        $assessorScopes[] = $s;
                     }
                 }
-                $builder->groupEnd(); // End the OR group
             }
-            $builder->groupEnd(); // End the main OR group
-        } else {
-            // If no specific scope is defined for the assessor in this fiscal year:
-            // Superadmin, Admin, and Manager can view all personnel for testing & evaluation oversight.
-            if (!in_array($session->get('status'), ['superadmin', 'admin', 'manager'])) {
-                $builder->where('1=0'); 
+
+            if (!empty($assessorScopes)) {
+                // Build dynamic WHERE OR conditions based on assessor scopes
+                $builder->groupStart();
+                foreach ($assessorScopes as $scope) {
+                    $builder->orGroupStart();
+                    if (!empty($scope['scope_pers_id'])) {
+                        $builder->where('tb_personnel.pers_id', $scope['scope_pers_id']);
+                    } else {
+                        if ($scope['scope_posi_id'] !== null) {
+                            $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
+                        }
+                        if ($scope['scope_lear_id'] !== null) {
+                            $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
+                        }
+                    }
+                    $builder->groupEnd();
+                }
+                $builder->groupEnd();
+            } else {
+                // If no specific scope is defined for the assessor in this fiscal year:
+                // Superadmin, Admin, and Manager can view all personnel for testing & evaluation oversight.
+                $userStatus = strtolower((string)$session->get('status'));
+                $userRoles = (string)$session->get('rloes');
+                $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel']) 
+                                  || str_contains($userRoles, 'งานประเมิน pa');
+
+                if (!$isSuperOrAdmin) {
+                    $builder->where('1=0'); 
+                }
             }
-        }
-        // --- End Assessor Scope Filtering ---
+            // --- End Assessor Scope Filtering ---
 
-        $query = $builder->get();
-        $personnel = $query->getResultArray();
+            $query = $builder->get();
+            $personnel = $query ? $query->getResultArray() : [];
 
-        foreach ($personnel as &$p) { // ใช้ & เพื่อแก้ไขค่าใน array โดยตรง
-            $evaluationExists = $db_pa_evaluation->table('tb_evaluator_scores')
-                                                 ->join('tb_evaluations', 'tb_evaluations.ev_id = tb_evaluator_scores.ev_id')
-                                                 ->where('tb_evaluations.t_id', $p['pers_id'])
-                                                 ->where('tb_evaluations.ev_fiscal_year', $fiscal_year_be)
-                                                 ->where('tb_evaluator_scores.e_id', $loggedInUserId)
-                                                 ->countAllResults() > 0;
-            $p['has_pa_evaluation'] = $evaluationExists;
+            foreach ($personnel as &$p) {
+                $evaluationExists = false;
+                try {
+                    $evaluationExists = $db_pa_evaluation->table('tb_evaluator_scores')
+                                                         ->join('tb_evaluations', 'tb_evaluations.ev_id = tb_evaluator_scores.ev_id')
+                                                         ->where('tb_evaluations.t_id', $p['pers_id'])
+                                                         ->groupStart()
+                                                             ->where('tb_evaluations.ev_fiscal_year', $fiscal_year_be)
+                                                             ->orWhere('tb_evaluations.ev_fiscal_year', (string)$fiscal_year_be)
+                                                             ->orWhere('tb_evaluations.ev_fiscal_year', $fiscal_year_ad)
+                                                             ->orWhere('tb_evaluations.ev_fiscal_year', (string)$fiscal_year_ad)
+                                                         ->groupEnd()
+                                                         ->whereIn('tb_evaluator_scores.e_id', $possibleAssessorIds)
+                                                         ->countAllResults() > 0;
+                } catch (\Throwable $e) {
+                    log_message('error', '[paPersonnelList] Check evaluation exists failed: ' . $e->getMessage());
+                }
+                $p['has_pa_evaluation'] = $evaluationExists;
+            }
+            unset($p);
+
+        } catch (\Throwable $e) {
+            log_message('error', '[paPersonnelList] Exception: ' . $e->getMessage());
+            $personnel = [];
         }
-        unset($p); // ยกเลิก reference หลังจากวนลูปเสร็จ
 
         $data = $this->DataMain();
         $data['title'] = "เลือกบุคลากรเพื่อประเมิน PA";

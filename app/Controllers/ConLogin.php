@@ -248,12 +248,23 @@ class ConLogin extends BaseController
 
     public function processTraditionalLogin(){
         $session = session();
-        $username = $this->request->getPost('username');
-        $password = $this->request->getPost('password');
-        $role = $this->request->getPost('role');
+        $username = trim($this->request->getPost('username') ?? '');
+        $password = trim($this->request->getPost('password') ?? '');
+        $role = trim($this->request->getPost('role') ?? 'assessor');
 
-        $DB_Personnel = \Config\Database::connect(); // Connects to 'default' (personnel) database
-        $DB_PA_Evaluation = \Config\Database::connect('pa_evaluation'); // Connects to 'pa_evaluation' database
+        if (empty($username) || empty($password)) {
+            $session->setFlashdata('Error', 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน!');
+            return redirect()->back();
+        }
+
+        try {
+            $DB_Personnel = \Config\Database::connect(); // Connects to 'default' (personnel) database
+            $DB_PA_Evaluation = \Config\Database::connect('pa_evaluation'); // Connects to 'pa_evaluation' database
+        } catch (\Throwable $e) {
+            log_message('error', '[processTraditionalLogin] Database connection failed: ' . $e->getMessage());
+            $session->setFlashdata('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+            return redirect()->back();
+        }
 
         $user = null;
         $userRoles = null;
@@ -261,85 +272,115 @@ class ConLogin extends BaseController
         $loggedInUsername = null;
         $loggedInStatus = null;
 
-        if ($role === 'assessor') {
-            $DBEvaluators = $DB_PA_Evaluation->table('tb_evaluators');
-            $evaluator = $DBEvaluators->where('e_Username', $username)->get()->getRowArray();
+        try {
+            if ($role === 'assessor') {
+                $DBEvaluators = $DB_PA_Evaluation->table('tb_evaluators');
+                $evaluator = $DBEvaluators->where('e_Username', $username)->get()->getRowArray();
 
-            if ($evaluator) {
-                if (password_verify($password, $evaluator['e_Password'])) { // Verify hashed password
-                    $user = $evaluator;
-                    $loggedInId = $evaluator['e_id'];
-                    $loggedInUsername = $evaluator['e_first_name'] . ' ' . $evaluator['e_last_name'];
-                    $loggedInStatus = 'assessor'; // Assign a status for assessor
-                    // For assessors, rloesAll might not be directly from tb_admin_rloes, define it here if needed
-                    $userRoles = ['rloesAll' => 'assessor']; // Set a proper role name
-                }
-            }
-        } elseif ($role === 'admin') {
-            $DBPers = $DB_Personnel->table('tb_personnel');
-            $DBrloes = $DB_Personnel->table('tb_admin_rloes');
+                if ($evaluator) {
+                    $dbPassword = $evaluator['e_Password'] ?? '';
+                    $passwordMatched = false;
 
-            $personnelUser = $DBPers->where('pers_username', $username)->get()->getRowArray();
-
-            if ($personnelUser) {
-                if ($password === $personnelUser['pers_password']) { // IMPORTANT: Verify hashed password in real app
-                    $user = $personnelUser;
-                    $loggedInId = $personnelUser['pers_id'];
-                    $loggedInUsername = $personnelUser['pers_prefix'] . $personnelUser['pers_firstname'] . ' ' . $personnelUser['pers_lastname'];
-                    $userRoles = $DBrloes->select('admin_rloes_status, admin_rloes_nanetype')
-                                        ->where('admin_rloes_userid', $personnelUser['pers_id'])
-                                        ->get()->getRowArray();
-                    $loggedInStatus = (isset($userRoles) && $userRoles['admin_rloes_status'] != "" ? $userRoles['admin_rloes_status'] : "Member");
-                }
-            }
-        }
-
-        if ($user) {
-            $hasRole = false;
-            if ($role === 'assessor' && $loggedInStatus === 'assessor') {
-                $hasRole = true;
-            } elseif ($role === 'admin' && isset($userRoles['admin_rloes_nanetype']) && str_contains($userRoles['admin_rloes_nanetype'], 'งานประเมิน pa')) {
-                $hasRole = true;
-            }
-
-            if ($hasRole) {
-                $newdata = [
-                    'username'  => $loggedInUsername,
-                    'id'     => $loggedInId,
-                    'img'    => (isset($user['pers_img']) ? $user['pers_img'] : ''),
-                    'fname'  => (isset($user['pers_firstname']) ? $user['pers_firstname'] : (isset($user['e_first_name']) ? $user['e_first_name'] : '')),
-                    'lname'  => (isset($user['pers_lastname']) ? $user['pers_lastname'] : (isset($user['e_last_name']) ? $user['e_last_name'] : '')),
-                    'logged_in' => true,
-                    'rloes' => (isset($userRoles['admin_rloes_nanetype']) ? $userRoles['admin_rloes_nanetype'] : ''),
-                    'status' => $loggedInStatus
-                ];
-                $session->set($newdata);
-
-                // Specific redirect for Admin or Assessor
-                if ($role === 'admin' || $role === 'assessor') {
-                    session()->remove('Return'); // Clear the return URL
-                    return redirect()->to(base_url('pa-personnel'));
-                }
-
-                // Fallback for other roles or if no specific redirect
-                $returnUrl = session()->get('Return');
-                session()->remove('Return');
-                if (!empty($returnUrl)) {
-                    if (!preg_match('#^https?://#i', $returnUrl)) {
-                        $returnUrl = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $returnUrl);
-                        $returnUrl = ltrim($returnUrl, '/');
+                    // 1. Check if hashed password
+                    if (!empty($dbPassword) && password_verify($password, $dbPassword)) {
+                        $passwordMatched = true;
+                    } 
+                    // 2. Fallback: Check if stored as plain text
+                    elseif (!empty($dbPassword) && $password === $dbPassword) {
+                        $passwordMatched = true;
+                        // Auto-upgrade password to hash
+                        $newHash = password_hash($password, PASSWORD_DEFAULT);
+                        $DB_PA_Evaluation->table('tb_evaluators')
+                                         ->where('e_id', $evaluator['e_id'])
+                                         ->update(['e_Password' => $newHash]);
                     }
-                    if (filter_var($returnUrl, FILTER_VALIDATE_URL)) {
-                        return redirect()->to($returnUrl);
+
+                    if ($passwordMatched) {
+                        $user = $evaluator;
+                        $loggedInId = $evaluator['e_id'];
+                        $loggedInUsername = ($evaluator['e_first_name'] ?? '') . ' ' . ($evaluator['e_last_name'] ?? '');
+                        $loggedInStatus = 'assessor';
+                        $userRoles = ['rloesAll' => 'assessor', 'admin_rloes_nanetype' => 'ผู้ประเมินภายนอก'];
                     }
-                    return redirect()->to(base_url($returnUrl));
                 }
-                return redirect()->to(base_url());
+            } elseif ($role === 'admin') {
+                $DBPers = $DB_Personnel->table('tb_personnel');
+                $DBrloes = $DB_Personnel->table('tb_admin_rloes');
+
+                $personnelUser = $DBPers->where('pers_username', $username)->get()->getRowArray();
+
+                if ($personnelUser) {
+                    $dbPassword = $personnelUser['pers_password'] ?? '';
+                    $passwordMatched = false;
+
+                    if (!empty($dbPassword) && password_verify($password, $dbPassword)) {
+                        $passwordMatched = true;
+                    } elseif (!empty($dbPassword) && $password === $dbPassword) {
+                        $passwordMatched = true;
+                    }
+
+                    if ($passwordMatched) {
+                        $user = $personnelUser;
+                        $loggedInId = $personnelUser['pers_id'];
+                        $loggedInUsername = ($personnelUser['pers_prefix'] ?? '') . ($personnelUser['pers_firstname'] ?? '') . ' ' . ($personnelUser['pers_lastname'] ?? '');
+                        $userRoles = $DBrloes->select('admin_rloes_status, admin_rloes_nanetype')
+                                            ->where('admin_rloes_userid', $personnelUser['pers_id'])
+                                            ->get()->getRowArray();
+                        $loggedInStatus = (isset($userRoles) && !empty($userRoles['admin_rloes_status']) ? $userRoles['admin_rloes_status'] : "Member");
+                    }
+                }
+            }
+
+            if ($user) {
+                $hasRole = false;
+                if ($role === 'assessor' && $loggedInStatus === 'assessor') {
+                    $hasRole = true;
+                } elseif ($role === 'admin' && isset($userRoles['admin_rloes_nanetype']) && str_contains($userRoles['admin_rloes_nanetype'], 'งานประเมิน pa')) {
+                    $hasRole = true;
+                }
+
+                if ($hasRole) {
+                    $newdata = [
+                        'username'  => $loggedInUsername,
+                        'id'        => $loggedInId,
+                        'img'       => (isset($user['pers_img']) ? $user['pers_img'] : ''),
+                        'fname'     => (isset($user['pers_firstname']) ? $user['pers_firstname'] : (isset($user['e_first_name']) ? $user['e_first_name'] : '')),
+                        'lname'     => (isset($user['pers_lastname']) ? $user['pers_lastname'] : (isset($user['e_last_name']) ? $user['e_last_name'] : '')),
+                        'logged_in' => true,
+                        'rloes'     => (isset($userRoles['admin_rloes_nanetype']) ? $userRoles['admin_rloes_nanetype'] : 'ผู้ประเมิน'),
+                        'status'    => $loggedInStatus
+                    ];
+                    $session->set($newdata);
+
+                    // Specific redirect for Admin or Assessor
+                    if ($role === 'admin' || $role === 'assessor') {
+                        session()->remove('Return'); // Clear the return URL
+                        return redirect()->to(base_url('pa-personnel'));
+                    }
+
+                    // Fallback for other roles or if no specific redirect
+                    $returnUrl = session()->get('Return');
+                    session()->remove('Return');
+                    if (!empty($returnUrl)) {
+                        if (!preg_match('#^https?://#i', $returnUrl)) {
+                            $returnUrl = preg_replace('#^[^/]*' . preg_quote($_SERVER['HTTP_HOST'] ?? 'localhost', '#') . '/?#i', '', $returnUrl);
+                            $returnUrl = ltrim($returnUrl, '/');
+                        }
+                        if (filter_var($returnUrl, FILTER_VALIDATE_URL)) {
+                            return redirect()->to($returnUrl);
+                        }
+                        return redirect()->to(base_url($returnUrl));
+                    }
+                    return redirect()->to(base_url());
+                } else {
+                    $session->setFlashdata('Error', 'บทบาทไม่ถูกต้องสำหรับผู้ใช้นี้!');
+                }
             } else {
-                $session->setFlashdata('Error', 'บทบาทไม่ถูกต้องสำหรับผู้ใช้นี้!');
+                $session->setFlashdata('Error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!');
             }
-        } else {
-            $session->setFlashdata('Error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!');
+        } catch (\Throwable $e) {
+            log_message('error', '[processTraditionalLogin] Error during login processing: ' . $e->getMessage());
+            $session->setFlashdata('Error', 'เกิดข้อผิดพลาดในระบบ: ' . $e->getMessage());
         }
 
         return redirect()->back(); // Redirect back to the login page with error

@@ -152,7 +152,7 @@
                 
             </ul>
             <div>
-                <?php if(isset($_SESSION['username']) && @$_SESSION['status'] == "AdminPersonnel" || @$_SESSION['status'] == 'ManagerPersonnel'): ?>
+                <?php if(isset($_SESSION['username']) && (@$_SESSION['status'] == "AdminPersonnel" || @$_SESSION['status'] == 'ManagerPersonnel' || @$_SESSION['status'] == 'superadmin' || @$_SESSION['status'] == 'admin')): ?>
                 <ul class="menu-inner py-1">
                     <li class="menu-item">
                         <!-- data-bs-toggle="modal" data-bs-target="#modalToggle" -->

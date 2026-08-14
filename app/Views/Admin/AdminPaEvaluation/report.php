@@ -52,7 +52,7 @@
         <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);">
             <div class="card-body d-flex align-items-center justify-content-between p-3">
                 <div>
-                    <span class="text-muted fw-semibold small d-block mb-1">บุคลากรทั้งหมด</span>
+                    <span class="text-muted fw-semibold small d-block mb-1">ครูข้าราชการทั้งหมด</span>
                     <h3 class="fw-bold mb-0 text-primary"><?= $total_personnel; ?> <span class="fs-6 text-muted fw-normal">คน</span></h3>
                 </div>
                 <div class="avatar avatar-md bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm">
@@ -92,8 +92,8 @@
 <!-- Table Card -->
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0 fw-bold fs-6"><i class="bx bx-file me-2 text-primary"></i>รายงานผลการประเมิน PA ปีการศึกษา <?= esc($fiscal_year) ?></h5>
-        <span class="badge bg-label-primary rounded-pill">ประจำปี <?= esc($fiscal_year) ?></span>
+        <h5 class="card-title mb-0 fw-bold fs-6"><i class="bx bx-file me-2 text-primary"></i>รายงานผลการประเมิน PA ครูข้าราชการ ปีการศึกษา <?= esc($fiscal_year) ?></h5>
+        <span class="badge bg-label-primary rounded-pill"><i class="bx bx-award me-1"></i>เฉพาะครูข้าราชการ ประจำปี <?= esc($fiscal_year) ?></span>
     </div>
     <div class="card-body pt-3">
         <div class="table-responsive">
@@ -101,7 +101,7 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width: 40px;" class="text-nowrap">#</th>
-                        <th class="text-nowrap" style="width: 220px;">ชื่อ-นามสกุล</th>
+                        <th class="text-nowrap" style="width: 220px;">ชื่อ-นามสกุล (ครูข้าราชการ)</th>
                         <th class="text-nowrap" style="width: 140px;">กลุ่มสาระ</th>
                         <th class="text-nowrap" style="width: 100px;">ตำแหน่ง</th>
                         <th class="text-nowrap" style="width: 110px;">วิทยฐานะ</th>

@@ -69,7 +69,7 @@ class ConAdminPaConfig extends BaseController
         $db_skj = \Config\Database::connect('skj');
         $db_default = \Config\Database::connect();
 
-        // Fetch personnel (filtered for civil servant teachers / ครูข้าราชการ, excluding ครูช่วยปฏิบัติงาน)
+        // Fetch personnel (filtered for civil servant teachers / ครูข้าราชการ, excluding ครูช่วยปฏิบัติงาน / ครูช่วยปฏิบัติการสอน)
         $personnel = $db_default->table('tb_personnel')
                                 ->select('tb_personnel.pers_id, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_learning, tb_position.posi_name')
                                 ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
@@ -80,6 +80,8 @@ class ConAdminPaConfig extends BaseController
                                     ->orWhere("tb_personnel.pers_position BETWEEN 'posi_003' AND 'posi_006'")
                                 ->groupEnd()
                                 ->notLike('tb_position.posi_name', 'ช่วยปฏิบัติงาน')
+                                ->notLike('tb_position.posi_name', 'ช่วยปฏิบัติการสอน')
+                                ->notLike('tb_position.posi_name', 'ช่วยสอน')
                                 ->notLike('tb_position.posi_name', 'ช่วยราชการ')
                                 ->orderBy('pers_firstname', 'ASC')
                                 ->get()->getResultArray();
@@ -93,6 +95,8 @@ class ConAdminPaConfig extends BaseController
                                 ->orWhere("posi_id BETWEEN 'posi_003' AND 'posi_006'")
                             ->groupEnd()
                             ->notLike('posi_name', 'ช่วยปฏิบัติงาน')
+                            ->notLike('posi_name', 'ช่วยปฏิบัติการสอน')
+                            ->notLike('posi_name', 'ช่วยสอน')
                             ->notLike('posi_name', 'ช่วยราชการ')
                             ->orderBy('posi_id', 'ASC')
                             ->get()->getResultArray();
@@ -180,14 +184,24 @@ class ConAdminPaConfig extends BaseController
         $current_year_ad = (int)date('Y');
         $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
 
-        // ดึงรายการปีการศึกษาทั้งหมดที่มีในระบบ
-        $years_raw = $db_pa_evaluation->table('tb_evaluations')
-            ->select('ev_fiscal_year')
+        // ดึงรายการปีการศึกษาทั้งหมดที่มีในระบบ (ทั้งจาก evaluations และ assessor_scope)
+        $years_eval = $db_pa_evaluation->table('tb_evaluations')
+            ->select('ev_fiscal_year as yr')
             ->distinct()
-            ->orderBy('ev_fiscal_year', 'DESC')
             ->get()->getResultArray();
 
-        $available_years = array_column($years_raw, 'ev_fiscal_year');
+        $years_scope = $db_pa_evaluation->table('tb_assessor_scope')
+            ->select('scope_fiscal_year as yr')
+            ->where('scope_fiscal_year >', 0)
+            ->distinct()
+            ->get()->getResultArray();
+
+        $merged_years = array_merge(
+            array_column($years_eval, 'yr'),
+            array_column($years_scope, 'yr')
+        );
+        $available_years = array_values(array_unique(array_filter($merged_years)));
+
         if (!in_array($current_fiscal_year_be, $available_years)) {
             array_unshift($available_years, $current_fiscal_year_be);
         }
@@ -196,9 +210,18 @@ class ConAdminPaConfig extends BaseController
         // รับค่าปีการศึกษาจาก GET (ถ้ามี) มิฉะนั้นใช้ปีปัจจุบัน
         $selected_fiscal_year = $this->request->getGet('fiscal_year');
         $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+        $fiscal_year_ad = $fiscal_year_be - 543;
 
-        // 1. Fetch all necessary lookup tables at once
-        $assessor_scopes = $db_pa_evaluation->table('tb_assessor_scope')->get()->getResultArray();
+        // 1. Fetch all necessary lookup tables at once (กรอง assessor_scope ตามปีการศึกษาที่เลือกอย่างเคร่งครัด)
+        $assessor_scopes = $db_pa_evaluation->table('tb_assessor_scope')
+            ->groupStart()
+                ->where('scope_fiscal_year', $fiscal_year_be)
+                ->orWhere('scope_fiscal_year', (string)$fiscal_year_be)
+                ->orWhere('scope_fiscal_year', $fiscal_year_ad)
+                ->orWhere('scope_fiscal_year', (string)$fiscal_year_ad)
+            ->groupEnd()
+            ->get()->getResultArray();
+
         $all_evaluators = $db_pa_evaluation->table('tb_evaluators')->get()->getResultArray();
         $evaluators_map = array_column($all_evaluators, null, 'e_id');
         $learning_groups_raw = $db_skj->table('tb_learning')->get()->getResultArray();
@@ -207,26 +230,29 @@ class ConAdminPaConfig extends BaseController
         $positions = array_column($positions_raw, 'posi_name', 'posi_id');
 
         // 2. Get the list of teachers (personnel)
-        $teacher_positions = $db_skj->table('tb_position')
-                                     ->select('posi_id')
-                                     ->whereIn('posi_name', ['ครู', 'ครูผู้ช่วย', 'ผู้อำนวยการสถานศึกษา', 'รองผู้อำนวยการสถานศึกษา'])
-                                     ->get()->getResultArray();
-        $teacher_position_ids = array_column($teacher_positions, 'posi_id');
+        $personnel_raw = $db_default->table('tb_personnel')
+                            ->where('pers_status', 'กำลังใช้งาน')
+                            ->groupStart()
+                                ->whereIn('pers_position', ['posi_003', 'posi_004', 'posi_005', 'posi_006'])
+                                ->orLike('pers_position', 'posi_')
+                            ->groupEnd()
+                            ->orderBy('pers_learning', 'ASC')
+                            ->orderBy('pers_firstname', 'ASC')
+                            ->get()->getResultArray();
 
         $personnel_with_names = [];
-        if (!empty($teacher_position_ids)) {
-            $personnel_raw = $db_default->table('tb_personnel')
-                                ->where('pers_status', 'กำลังใช้งาน')
-                                ->whereIn('pers_position', $teacher_position_ids)
-                                ->orderBy('pers_learning', 'ASC')
-                                ->orderBy('pers_firstname', 'ASC')
-                                ->get()->getResultArray();
-
-            foreach ($personnel_raw as $person) {
-                $person['learning_area_name'] = $learning_groups[$person['pers_learning']] ?? '';
-                $person['position_name'] = $positions[$person['pers_position']] ?? '';
-                $personnel_with_names[] = $person;
+        foreach ($personnel_raw as $person) {
+            $posName = $positions[$person['pers_position']] ?? '';
+            // กรองเฉพาะสายครูผู้สอน/ผู้บริหารสถานศึกษา ไม่รวมช่วยราชการ/ช่วยปฏิบัติงาน/ช่วยปฏิบัติการสอน
+            if (str_contains($posName, 'ช่วยปฏิบัติงาน') || str_contains($posName, 'ช่วยปฏิบัติการสอน') || str_contains($posName, 'ช่วยสอน') || str_contains($posName, 'ช่วยราชการ')) {
+                continue;
             }
+            if (empty($posName) || (!str_contains($posName, 'ครู') && !str_contains($posName, 'ผู้อำนวยการ'))) {
+                continue;
+            }
+            $person['learning_area_name'] = $learning_groups[$person['pers_learning']] ?? '';
+            $person['position_name'] = $posName;
+            $personnel_with_names[] = $person;
         }
 
         // 3. Get all completed evaluation submissions for the relevant teachers
@@ -237,7 +263,12 @@ class ConAdminPaConfig extends BaseController
             $submissions = $db_pa_evaluation->table('tb_evaluations as ev')
                 ->select('ev.t_id, sc.e_id')
                 ->join('tb_evaluator_scores as sc', 'sc.ev_id = ev.ev_id')
-                ->where('ev.ev_fiscal_year', $fiscal_year_be)
+                ->groupStart()
+                    ->where('ev.ev_fiscal_year', $fiscal_year_be)
+                    ->orWhere('ev.ev_fiscal_year', (string)$fiscal_year_be)
+                    ->orWhere('ev.ev_fiscal_year', $fiscal_year_ad)
+                    ->orWhere('ev.ev_fiscal_year', (string)$fiscal_year_ad)
+                ->groupEnd()
                 ->whereIn('ev.t_id', $teacher_ids)
                 ->distinct()
                 ->get()->getResultArray();
@@ -259,7 +290,7 @@ class ConAdminPaConfig extends BaseController
                 $scope_has_lear = !empty($scope['scope_lear_id']);
 
                 if ($scope_has_pers) {
-                    if ($scope['scope_pers_id'] === $person['pers_id']) {
+                    if ((string)$scope['scope_pers_id'] === (string)$person['pers_id']) {
                         $is_match = true;
                     }
                 } else if ($scope_has_posi && $scope_has_lear) {
@@ -274,11 +305,11 @@ class ConAdminPaConfig extends BaseController
                     if ($scope['scope_lear_id'] === $person['pers_learning']) {
                         $is_match = true;
                     }
-                } else {
-                    $is_match = true;
                 }
+                // หมายเหตุ: หาก scope_pers_id, scope_posi_id, scope_lear_id เป็น NULL ทั้งหมด 
+                // แสดงว่าผู้ประเมินยังไม่ได้ถูกผูกกับครูคนใด จึงไม่จับคู่ ($is_match = false)
 
-                if ($is_match) {
+                if ($is_match && !empty($scope['assessor_e_id'])) {
                     $assigned_evaluator_ids[$scope['assessor_e_id']] = true;
                 }
             }
@@ -321,14 +352,21 @@ class ConAdminPaConfig extends BaseController
             $fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
         }
 
+        $fiscal_year_ad = (int)$fiscal_year_be - 543;
+
         // 2. Find the main evaluation record (tb_evaluations)
         $evaluation = $db_pa_evaluation->table('tb_evaluations')
             ->where('t_id', $personId)
-            ->where('ev_fiscal_year', $fiscal_year_be)
+            ->groupStart()
+                ->where('ev_fiscal_year', $fiscal_year_be)
+                ->orWhere('ev_fiscal_year', (string)$fiscal_year_be)
+                ->orWhere('ev_fiscal_year', $fiscal_year_ad)
+                ->orWhere('ev_fiscal_year', (string)$fiscal_year_ad)
+            ->groupEnd()
             ->get()->getRowArray();
 
         if (!$evaluation) {
-            return $this->response->setBody('<div class="alert alert-warning">ไม่พบข้อมูลการประเมินหลักสำหรับบุคลากรนี้ในปีการศึกษานี้</div>');
+            return $this->response->setBody('<div class="alert alert-warning">ไม่พบข้อมูลการประเมินหลักสำหรับบุคลากรนี้ในปีการศึกษา ' . esc($fiscal_year_be) . '</div>');
         }
 
         // 3. Find the specific evaluator's score summary (tb_evaluator_scores)
