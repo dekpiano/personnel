@@ -99,11 +99,12 @@
                 <thead class="table-secondary text-dark">
                     <tr>
                         <th style="width: 40px;" class="text-nowrap text-center fw-bold text-dark">#</th>
-                        <th class="text-nowrap fw-bold text-dark" style="width: 220px;">ชื่อ-นามสกุล</th>
-                        <th class="text-nowrap fw-bold text-dark" style="width: 130px;">กลุ่มสาระ</th>
-                        <th class="text-nowrap fw-bold text-dark" style="width: 110px;">ตำแหน่ง</th>
-                        <th class="text-nowrap fw-bold text-dark" style="width: 120px;">วิทยฐานะ</th>
-                        <th class="text-nowrap fw-bold text-dark" style="width: 130px;">สถานะ</th>
+                        <th class="text-nowrap fw-bold text-dark" style="width: 200px;">ชื่อ-นามสกุล</th>
+                        <th class="text-nowrap fw-bold text-dark" style="width: 120px;">กลุ่มสาระ</th>
+                        <th class="text-nowrap fw-bold text-dark" style="width: 100px;">ตำแหน่ง</th>
+                        <th class="text-nowrap fw-bold text-dark" style="width: 110px;">วิทยฐานะ</th>
+                        <th class="text-nowrap fw-bold text-dark text-center" style="width: 180px;">ข้อมูลข้อตกลง PA ของครู</th>
+                        <th class="text-nowrap fw-bold text-dark text-center" style="width: 110px;">สถานะประเมิน</th>
                         <th style="width: 120px;" class="text-center text-nowrap fw-bold text-dark">จัดการ</th>
                     </tr>
                 </thead>
@@ -111,6 +112,14 @@
                     <?php if (isset($personnel) && count($personnel) > 0): ?>
                         <?php $index = 1; ?>
                         <?php foreach ($personnel as $person): ?>
+                            <?php 
+                                $agreement = $person['pa_agreement'] ?? null;
+                                $has_pres = !empty($agreement['pa_presentation_link']);
+                                $has_plan = !empty($agreement['pa_file_lesson_plan']);
+                                $has_pa1  = !empty($agreement['pa_file_pa1']);
+                                $plan_url = $has_plan ? ($pa_upload_baseurl . $selected_year . '/lesson_plan/' . $agreement['pa_file_lesson_plan']) : '';
+                                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . $selected_year . '/pa1/' . $agreement['pa_file_pa1']) : '';
+                            ?>
                             <tr>
                                 <td class="text-center text-nowrap fw-semibold text-dark"><?= $index++; ?></td>
                                 <td class="text-nowrap">
@@ -144,7 +153,65 @@
                                         <?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?>
                                     </span>
                                 </td>
-                                <td class="text-nowrap">
+                                <!-- คอลัมน์ข้อมูลข้อตกลง PA ของครู -->
+                                <td class="text-center text-nowrap">
+                                    <?php if ($agreement && ($has_pres || $has_plan || $has_pa1)): ?>
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <!-- สื่อนำเสนอ -->
+                                            <?php if ($has_pres): ?>
+                                                <a href="<?= esc($agreement['pa_presentation_link']); ?>" target="_blank" class="btn btn-xs btn-outline-primary px-2 py-1 rounded shadow-none" title="คลิกเพื่อดูสื่อนำเสนอ (Canva / PPT)" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-slideshow fs-6 me-1"></i>สื่อ
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบสื่อนำเสนอ" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-slideshow fs-6 me-1"></i>-
+                                                </span>
+                                            <?php endif; ?>
+
+                                            <!-- แผนการสอน -->
+                                            <?php if ($has_plan): ?>
+                                                <a href="<?= esc($plan_url); ?>" target="_blank" class="btn btn-xs btn-outline-info px-2 py-1 rounded shadow-none" title="คลิกเพื่อดู/ดาวน์โหลดไฟล์แผนการสอน (PDF)" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-book-open fs-6 me-1"></i>แผน
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบแผนการสอน" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-book-open fs-6 me-1"></i>-
+                                                </span>
+                                            <?php endif; ?>
+
+                                            <!-- บันทึกข้อตกลง PA1 -->
+                                            <?php if ($has_pa1): ?>
+                                                <a href="<?= esc($pa1_url); ?>" target="_blank" class="btn btn-xs btn-outline-danger px-2 py-1 rounded shadow-none" title="คลิกเพื่อดู/ดาวน์โหลดแบบข้อตกลง PA1 (PDF)" data-bs-toggle="tooltip">
+                                                    <i class="bx bxs-file-pdf fs-6 me-1"></i>PA1
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบไฟล์ PA1" data-bs-toggle="tooltip">
+                                                    <i class="bx bxs-file-pdf fs-6 me-1"></i>-
+                                                </span>
+                                            <?php endif; ?>
+
+                                            <!-- ปุ่ม Modal ดูรายละเอียดทั้งหมด -->
+                                            <button type="button" class="btn btn-xs btn-warning text-dark px-2 py-1 rounded fw-bold btn-view-pa-modal" 
+                                                data-name="<?= esc($person['pers_prefix'] . $person['pers_firstname'] . ' ' . $person['pers_lastname']); ?>"
+                                                data-posi="<?= esc($person['posi_name'] ?? '-'); ?>"
+                                                data-academic="<?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?>"
+                                                data-pres="<?= esc($agreement['pa_presentation_link'] ?? ''); ?>"
+                                                data-plan="<?= esc($plan_url); ?>"
+                                                data-plan-name="<?= esc($agreement['pa_file_lesson_plan'] ?? ''); ?>"
+                                                data-pa1="<?= esc($pa1_url); ?>"
+                                                data-pa1-name="<?= esc($agreement['pa_file_pa1'] ?? ''); ?>"
+                                                data-updated="<?= esc($agreement['pa_updated_at'] ?? $agreement['pa_created_at'] ?? ''); ?>"
+                                                title="ดูสรุปข้อมูล PA ทั้งหมด" data-bs-toggle="tooltip">
+                                                <i class="bx bx-detail"></i>
+                                            </button>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="badge bg-light text-muted border px-2 py-1 fw-normal">
+                                            <i class="bx bx-x me-1"></i>ยังไม่ส่งเอกสาร
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center text-nowrap">
                                     <?php if ($person['has_pa_evaluation']): ?>
                                         <span class="badge bg-success text-white rounded-pill px-2 py-1"><i class="bx bx-check-circle me-1"></i>ประเมินแล้ว</span>
                                     <?php else: ?>
@@ -153,11 +220,11 @@
                                 </td>
                                 <td class="text-center text-nowrap">
                                     <?php if ($person['has_pa_evaluation']): ?>
-                                        <a href="<?= base_url('pa-form/' . $person['pers_id']); ?>" class="btn btn-sm btn-success text-white fw-bold rounded-pill px-3 shadow-sm">
+                                        <a href="<?= base_url('pa-form/' . $person['pers_id'] . '?fiscal_year=' . $selected_year); ?>" class="btn btn-sm btn-success text-white fw-bold rounded-pill px-3 shadow-sm">
                                             <i class="bx bx-edit me-1"></i> ดู / แก้ไข
                                         </a>
                                     <?php else: ?>
-                                        <a href="<?= base_url('pa-form/' . $person['pers_id']); ?>" class="btn btn-sm btn-primary text-white fw-bold rounded-pill px-3 shadow-sm">
+                                        <a href="<?= base_url('pa-form/' . $person['pers_id'] . '?fiscal_year=' . $selected_year); ?>" class="btn btn-sm btn-primary text-white fw-bold rounded-pill px-3 shadow-sm">
                                             <i class="bx bx-pencil me-1"></i> ประเมิน
                                         </a>
                                     <?php endif; ?>
@@ -170,11 +237,122 @@
         </div>
     </div>
 </div>
+
+<!-- Modal รายละเอียดข้อมูลข้อตกลง PA -->
+<div class="modal fade" id="paAgreementModal" tabindex="-1" aria-labelledby="paAgreementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #025588 0%, #01345b 100%);">
+                <h5 class="modal-title text-white fw-bold" id="paAgreementModalLabel">
+                    <i class="bx bx-folder-open me-2 text-warning"></i>เอกสารและสื่อนำเสนอผลการพัฒนางาน (PA)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <!-- Info Header in Modal -->
+                <div class="card border-0 shadow-sm p-3 mb-3 bg-white" style="border-radius: 12px;">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1 fs-5" id="modalTeacherName">-</h6>
+                            <div class="text-muted small">
+                                <span class="badge bg-label-primary rounded-pill me-1" id="modalTeacherPosition">-</span>
+                                <span class="badge bg-label-info rounded-pill" id="modalTeacherAcademic">-</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-label-secondary rounded-pill px-3 py-2">
+                                <i class="bx bx-calendar me-1"></i>ปีการศึกษา <?= esc($selected_year); ?>
+                            </span>
+                            <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px;" id="modalUpdatedAt">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Items List -->
+                <div class="row g-3">
+                    <!-- 1. สื่อนำเสนอ -->
+                    <div class="col-12">
+                        <div class="card border border-primary-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-md bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                                        <i class="bx bx-slideshow fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">1. ลิงก์สื่อนำเสนอผลการพัฒนางานตามข้อตกลง (PA)</h6>
+                                        <small class="text-muted">เช่น สื่อ Canva, PowerPoint Online, Google Slides</small>
+                                        <div id="modalPresLinkText" class="text-truncate mt-1 text-primary small" style="max-width: 380px;">-</div>
+                                    </div>
+                                </div>
+                                <div id="modalPresAction">
+                                    <span class="badge bg-light text-muted border">ไม่มีข้อมูล</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. แผนการจัดการเรียนรู้ -->
+                    <div class="col-12">
+                        <div class="card border border-info-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-md bg-info text-white rounded-3 d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                                        <i class="bx bx-book-open fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">2. ไฟล์แผนการจัดการเรียนรู้ (Lesson Plan)</h6>
+                                        <small class="text-muted">ไฟล์เอกสารประกอบการจัดการเรียนรู้ (PDF)</small>
+                                        <div id="modalPlanFileText" class="text-truncate mt-1 text-secondary small" style="max-width: 380px;">-</div>
+                                    </div>
+                                </div>
+                                <div id="modalPlanAction">
+                                    <span class="badge bg-light text-muted border">ไม่มีข้อมูล</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. บันทึกข้อตกลง PA1 -->
+                    <div class="col-12">
+                        <div class="card border border-danger-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-md bg-danger text-white rounded-3 d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                                        <i class="bx bxs-file-pdf fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">3. ไฟล์บันทึกข้อตกลงในการพัฒนางาน (PA1)</h6>
+                                        <small class="text-muted">แบบข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง (PDF)</small>
+                                        <div id="modalPa1FileText" class="text-truncate mt-1 text-secondary small" style="max-width: 380px;">-</div>
+                                    </div>
+                                </div>
+                                <div id="modalPa1Action">
+                                    <span class="badge bg-light text-muted border">ไม่มีข้อมูล</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
     if ($.fn.select2) {
         $('.select2').select2({
             minimumResultsForSearch: -1
@@ -186,6 +364,54 @@ $(document).ready(function() {
             "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json"
         },
         "pageLength": 10
+    });
+
+    // Handle View PA Agreement Modal
+    $('.btn-view-pa-modal').on('click', function() {
+        const btn = $(this);
+        const name = btn.data('name');
+        const posi = btn.data('posi');
+        const academic = btn.data('academic');
+        const pres = btn.data('pres');
+        const plan = btn.data('plan');
+        const planName = btn.data('plan-name');
+        const pa1 = btn.data('pa1');
+        const pa1Name = btn.data('pa1-name');
+        const updated = btn.data('updated');
+
+        $('#modalTeacherName').text(name);
+        $('#modalTeacherPosition').text(posi);
+        $('#modalTeacherAcademic').text(academic);
+        $('#modalUpdatedAt').text(updated ? ('อัปเดตล่าสุด: ' + updated) : '');
+
+        // Presentation
+        if (pres && pres.trim() !== '') {
+            $('#modalPresLinkText').html('<i class="bx bx-link-external me-1"></i>' + pres);
+            $('#modalPresAction').html('<a href="' + pres + '" target="_blank" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-link-external me-1"></i>เปิดสื่อนำเสนอ</a>');
+        } else {
+            $('#modalPresLinkText').text('ยังไม่ได้ระบุลิงก์');
+            $('#modalPresAction').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
+        }
+
+        // Lesson Plan
+        if (plan && plan.trim() !== '') {
+            $('#modalPlanFileText').html('<i class="bx bx-file me-1"></i>' + (planName || 'ไฟล์แผนการสอน'));
+            $('#modalPlanAction').html('<a href="' + plan + '" target="_blank" class="btn btn-info text-white rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-download me-1"></i>ดูไฟล์ PDF</a>');
+        } else {
+            $('#modalPlanFileText').text('ยังไม่มีการอัปโหลดไฟล์');
+            $('#modalPlanAction').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
+        }
+
+        // PA1
+        if (pa1 && pa1.trim() !== '') {
+            $('#modalPa1FileText').html('<i class="bx bxs-file-pdf me-1"></i>' + (pa1Name || 'ไฟล์แบบข้อตกลง PA1'));
+            $('#modalPa1Action').html('<a href="' + pa1 + '" target="_blank" class="btn btn-danger rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-download me-1"></i>ดูไฟล์ PA1</a>');
+        } else {
+            $('#modalPa1FileText').text('ยังไม่มีการอัปโหลดไฟล์');
+            $('#modalPa1Action').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
+        }
+
+        $('#paAgreementModal').modal('show');
     });
 });
 </script>

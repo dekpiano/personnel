@@ -60,7 +60,112 @@
                 <div class="col-md-6">
                     <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีการศึกษาประจำแบบประเมิน</label>
                     <input type="text" class="form-control border shadow-none bg-white fw-bold text-dark fs-6" id="academicYear" name="academicYear"
-                        placeholder="ระบุปีการศึกษา" value="<?= date('Y') + 543; ?>">
+                        placeholder="ระบุปีการศึกษา" value="<?= esc($fiscal_year_be ?? (date('Y') + 543)); ?>">
+                </div>
+            </div>
+
+            <!-- PA Agreement Reference Documents Card -->
+            <?php 
+                $agreement = $paAgreement ?? null;
+                $has_pres = !empty($agreement['pa_presentation_link']);
+                $has_plan = !empty($agreement['pa_file_lesson_plan']);
+                $has_pa1  = !empty($agreement['pa_file_pa1']);
+                $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/lesson_plan/' . $agreement['pa_file_lesson_plan']) : '';
+                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/pa1/' . $agreement['pa_file_pa1']) : '';
+            ?>
+            <div class="card border border-primary-subtle shadow-sm mb-4" style="border-radius: 14px; background: #fbfdff;">
+                <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                            <i class="bx bx-folder-open fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0 text-dark fs-6">
+                            เอกสารและสื่อนำเสนอผลการพัฒนางานตามข้อตกลง (PA) ของผู้รับการประเมิน
+                        </h6>
+                    </div>
+                    <span class="badge bg-label-primary rounded-pill px-3 py-1 fw-bold">ประจำปีการศึกษา <?= esc($fiscal_year_be ?? (date('Y') + 543)); ?></span>
+                </div>
+                <div class="card-body p-3">
+                    <?php if ($agreement && ($has_pres || $has_plan || $has_pa1)): ?>
+                        <div class="row g-3">
+                            <!-- 1. สื่อนำเสนอ -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="avatar avatar-sm bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
+                                            <i class="bx bx-slideshow fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">1. สื่อนำเสนอ PA</span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Canva / PowerPoint / Slides</small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <?php if ($has_pres): ?>
+                                            <a href="<?= esc($agreement['pa_presentation_link']); ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold">
+                                                <i class="bx bx-link-external me-1"></i>เปิดดูสื่อนำเสนอ
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="btn btn-light btn-sm w-100 rounded-pill text-muted border" disabled>ยังไม่ได้แนบสื่อ</button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. แผนการจัดการเรียนรู้ -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="avatar avatar-sm bg-info text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
+                                            <i class="bx bx-book-open fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">2. แผนการจัดการเรียนรู้</span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">ไฟล์เอกสารแผนการสอน (PDF)</small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <?php if ($has_plan): ?>
+                                            <a href="<?= esc($plan_url); ?>" target="_blank" class="btn btn-outline-info btn-sm w-100 rounded-pill fw-bold">
+                                                <i class="bx bx-file me-1"></i>ดูไฟล์แผนการสอน
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="btn btn-light btn-sm w-100 rounded-pill text-muted border" disabled>ยังไม่ได้แนบแผน</button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. แบบข้อตกลง PA1 -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="avatar avatar-sm bg-danger text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
+                                            <i class="bx bxs-file-pdf fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">3. แบบข้อตกลง (PA1)</span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">บันทึกข้อตกลงการพัฒนางาน (PDF)</small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <?php if ($has_pa1): ?>
+                                            <a href="<?= esc($pa1_url); ?>" target="_blank" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-bold">
+                                                <i class="bx bxs-file-pdf me-1"></i>ดูแบบข้อตกลง PA1
+                                            </a>
+                                        <?php else: ?>
+                                            <button class="btn btn-light btn-sm w-100 rounded-pill text-muted border" disabled>ยังไม่ได้แนบ PA1</button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-3 text-muted">
+                            <i class="bx bx-info-circle fs-4 d-block mb-1 text-secondary"></i>
+                            <span class="small">ผู้รับการประเมินยังไม่ได้ส่งเอกสารหรือสื่อนำเสนอในระบบบันทึกข้อมูลครู สำหรับปีการศึกษานี้</span>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

@@ -136,6 +136,24 @@ class ConUserPaEvaluation extends BaseController
             $query = $builder->get();
             $personnel = $query ? $query->getResultArray() : [];
 
+            // Query PA Agreements for all personnel for the selected fiscal year
+            $paAgreements = [];
+            try {
+                $agreementRows = $db_personnel->table('tb_teacher_pa_agreement')
+                                              ->groupStart()
+                                                  ->where('pa_year', $fiscal_year_be)
+                                                  ->orWhere('pa_year', (string)$fiscal_year_be)
+                                                  ->orWhere('pa_year', $fiscal_year_ad)
+                                                  ->orWhere('pa_year', (string)$fiscal_year_ad)
+                                              ->groupEnd()
+                                              ->get()->getResultArray();
+                foreach ($agreementRows as $arow) {
+                    $paAgreements[$arow['pa_teacher_id']] = $arow;
+                }
+            } catch (\Throwable $e) {
+                log_message('error', '[paPersonnelList] Fetch PA agreement failed: ' . $e->getMessage());
+            }
+
             foreach ($personnel as &$p) {
                 $evaluationExists = false;
                 try {
@@ -154,6 +172,7 @@ class ConUserPaEvaluation extends BaseController
                     log_message('error', '[paPersonnelList] Check evaluation exists failed: ' . $e->getMessage());
                 }
                 $p['has_pa_evaluation'] = $evaluationExists;
+                $p['pa_agreement'] = $paAgreements[$p['pers_id']] ?? null;
             }
             unset($p);
 
@@ -168,6 +187,8 @@ class ConUserPaEvaluation extends BaseController
         $data['UrlMenuMain'] = 'PA_FORM';
         $data['UrlMenuSub'] = '';
         $data['personnel'] = $personnel;
+        $data['selected_fiscal_year'] = $fiscal_year_be;
+        $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/');
 
         return view('User/UserPA/PaPersonnelList', $data);
     }
@@ -185,6 +206,31 @@ class ConUserPaEvaluation extends BaseController
 
         if (!$person) {
             return redirect()->to('pa-personnel')->with('Error', 'ไม่พบข้อมูลบุคลากร');
+        }
+
+        // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
+        $current_month = (int)date('m');
+        $current_year_ad = (int)date('Y');
+        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+        $fiscal_year_ad = $fiscal_year_be - 543;
+
+        // Fetch PA Agreement from tb_teacher_pa_agreement
+        $paAgreement = null;
+        try {
+            $paAgreement = $database->table('tb_teacher_pa_agreement')
+                                   ->where('pa_teacher_id', $personId)
+                                   ->groupStart()
+                                       ->where('pa_year', $fiscal_year_be)
+                                       ->orWhere('pa_year', (string)$fiscal_year_be)
+                                       ->orWhere('pa_year', $fiscal_year_ad)
+                                       ->orWhere('pa_year', (string)$fiscal_year_ad)
+                                   ->groupEnd()
+                                   ->orderBy('pa_id', 'DESC')
+                                   ->get()->getRowArray();
+        } catch (\Throwable $e) {
+            log_message('error', '[paForm] Fetch PA Agreement failed: ' . $e->getMessage());
         }
 
         // Temporarily fetch all rubric items for debugging purposes
@@ -282,6 +328,9 @@ class ConUserPaEvaluation extends BaseController
         $data['evaluatorScore'] = $evaluatorScore; // ส่งข้อมูลคะแนนรวมของผู้ประเมิน
         $data['itemScores'] = $itemScores;         // ส่งข้อมูลคะแนนรายข้อ
         $data['rawItemScores'] = $rawItemScores;   // ส่งข้อมูลคะแนนดิบสำหรับ radio button
+        $data['paAgreement'] = $paAgreement;       // ส่งข้อมูล PA Agreement
+        $data['fiscal_year_be'] = $fiscal_year_be;
+        $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/');
 
         log_message('debug', 'rawItemScores: ' . json_encode($rawItemScores));
 
