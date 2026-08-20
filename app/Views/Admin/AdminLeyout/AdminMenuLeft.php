@@ -101,35 +101,34 @@
                     </ul>
                 </li>
                 <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' || $uri->getSegment(2) == 'Holiday') ? 'active open' : '' ?>">
-        <a href="javascript:void(0);" class="menu-link menu-toggle">
-            <i class="menu-icon tf-icons bi bi-calendar-check-fill"></i>
-            <div data-i18n="Leave Management">ระบบจัดการการลา</div>
-        </a>
-        <ul class="menu-sub">
-            <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) != 'Settings') ? 'active' : '' ?>">
-                <a href="<?= base_url('Admin/Leave') ?>" class="menu-link">
-                    <div data-i18n="All Leaves">รายการขอลาทั้งหมด</div>
-                </a>
-            </li>
-            <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) == 'Settings') ? 'active' : '' ?>">
-                <a href="<?= base_url('Admin/Leave/Settings') ?>" class="menu-link">
-                    <div data-i18n="Leave Settings">ตั้งค่าโควตาการลา</div>
-                </a>
-            </li>
-            <li class="menu-item <?= ($uri->getSegment(2) == 'Holiday') ? 'active' : '' ?>">
-                <a href="<?= base_url('Admin/Holiday') ?>" class="menu-link">
-                    <div data-i18n="Holiday Settings">ตั้งค่าวันหยุดราชการ</div>
-                </a>
-            </li>
-        </ul>
-    </li>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons bi bi-calendar-check-fill"></i>
+                        <div data-i18n="Leave Management">ระบบจัดการการลา</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) != 'Settings') ? 'active' : '' ?>">
+                            <a href="<?= base_url('Admin/Leave') ?>" class="menu-link">
+                                <div data-i18n="All Leaves">รายการขอลาทั้งหมด</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?= ($uri->getSegment(2) == 'Leave' && $uri->getSegment(3) == 'Settings') ? 'active' : '' ?>">
+                            <a href="<?= base_url('Admin/Leave/Settings') ?>" class="menu-link">
+                                <div data-i18n="Leave Settings">ตั้งค่าโควตาการลา</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?= ($uri->getSegment(2) == 'Holiday') ? 'active' : '' ?>">
+                            <a href="<?= base_url('Admin/Holiday') ?>" class="menu-link">
+                                <div data-i18n="Holiday Settings">ตั้งค่าวันหยุดราชการ</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <?php endif; ?>
                 <?php if($_SESSION['status'] === "superadmin" || in_array('งานประเมิน pa',$SubRloes) || strpos($_SESSION['rloes'] ?? '', 'งานประเมิน pa') !== false) :?>
-            <ul class="menu-inner py-1">
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">งานการประเมิน PA</span>
                 </li>
-                <li class="menu-item <?php echo (in_array($uri->getSegment(2), ["PaConfig", "PaReport"]) ? "active open" : "")?>">
+                <li class="menu-item <?php echo (in_array($uri->getSegment(2), ["PaConfig", "PaAgreement", "PaReport"]) ? "active open" : "")?>">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-file"></i>
                         <div data-i18n="Layouts">จัดการประเมิน PA</div>
@@ -144,6 +143,11 @@
                         <li class="menu-item <?php echo $uri->getSegment(3) == "Rubrics"? "active" : ""?>">
                             <a href="<?=base_url('Admin/PaConfig/Rubrics')?>" class="menu-link">
                                 <div data-i18n="Without menu">จัดการหัวข้อการประเมิน</div>
+                            </a>
+                        </li>
+                        <li class="menu-item <?= ($uri->getSegment(2) == 'PaAgreement') ? 'active' : '' ?>">
+                            <a href="<?= base_url('Admin/PaAgreement') ?>" class="menu-link">
+                                <div data-i18n="Without menu">จัดการข้อตกลง PA (รายคน)</div>
                             </a>
                         </li>
                         <li class="menu-item <?php echo $uri->getSegment(2) == "PaReport"?"active":""?>">
@@ -164,11 +168,8 @@
                         <div data-i18n="Analytics">ตรวจสอบการส่งงาน </div>
                     </a>
                 </li>
+                <?php endif; ?>
             </ul>
-            <?php endif; ?>
-            </ul>
-
-          
 
             <?php if($_SESSION['status'] === "superadmin") : ?>
             <div>

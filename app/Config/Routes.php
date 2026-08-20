@@ -37,7 +37,6 @@ $routes->get('directory/api/filter/(:segment)', 'ConUserDirectory::getByLearning
 $routes->post('directory/save-profile', 'ConUserDirectory::saveProfile');
 
 // PA Form routes
-// PA Form routes
 $routes->get('pa-personnel', 'ConUserPaEvaluation::paPersonnelList');
 $routes->get('pa-form', 'ConUserPaEvaluation::paForm');
 $routes->get('pa-form/(:segment)', 'ConUserPaEvaluation::paForm/$1');
@@ -163,6 +162,12 @@ $routes->post('Admin/SaveAttendance/SetupLocation/ToggleActive', 'ConAdminSaveAt
 $routes->get('Admin/SaveAttendance/OnlineHistory', 'ConAdminSaveAttendance::OnlineHistory');
 
 // Admin PA Config routes
+$routes->get('Admin/PaAgreement', 'ConAdminPaAgreement::index');
+$routes->post('Admin/PaAgreement/upload-chunk', 'ConAdminPaAgreement::uploadChunk');
+$routes->post('Admin/PaAgreement/save-file', 'ConAdminPaAgreement::savePaFile');
+$routes->post('Admin/PaAgreement/delete-file', 'ConAdminPaAgreement::deletePaFile');
+$routes->post('Admin/PaAgreement/clean-junk', 'ConAdminPaAgreement::cleanupOrphanFiles');
+
 $routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
 $routes->post('Admin/PaConfig/save', 'ConAdminPaConfig::saveScope');
 $routes->get('Admin/PaConfig/delete/(:num)', 'ConAdminPaConfig::deleteScope/$1');
@@ -179,9 +184,6 @@ $routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)', 'ConAdminPaConfi
 $routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2/$3');
 $routes->get('Admin/TeacherEvaluation', 'ConAdminTeacherEvaluation::index');
 $routes->post('Admin/TeacherEvaluation/saveConfig', 'ConAdminTeacherEvaluation::saveConfig');
-
-
-
 
 /*
  * --------------------------------------------------------------------
