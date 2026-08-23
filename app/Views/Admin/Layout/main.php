@@ -15,10 +15,10 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="<?=base_url()?>/assets/img/favicon/favicon.ico" />
 
-    <!-- Fonts -->
+    <!-- Fonts: K2D & Outfit (Modern Thai & Number Typography) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@200;300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=K2D:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/fonts/boxicons.css" />
@@ -43,6 +43,11 @@
 
     <!-- Page CSS -->
     <style>
+        /* 🇹🇭 Universal Typography Standard: K2D Font */
+        body, html, .layout-wrapper, .menu, .card, .btn, .form-control, .form-select, .table, .modal, .dropdown-menu, .nav, .badge, h1, h2, h3, h4, h5, h6, p, span, a, label, input, select, textarea {
+            font-family: 'K2D', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
         /* Lozad Fade-in Animation */
         .lozad {
             opacity: 0;

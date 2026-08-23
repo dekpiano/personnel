@@ -89,6 +89,9 @@ The application is divided into Admin and User (personnel) sections.
   - All `.badge` and `.bg-label-*` elements must strictly maintain high contrast (dark bold text `#0f172a` / `#0369a1` on tinted background with clear borders) to prevent blending into backgrounds.
 - **💙 Hero & Header Card Signature Blue Theme (พื้นหลังการ์ดฮีโร่และแบนเนอร์สีฟ้า-น้ำเงินทั้งระบบ):**
   - All Hero Cards, Header Banners, and Welcome Panels across every page and subsystem (Admin & User) must strictly use the signature royal/ocean blue gradient (`linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #075985 100%)` / `--primary-gradient`) with crisp white typography (`#ffffff` / `#e0f2fe`) and high-contrast action buttons.
+- **🔤 Universal Typography Standard: K2D Font (ฟอนต์ K2D ภาษาไทยสากลทั้งระบบ):**
+  - All pages, components, cards, tables, modals, menus, inputs, and buttons must strictly use Google Font **'K2D'** (`font-family: 'K2D', sans-serif !important;`) as the primary typeface for modern, clean, and legible Thai text.
+  - Numbers, metrics, and KPI counters can complement with **'Outfit'** or bold weights of **'K2D'**.
 
 ## 8. Business Logic: Leave Quota & Fiscal Year (การคำนวณโควตาวันลาและปีงบประมาณ)
 

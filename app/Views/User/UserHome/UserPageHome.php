@@ -3,10 +3,10 @@
 <?= $this->section('title') ?><?= $title ?? 'ระบบบริหารงานบุคคล โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์' ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<!-- Modern Fonts -->
+<!-- Modern Fonts: K2D & Outfit -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=K2D:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
     /* ====================================================
@@ -21,7 +21,7 @@
 
     /* 🌊 Animated Background on <body> */
     body {
-        font-family: 'Kanit', sans-serif !important;
+        font-family: 'K2D', sans-serif !important;
         color: #1e293b;
         position: relative;
         overflow-x: hidden;
@@ -42,12 +42,91 @@
         }
     }
 
-    /* Ambient Floating Mesh Aura Orbs (Hardware-accelerated) */
+    /* ====================================================
+       🌐 ANIMATED SVG GRID PATTERN SYSTEM (High-Tech Pattern)
+       ==================================================== */
+    .animated-grid-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .animated-grid-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Grid Moving Lattice Animation */
+    .grid-moving-layer {
+        animation: gridDrift 22s linear infinite;
+        will-change: transform;
+    }
+
+    @keyframes gridDrift {
+        0% {
+            transform: translate3d(0, 0, 0);
+        }
+        100% {
+            transform: translate3d(48px, 48px, 0);
+        }
+    }
+
+    /* Pulsing Glowing Grid Tiles */
+    .pulse-tile {
+        opacity: 0;
+        filter: drop-shadow(0 0 10px currentColor);
+        animation-iteration-count: infinite;
+        animation-timing-function: ease-in-out;
+        will-change: opacity, transform;
+    }
+
+    .tile-1 { animation: pulseGlow1 6s 0.2s infinite; color: #38bdf8; }
+    .tile-2 { animation: pulseGlow2 8s 1.5s infinite; color: #0284c7; }
+    .tile-3 { animation: pulseGlow1 7s 2.8s infinite; color: #60a5fa; }
+    .tile-4 { animation: pulseGlow2 9s 0.8s infinite; color: #38bdf8; }
+    .tile-5 { animation: pulseGlow1 8.5s 3.5s infinite; color: #818cf8; }
+    .tile-6 { animation: pulseGlow2 6.5s 4.2s infinite; color: #34d399; }
+    .tile-7 { animation: pulseGlow1 7.5s 1.1s infinite; color: #38bdf8; }
+    .tile-8 { animation: pulseGlow2 8s 2.3s infinite; color: #0284c7; }
+
+    @keyframes pulseGlow1 {
+        0%, 100% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        50% {
+            opacity: 0.35;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes pulseGlow2 {
+        0%, 100% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        50% {
+            opacity: 0.45;
+            transform: scale(1.02);
+        }
+    }
+
+    /* Ambient Floating Mesh Aura Orbs */
     .ambient-orb {
         position: fixed;
         border-radius: 50%;
         filter: blur(85px);
-        opacity: 0.45;
+        opacity: 0.42;
         pointer-events: none;
         z-index: 0;
         will-change: transform;
@@ -240,6 +319,7 @@
         align-items: center;
         gap: 1rem;
         z-index: 1;
+        height: 100%;
     }
 
     .stat-portal-card:hover {
@@ -392,7 +472,163 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         z-index: 1;
     }
+
+    /* ====================================================
+       📱 MOBILE COMPACT & PROPORTIONAL RESPONSIVENESS
+       ==================================================== */
+    @media (max-width: 768px) {
+        .home-hero-card {
+            padding: 1.75rem 1.25rem !important;
+            border-radius: 20px !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .hero-logo-wrap {
+            width: 65px !important;
+            height: 65px !important;
+            border-radius: 16px !important;
+            padding: 8px !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .home-hero-card h1 {
+            font-size: 1.65rem !important;
+            line-height: 1.3 !important;
+        }
+
+        .home-hero-card p {
+            font-size: 0.9rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .hero-illustration-img {
+            max-height: 220px !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .hero-action-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 0.65rem 1.25rem !important;
+            font-size: 0.9rem !important;
+        }
+
+        .glass-pill {
+            font-size: 0.72rem !important;
+            padding: 0.2rem 0.65rem !important;
+        }
+
+        /* 2 Columns on Mobile for Stats (Super Compact) */
+        .stat-portal-card {
+            padding: 0.9rem 0.75rem !important;
+            border-radius: 14px !important;
+            gap: 0.6rem !important;
+        }
+
+        .stat-portal-icon {
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+            font-size: 1.35rem !important;
+        }
+
+        .stat-portal-number {
+            font-size: 1.45rem !important;
+        }
+
+        .stat-portal-label {
+            font-size: 0.72rem !important;
+            line-height: 1.2 !important;
+        }
+
+        /* Compact Bento Cards on Mobile */
+        .service-card {
+            padding: 1.25rem 1.15rem !important;
+            border-radius: 16px !important;
+        }
+
+        .service-icon-box {
+            width: 46px !important;
+            height: 46px !important;
+            border-radius: 12px !important;
+            font-size: 1.45rem !important;
+            margin-bottom: 0.85rem !important;
+        }
+
+        .service-title {
+            font-size: 1.05rem !important;
+            margin-bottom: 0.35rem !important;
+        }
+
+        .service-desc {
+            font-size: 0.82rem !important;
+            margin-bottom: 0.85rem !important;
+            line-height: 1.45 !important;
+        }
+
+        .section-header-title {
+            font-size: 1.1rem !important;
+        }
+
+        .contact-card {
+            padding: 1.25rem 1.15rem !important;
+            border-radius: 16px !important;
+        }
+
+        /* Scale down orbs on mobile */
+        .ambient-orb {
+            filter: blur(50px) !important;
+            opacity: 0.3 !important;
+        }
+
+        .orb-1 { width: 350px !important; height: 350px !important; }
+        .orb-2 { width: 380px !important; height: 380px !important; }
+        .orb-3 { width: 300px !important; height: 300px !important; }
+    }
 </style>
+
+<!-- 🌐 Animated SVG Grid Pattern Background (Moving Grid Lattice + Pulsing Glowing Cells) -->
+<div class="animated-grid-wrapper">
+    <svg class="animated-grid-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Pattern Definition -->
+            <pattern id="animated-grid-pattern" width="48" height="48" patternUnits="userSpaceOnUse" x="0" y="0">
+                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#0284c7" stroke-width="1" stroke-opacity="0.12" />
+                <!-- Grid Intersection Points (Crosshairs / Dots) -->
+                <circle cx="0" cy="0" r="1.5" fill="#0284c7" fill-opacity="0.4" />
+                <circle cx="48" cy="0" r="1.5" fill="#0284c7" fill-opacity="0.4" />
+                <circle cx="0" cy="48" r="1.5" fill="#0284c7" fill-opacity="0.4" />
+                <circle cx="48" cy="48" r="1.5" fill="#0284c7" fill-opacity="0.4" />
+            </pattern>
+            
+            <!-- Vignette Soft Radial Fade Mask -->
+            <radialGradient id="grid-fade-mask" cx="50%" cy="40%" r="65%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="60%" stop-color="#ffffff" stop-opacity="0.65" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+            </radialGradient>
+            
+            <mask id="grid-mask">
+                <rect width="100%" height="100%" fill="url(#grid-fade-mask)" />
+            </mask>
+        </defs>
+
+        <!-- Base Moving Lattice Grid using Radial Mask -->
+        <rect width="100%" height="100%" fill="url(#animated-grid-pattern)" mask="url(#grid-mask)" class="grid-moving-layer" />
+        
+        <!-- Animated Glowing Grid Squares (Random Pulsing Cells) -->
+        <g mask="url(#grid-mask)">
+            <rect x="144" y="96" width="48" height="48" rx="4" fill="#38bdf8" class="pulse-tile tile-1" />
+            <rect x="336" y="192" width="48" height="48" rx="4" fill="#0284c7" class="pulse-tile tile-2" />
+            <rect x="528" y="96" width="48" height="48" rx="4" fill="#60a5fa" class="pulse-tile tile-3" />
+            <rect x="240" y="384" width="48" height="48" rx="4" fill="#38bdf8" class="pulse-tile tile-4" />
+            <rect x="720" y="288" width="48" height="48" rx="4" fill="#818cf8" class="pulse-tile tile-5" />
+            <rect x="96" y="480" width="48" height="48" rx="4" fill="#34d399" class="pulse-tile tile-6" />
+            <rect x="864" y="144" width="48" height="48" rx="4" fill="#38bdf8" class="pulse-tile tile-7" />
+            <rect x="624" y="432" width="48" height="48" rx="4" fill="#0284c7" class="pulse-tile tile-8" />
+        </g>
+    </svg>
+</div>
 
 <!-- 🌌 Animated Ambient Mesh Glow Orbs in Background -->
 <div class="ambient-orb orb-1"></div>
@@ -413,14 +649,14 @@
     <circle cx="50" cy="50" r="14" fill="#60a5fa" opacity="0.4"/>
 </svg>
 
-<div class="container-xxl py-4 position-relative" style="z-index: 1;">
+<div class="container-xxl py-3 py-md-4 position-relative" style="z-index: 1;">
 
     <!-- Hero Header Banner (2-Column Layout with Bespoke SVG Illustration) -->
     <div class="home-hero-card position-relative">
         <div class="row align-items-center position-relative" style="z-index: 2;">
             
             <!-- Left Column: Content & Actions -->
-            <div class="col-lg-7 col-xl-7 mb-4 mb-lg-0 text-lg-start text-center">
+            <div class="col-lg-7 col-xl-7 mb-3 mb-lg-0 text-lg-start text-center">
                 <div class="d-flex align-items-center justify-content-lg-start justify-content-center">
                     <div class="hero-logo-wrap">
                         <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" style="width: 100%; height: auto;">
@@ -436,28 +672,28 @@
                     </span>
                 </div>
 
-                <h1 class="fw-extrabold text-white mb-2" style="font-size: clamp(2rem, 4.5vw, 2.85rem); letter-spacing: -0.5px; line-height: 1.25;">
+                <h1 class="fw-extrabold text-white mb-2" style="font-size: clamp(1.8rem, 4.5vw, 2.85rem); letter-spacing: -0.5px; line-height: 1.25;">
                     ระบบบริหารงานบุคคล<br>
                     <span style="font-size: 0.85em; font-weight: 600; opacity: 0.95;">(Personnel Management System)</span>
                 </h1>
 
-                <p class="text-white text-opacity-90 mb-4" style="max-width: 600px; font-size: 1.02rem; line-height: 1.6; font-weight: 300;">
+                <p class="text-white text-opacity-90 mb-3 mb-md-4" style="max-width: 600px; font-size: 0.98rem; line-height: 1.6; font-weight: 300;">
                     ศูนย์กลางสารสนเทศครูและบุคลากรทางการศึกษา ระบบประเมิน PA (ว 9/2564) การบันทึกเวลาทำงาน GPS และบริการสารสนเทศออนไลน์ครบวงจร
                 </p>
 
-                <div class="d-flex align-items-center justify-content-lg-start justify-content-center gap-3 flex-wrap mb-3">
-                    <a href="<?= base_url('LoginOfficerPersonnel') ?>" class="btn btn-white text-primary fw-bold shadow-lg px-4 py-2.5 bg-white rounded-pill d-inline-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                <div class="d-flex align-items-center justify-content-lg-start justify-content-center gap-2 gap-md-3 flex-wrap mb-3">
+                    <a href="<?= base_url('LoginOfficerPersonnel') ?>" class="btn btn-white text-primary fw-bold shadow-lg px-4 py-2.5 bg-white rounded-pill d-inline-flex align-items-center gap-2 hero-action-btn" style="font-size: 0.92rem;">
                         <i class="bx bxs-lock-alt text-primary fs-5"></i> เข้าสู่ระบบเจ้าหน้าที่ / บุคลากร
                     </a>
-                    <a href="<?= base_url('directory') ?>" class="btn btn-outline-light fw-bold px-4 py-2.5 rounded-pill d-inline-flex align-items-center gap-2" style="font-size: 0.95rem; border-width: 2px;">
+                    <a href="<?= base_url('directory') ?>" class="btn btn-outline-light fw-bold px-4 py-2.5 rounded-pill d-inline-flex align-items-center gap-2 hero-action-btn" style="font-size: 0.92rem; border-width: 2px;">
                         <i class="bx bx-user-pin fs-5"></i> ทำเนียบครูและบุคลากร
                     </a>
                 </div>
 
                 <!-- Quick Highlights -->
-                <div class="d-flex align-items-center justify-content-lg-start justify-content-center gap-3 flex-wrap text-white text-opacity-80 small pt-2 border-top border-white border-opacity-10">
+                <div class="d-flex align-items-center justify-content-lg-start justify-content-center gap-2 gap-md-3 flex-wrap text-white text-opacity-80 small pt-2 border-top border-white border-opacity-10" style="font-size: 0.78rem;">
                     <span><i class="bx bx-check-circle text-info me-1"></i>ประเมิน PA ออนไลน์</span>
-                    <span><i class="bx bx-check-circle text-info me-1"></i>บันทึกเวลา GPS / สแกนนิ้ว</span>
+                    <span><i class="bx bx-check-circle text-info me-1"></i>บันทึกเวลา GPS</span>
                     <span><i class="bx bx-check-circle text-info me-1"></i>ยื่นใบลาอิเล็กทรอนิกส์</span>
                 </div>
             </div>
@@ -468,38 +704,38 @@
                     <img src="<?= base_url('assets/img/illustrations/personnel_system_hero.svg') ?>" 
                          alt="ระบบบริหารงานบุคคล Personnel Management System" 
                          class="hero-illustration-img"
-                         style="max-height: 380px;">
+                         style="max-height: 360px;">
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- Section 1: Personnel Overview KPI Stats -->
+    <!-- Section 1: Personnel Overview KPI Stats (Compact 2x2 on Mobile) -->
     <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2 mb-md-3">
             <h2 class="section-header-title mb-0">
-                <i class="bx bx-bar-chart-alt-2 text-primary fs-3"></i> ข้อมูลสถิติจำนวนบุคลากรปัจจุบัน
+                <i class="bx bx-bar-chart-alt-2 text-primary fs-4 fs-md-3"></i> ข้อมูลสถิติจำนวนบุคลากรปัจจุบัน
             </h2>
-            <span class="badge bg-label-primary rounded-pill px-3 py-1 fw-bold">ข้อมูลล่าสุด</span>
+            <span class="badge bg-label-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">ข้อมูลล่าสุด</span>
         </div>
 
-        <div class="row g-3">
+        <div class="row g-2 g-md-3">
             <!-- Total -->
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-md-6 col-xl-3">
                 <div class="stat-portal-card">
                     <div class="stat-portal-icon" style="background: #e0f2fe; color: #0284c7;">
                         <i class="bx bx-group"></i>
                     </div>
                     <div>
                         <div class="stat-portal-number" data-counter="<?= esc($stats['total']) ?>"><?= number_format($stats['total']) ?></div>
-                        <div class="stat-portal-label">บุคลากรทั้งหมด (คน)</div>
+                        <div class="stat-portal-label">บุคลากรทั้งหมด</div>
                     </div>
                 </div>
             </div>
 
             <!-- Executives -->
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-md-6 col-xl-3">
                 <div class="stat-portal-card">
                     <div class="stat-portal-icon" style="background: #fef3c7; color: #d97706;">
                         <i class="bx bx-user-voice"></i>
@@ -512,27 +748,27 @@
             </div>
 
             <!-- Teachers -->
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-md-6 col-xl-3">
                 <div class="stat-portal-card">
                     <div class="stat-portal-icon" style="background: #dcfce7; color: #16a34a;">
                         <i class="bx bx-id-card"></i>
                     </div>
                     <div>
                         <div class="stat-portal-number" data-counter="<?= esc($stats['teachers']) ?>"><?= number_format($stats['teachers']) ?></div>
-                        <div class="stat-portal-label">ข้าราชการครู / ครูผู้สอน</div>
+                        <div class="stat-portal-label">ครูผู้สอน</div>
                     </div>
                 </div>
             </div>
 
             <!-- Support -->
-            <div class="col-12 col-sm-6 col-xl-3">
+            <div class="col-6 col-md-6 col-xl-3">
                 <div class="stat-portal-card">
                     <div class="stat-portal-icon" style="background: #f3e8ff; color: #9333ea;">
                         <i class="bx bx-support"></i>
                     </div>
                     <div>
                         <div class="stat-portal-number" data-counter="<?= esc($stats['support']) ?>"><?= number_format($stats['support']) ?></div>
-                        <div class="stat-portal-label">บุคลากรสายสนับสนุน</div>
+                        <div class="stat-portal-label">สายสนับสนุน</div>
                     </div>
                 </div>
             </div>
@@ -540,15 +776,15 @@
     </div>
 
     <!-- Section 2: Services & Online Hub -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="mb-4 mb-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-2 mb-md-3">
             <h2 class="section-header-title mb-0">
-                <i class="bx bx-grid-alt text-primary fs-3"></i> บริการและระบบงานสารสนเทศ
+                <i class="bx bx-grid-alt text-primary fs-4 fs-md-3"></i> บริการและระบบงานสารสนเทศ
             </h2>
-            <span class="text-muted small">เลือกบริการที่ต้องการเข้าใช้งาน</span>
+            <span class="text-muted small d-none d-sm-inline">เลือกบริการที่ต้องการเข้าใช้งาน</span>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-3 g-md-4">
             <!-- 1. Directory -->
             <div class="col-12 col-md-6 col-lg-4">
                 <a href="<?= base_url('directory') ?>" class="service-card">
@@ -675,13 +911,13 @@
                     </div>
                     <h4 class="mb-0 fw-bold fs-6 text-dark">ติดต่อกลุ่มบริหารงานบุคคล</h4>
                 </div>
-                <p class="text-muted mb-0" style="font-size: 0.88rem; line-height: 1.6;">
+                <p class="text-muted mb-0" style="font-size: 0.85rem; line-height: 1.6;">
                     สำนักงานกลุ่มบริหารงานบุคคล อาคาร 4 โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์ <br>
                     เลขที่ 160 หมู่ 1 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000 | <strong>โทรศัพท์:</strong> 056-200-765
                 </p>
             </div>
             <div class="col-lg-4 col-md-5 d-flex justify-content-md-end justify-content-start align-items-center gap-2 flex-wrap">
-                <a href="https://skj.ac.th" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+                <a href="https://skj.ac.th" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center justify-content-center gap-2 w-100 w-md-auto">
                     <i class="bx bx-globe"></i> เว็บไซต์หลักโรงเรียน
                 </a>
             </div>
