@@ -269,12 +269,66 @@ class ConAdminSaveAttendance extends BaseController
     public function GetAttendanceToDate()
     { 
         $data = $this->DataMain();    
-        $DBPers = $data['database']->table('tb_personnel_attendance');
-        $date = $this->request->getGet('date');
-        $data = $DBPers->where('att_date', $date)
+        $db = $data['database'];
+        $date = $this->request->getGet('date') ?: date('Y-m-d');
+
+        // 1. ดึงข้อมูลบันทึกเวลาทำงานที่มีอยู่ในตาราง tb_personnel_attendance
+        $attendanceRows = $db->table('tb_personnel_attendance')
+            ->where('att_date', $date)
             ->select('att_person_id as person_id, att_status as status, att_reason as remark, att_time_in as time_in, att_time_out as time_out')
             ->get()->getResultArray();
-        return $this->response->setJSON($data);
+
+        $attMap = [];
+        foreach ($attendanceRows as $row) {
+            $attMap[$row['person_id']] = $row;
+        }
+
+        // 2. ดึงข้อมูล "การลาออนไลน์ที่ได้รับอนุมัติแล้ว" (Approved Leave Requests) ในวันที่ระบุ
+        $approvedLeaves = $db->table('tb_leave_requests')
+            ->select('tb_leave_requests.pers_id, tb_leave_requests.leave_period, tb_leave_requests.leave_topic, tb_leave_types.leave_type_name')
+            ->join('tb_leave_types', 'tb_leave_types.leave_type_id = tb_leave_requests.leave_type_id')
+            ->where('tb_leave_requests.leave_status', 'approved')
+            ->where('tb_leave_requests.leave_start_date <=', $date)
+            ->where('tb_leave_requests.leave_end_date >=', $date)
+            ->get()->getResultArray();
+
+        // 3. รวมผลการลาเข้ากับข้อมูลเช็คชื่อ (Auto Map สถานะการลาออนไลน์)
+        foreach ($approvedLeaves as $lv) {
+            $pId = $lv['pers_id'];
+            $typeName = $lv['leave_type_name'];
+            
+            // แมปประเภทการลาให้ตรงกับตัวเลือกในระบบบันทึกเวลา: 'ลาป่วย', 'ลากิจ', 'ไปราชการ', 'อื่นๆ'
+            $mappedStatus = 'อื่นๆ';
+            if (strpos($typeName, 'ป่วย') !== false) {
+                $mappedStatus = 'ลาป่วย';
+            } elseif (strpos($typeName, 'กิจ') !== false) {
+                $mappedStatus = 'ลากิจ';
+            } elseif (strpos($typeName, 'ราชการ') !== false) {
+                $mappedStatus = 'ไปราชการ';
+            }
+
+            $periodText = ($lv['leave_period'] === 'morning') ? ' (ครึ่งวันเช้า)' : (($lv['leave_period'] === 'afternoon') ? ' (ครึ่งวันบ่าย)' : '');
+            $remarkText = "[อนุมัติลาออนไลน์] " . $typeName . $periodText . ($lv['leave_topic'] ? ': ' . $lv['leave_topic'] : '');
+
+            // หากยังไม่มีการบันทึก หรือมีแต่สถานะเป็นขาด/ว่าง ให้แทนที่ด้วยสถานะการลาที่อนุมัติแล้วทันที
+            if (!isset($attMap[$pId]) || in_array($attMap[$pId]['status'], ['ขาด', ''])) {
+                $attMap[$pId] = [
+                    'person_id' => $pId,
+                    'status'    => $mappedStatus,
+                    'remark'    => $remarkText,
+                    'time_in'   => '',
+                    'time_out'  => '',
+                    'is_online_leave' => true
+                ];
+            } else {
+                // หากมีการเช็คชื่อแล้ว แต่เป็นวันลา ให้ระบุหมายเหตุการลาแนบไว้
+                if (empty($attMap[$pId]['remark'])) {
+                    $attMap[$pId]['remark'] = $remarkText;
+                }
+            }
+        }
+
+        return $this->response->setJSON(array_values($attMap));
     }
 
     public function SaveAttendanceToDB()

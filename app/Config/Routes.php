@@ -71,6 +71,7 @@ $routes->group('Admin', function ($routes) {
     $routes->get('Leave/DeleteType/(:num)', 'ConAdminLeave::DeleteLeaveType/$1');
     $routes->post('Leave/UpdateStatus', 'ConAdminLeave::UpdateStatus');
     $routes->get('Leave/Get/(:num)', 'ConAdminLeave::GetLeaveRequest/$1');
+    $routes->get('Leave/Print/(:num)', 'ConAdminLeave::Print/$1');
 
     // ระบบจัดการวันหยุด
     $routes->get('Holiday', 'ConAdminHoliday::index');

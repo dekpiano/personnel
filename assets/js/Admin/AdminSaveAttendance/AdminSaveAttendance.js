@@ -34,10 +34,13 @@ document.addEventListener("DOMContentLoaded", function () {
               const remark = att.remark || "";
               const time_in = att.time_in ? att.time_in.slice(0, 5) : "";
               const time_out = att.time_out ? att.time_out.slice(0, 5) : "";
-              html += `<tr>
+              const isLeave = att.is_online_leave ? true : false;
+              const rowClass = isLeave ? "table-warning bg-opacity-25" : "";
+
+              html += `<tr class="${rowClass}">
                                 <td>
-                                    <div class="fw-bold">${p.pers_prefix}${p.pers_firstname} ${p.pers_lastname}</div>
-                                    <small class="text-muted">${p.posi_name}</small>
+                                    <div class="fw-bold text-dark">${p.pers_prefix}${p.pers_firstname} ${p.pers_lastname} ${isLeave ? '<span class="badge bg-warning text-dark border border-warning ms-1 small fw-bold"><i class="bi bi-calendar-check me-1"></i>ลาออนไลน์</span>' : ''}</div>
+                                    <small class="text-secondary fw-semibold">${p.posi_name}</small>
                                 </td>
                                 <td class="text-center"><span class="badge bg-light text-dark border">${p.pers_finger_id || '-'}</span></td>
                                 <td><input type="text" class="form-control form-control-sm text-center px-1" name="time_in[${p.pers_id}]" value="${time_in}" placeholder="--:--" style="max-width: 80px; margin: 0 auto;"></td>
@@ -49,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="ลาป่วย" ${status == "ลาป่วย" ? "checked" : ""}></td>
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="ไปราชการ" ${status == "ไปราชการ" ? "checked" : ""}></td>
                                 <td class="text-center"><input class="form-check-input" type="radio" name="status[${p.pers_id}]" value="อื่นๆ" ${status == "อื่นๆ" ? "checked" : ""}></td>
-                                <td><input type="text" class="form-control form-control-sm" name="remark[${p.pers_id}]" value="${remark}" placeholder="-"></td>
+                                <td><input type="text" class="form-control form-control-sm ${isLeave ? 'border-warning fw-bold text-dark' : ''}" name="remark[${p.pers_id}]" value="${remark}" placeholder="-"></td>
                             </tr>`;
             });
             tbody.innerHTML = html;
@@ -443,25 +446,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
                   foundCount++;
                 } else {
-                  // User not found in Excel data, default to "ขาด"
-                  let absentRadio = row.querySelector(`input[type="radio"][value="ขาด"]`);
-                  if (absentRadio) {
-                     absentRadio.checked = true;
-                  }
-                  
-                  let remarkInput = row.querySelector(`input[name="remark[${pId}]"]`);
-                  if (remarkInput) {
-                     remarkInput.value = "";
-                  }
+                  // User not found in Excel data: Check if row already has online leave
+                  let isOnlineLeaveRow = row.classList.contains("table-warning");
+                  if (!isOnlineLeaveRow) {
+                    let absentRadio = row.querySelector(`input[type="radio"][value="ขาด"]`);
+                    if (absentRadio) {
+                       absentRadio.checked = true;
+                    }
+                    
+                    let remarkInput = row.querySelector(`input[name="remark[${pId}]"]`);
+                    if (remarkInput) {
+                       remarkInput.value = "";
+                    }
 
-                  let timeInInput = row.querySelector(`input[name="time_in[${pId}]"]`);
-                  if (timeInInput) {
-                     timeInInput.value = "";
-                  }
+                    let timeInInput = row.querySelector(`input[name="time_in[${pId}]"]`);
+                    if (timeInInput) {
+                       timeInInput.value = "";
+                    }
 
-                  let timeOutInput = row.querySelector(`input[name="time_out[${pId}]"]`);
-                  if (timeOutInput) {
-                     timeOutInput.value = "";
+                    let timeOutInput = row.querySelector(`input[name="time_out[${pId}]"]`);
+                    if (timeOutInput) {
+                       timeOutInput.value = "";
+                    }
                   }
 
                   notFoundCount++;

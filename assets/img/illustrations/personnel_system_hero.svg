@@ -1,0 +1,268 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <linearGradient id="primaryCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#f0f9ff" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="accentGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+
+    <linearGradient id="successGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+
+    <filter id="floatShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#0284c7" flood-opacity="0.25"/>
+    </filter>
+
+    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background Decorative Ambient Circles -->
+  <circle cx="300" cy="250" r="210" fill="url(#bgGlow)"/>
+  <circle cx="460" cy="130" r="70" fill="#38bdf8" opacity="0.15"/>
+  <circle cx="120" cy="380" r="90" fill="#60a5fa" opacity="0.12"/>
+
+  <!-- Background Grid Accent -->
+  <g opacity="0.12" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="4 4">
+    <line x1="100" y1="80" x2="500" y2="80"/>
+    <line x1="80" y1="200" x2="520" y2="200"/>
+    <line x1="100" y1="350" x2="500" y2="350"/>
+    <line x1="180" y1="60" x2="180" y2="400"/>
+    <line x1="420" y1="60" x2="420" y2="400"/>
+  </g>
+
+  <!-- Central Main Portal Display (Glassmorphism Dashboard) -->
+  <g transform="translate(110, 70)" filter="url(#cardShadow)">
+    <!-- Dashboard Base Screen -->
+    <rect x="0" y="0" width="380" height="270" rx="20" fill="url(#primaryCardGrad)" stroke="#ffffff" stroke-width="2"/>
+    
+    <!-- Top Window Bar -->
+    <path d="M0 20 C0 8.954 8.954 0 20 0 L360 0 C371.046 0 380 8.954 380 20 L380 40 L0 40 Z" fill="#f8fafc"/>
+    <line x1="0" y1="40" x2="380" y2="40" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="24" cy="20" r="5" fill="#f87171"/>
+    <circle cx="38" cy="20" r="5" fill="#fbbf24"/>
+    <circle cx="52" cy="20" r="5" fill="#34d399"/>
+
+    <!-- App Header in Screen -->
+    <rect x="80" y="14" width="140" height="12" rx="6" fill="#cbd5e1" opacity="0.6"/>
+    <rect x="320" y="12" width="44" height="16" rx="8" fill="#e0f2fe"/>
+    <circle cx="330" cy="20" r="4" fill="#0284c7"/>
+
+    <!-- Dashboard Content Elements -->
+    <!-- Left Profile & Badge Area -->
+    <g transform="translate(25, 58)">
+      <rect x="0" y="0" width="105" height="125" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#subtleShadow)"/>
+      <rect x="0" y="0" width="105" height="36" rx="14" fill="url(#blueGrad)"/>
+      <!-- ID Avatar -->
+      <circle cx="52.5" cy="36" r="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+      <circle cx="52.5" cy="32" r="11" fill="#0284c7"/>
+      <path d="M37 52 C37 44 44 43 52.5 43 C61 43 68 44 68 52 Z" fill="#0284c7"/>
+      
+      <rect x="18" y="66" width="69" height="8" rx="4" fill="#0f172a" opacity="0.8"/>
+      <rect x="26" y="80" width="53" height="6" rx="3" fill="#64748b" opacity="0.6"/>
+      <rect x="22" y="96" width="61" height="16" rx="8" fill="#dcfce7"/>
+      <text x="52.5" y="107" font-size="8" font-family="'Kanit', sans-serif" font-weight="bold" fill="#166534" text-anchor="middle">ACTIVE STAFF</text>
+    </g>
+
+    <!-- Center/Right Analytics Chart inside Screen -->
+    <g transform="translate(145, 58)">
+      <rect x="0" y="0" width="210" height="125" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#subtleShadow)"/>
+      
+      <text x="16" y="24" font-size="11" font-family="'Kanit', sans-serif" font-weight="bold" fill="#1e293b">การประเมินและสถิติบุคคล</text>
+      <rect x="150" y="14" width="44" height="14" rx="7" fill="#f0f9ff"/>
+      <text x="172" y="24" font-size="8" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0284c7" text-anchor="middle">ว 9/2564</text>
+      
+      <!-- Growth Bar Chart -->
+      <g transform="translate(20, 42)">
+        <!-- Grid lines -->
+        <line x1="0" y1="55" x2="170" y2="55" stroke="#f1f5f9" stroke-width="1.5"/>
+        <line x1="0" y1="30" x2="170" y2="30" stroke="#f1f5f9" stroke-width="1.5"/>
+        <line x1="0" y1="5" x2="170" y2="5" stroke="#f1f5f9" stroke-width="1.5"/>
+        
+        <!-- Bars -->
+        <rect x="15" y="22" width="18" height="33" rx="4" fill="#bae6fd"/>
+        <rect x="48" y="12" width="18" height="43" rx="4" fill="#7dd3fc"/>
+        <rect x="81" y="18" width="18" height="37" rx="4" fill="#38bdf8"/>
+        <rect x="114" y="6" width="18" height="49" rx="4" fill="url(#blueGrad)"/>
+        <rect x="147" y="2" width="18" height="53" rx="4" fill="url(#cyanGrad)"/>
+
+        <!-- Trend Line -->
+        <path d="M24 20 L57 10 L90 16 L123 4 L156 0" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="156" cy="0" r="4" fill="#f59e0b"/>
+      </g>
+    </g>
+
+    <!-- Bottom Quick Stats Row inside Dashboard -->
+    <g transform="translate(25, 198)">
+      <rect x="0" y="0" width="330" height="52" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      
+      <!-- Mini KPI 1 -->
+      <circle cx="28" cy="26" r="14" fill="#e0f2fe"/>
+      <path d="M28 19 L32 26 L24 26 Z" fill="#0284c7"/>
+      <text x="48" y="23" font-size="12" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">100%</text>
+      <text x="48" y="36" font-size="8" font-family="'Kanit', sans-serif" fill="#64748b">ส่งประเมิน PA</text>
+
+      <!-- Divider -->
+      <line x1="110" y1="12" x2="110" y2="40" stroke="#e2e8f0" stroke-width="1"/>
+
+      <!-- Mini KPI 2 -->
+      <circle cx="138" cy="26" r="14" fill="#dcfce7"/>
+      <path d="M134 26 L137 29 L143 22" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="158" y="23" font-size="12" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">07:45</text>
+      <text x="158" y="36" font-size="8" font-family="'Kanit', sans-serif" fill="#64748b">เวลาสแกนนิ้ว</text>
+
+      <!-- Divider -->
+      <line x1="220" y1="12" x2="220" y2="40" stroke="#e2e8f0" stroke-width="1"/>
+
+      <!-- Mini KPI 3 -->
+      <circle cx="248" cy="26" r="14" fill="#fef3c7"/>
+      <polygon points="248,18 251,23 257,24 253,28 254,34 248,31 243,34 244,28 240,24 245,23" fill="#d97706"/>
+      <text x="268" y="23" font-size="12" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">4.95</text>
+      <text x="268" y="36" font-size="8" font-family="'Kanit', sans-serif" fill="#64748b">ผลปฏิบัติงาน</text>
+    </g>
+  </g>
+
+  <!-- ==============================================
+       FLOATING CHARACTERS (Personnel & Teachers)
+       ============================================== -->
+  <!-- Character 1: Administrator / Principal (Center Left) -->
+  <g transform="translate(60, 210)" filter="url(#floatShadow)">
+    <!-- Base Body Silhouette -->
+    <path d="M35 150 C35 105 55 90 90 90 C125 90 145 105 145 150 Z" fill="#1e3a8a"/>
+    <!-- Suit Lapels / Tie -->
+    <polygon points="90,95 78,145 102,145" fill="#ffffff"/>
+    <polygon points="90,105 85,145 95,145" fill="#0284c7"/>
+    <!-- Head -->
+    <circle cx="90" cy="55" r="28" fill="#fbcfe8"/>
+    <!-- Hair -->
+    <path d="M64 52 C64 30 75 22 90 22 C108 22 116 32 116 48 C116 52 108 42 90 42 C76 42 66 50 64 52 Z" fill="#1e293b"/>
+    <!-- Glasses -->
+    <rect x="74" y="48" width="13" height="9" rx="2" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <rect x="93" y="48" width="13" height="9" rx="2" fill="none" stroke="#0f172a" stroke-width="2"/>
+    <line x1="87" y1="52" x2="93" y2="52" stroke="#0f172a" stroke-width="2"/>
+    <!-- Cheerful Smile -->
+    <path d="M84 66 Q90 71 96 66" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Clipboard in Hand -->
+    <g transform="translate(115, 95) rotate(-8)">
+      <rect x="0" y="0" width="52" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#subtleShadow)"/>
+      <rect x="14" y="-5" width="24" height="10" rx="3" fill="#94a3b8"/>
+      <!-- Lines -->
+      <line x1="8" y1="18" x2="44" y2="18" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+      <line x1="8" y1="28" x2="36" y2="28" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+      <line x1="8" y1="38" x2="40" y2="38" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+      <line x1="8" y1="48" x2="30" y2="48" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+      <!-- Checkmark Stamp -->
+      <circle cx="36" cy="48" r="9" fill="#dcfce7"/>
+      <path d="M32 48 L35 51 L40 45" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Character 2: Modern Female Teacher with Digital Tablet (Center Right) -->
+  <g transform="translate(420, 215)" filter="url(#floatShadow)">
+    <!-- Base Body Silhouette -->
+    <path d="M30 145 C30 105 50 88 80 88 C110 88 130 105 130 145 Z" fill="#0284c7"/>
+    <!-- Scarf / Collar -->
+    <path d="M65 88 Q80 110 95 88" fill="#38bdf8"/>
+    <!-- Head -->
+    <circle cx="80" cy="52" r="26" fill="#fed7aa"/>
+    <!-- Long Hair -->
+    <path d="M52 50 C52 24 64 18 80 18 C100 18 108 28 108 55 C108 85 98 100 98 100 L62 100 C62 100 52 80 52 50 Z" fill="#78350f" opacity="0.95"/>
+    <circle cx="80" cy="52" r="24" fill="#fed7aa"/>
+    <path d="M56 42 C64 32 76 30 92 34 C104 38 104 50 104 50 C104 50 96 40 82 40 C68 40 58 48 56 42 Z" fill="#78350f"/>
+    <!-- Smile -->
+    <path d="M75 63 Q80 67 85 63" fill="none" stroke="#9a3412" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Digital iPad / Tablet in Hand -->
+    <g transform="translate(-15, 90) rotate(12)">
+      <rect x="0" y="0" width="58" height="74" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="2" filter="url(#subtleShadow)"/>
+      <rect x="4" y="4" width="50" height="66" rx="5" fill="#f0f9ff"/>
+      <!-- Screen Graphic -->
+      <circle cx="29" cy="24" r="12" fill="#e0e7ff"/>
+      <path d="M29 16 L31 22 L37 22 L32 26 L34 32 L29 28 L24 32 L26 26 L21 22 L27 22 Z" fill="#4f46e5"/>
+      <rect x="10" y="44" width="38" height="5" rx="2" fill="#0284c7"/>
+      <rect x="14" y="53" width="30" height="4" rx="2" fill="#94a3b8"/>
+    </g>
+  </g>
+
+  <!-- ==============================================
+       FLOATING GLASS WIDGETS & BADGES
+       ============================================== -->
+  <!-- Top Left Floating Badge: GPS Check-in Verified -->
+  <g transform="translate(45, 60)" filter="url(#floatShadow)">
+    <rect x="0" y="0" width="135" height="56" rx="16" fill="#ffffff" stroke="#e0f2fe" stroke-width="2"/>
+    <circle cx="28" cy="28" r="16" fill="url(#blueGrad)"/>
+    <!-- GPS Location Pin Icon -->
+    <path d="M28 18 C24 18 21 21 21 25 C21 30 28 37 28 37 C28 37 35 30 35 25 C35 21 32 18 28 18 Z" fill="#ffffff"/>
+    <circle cx="28" cy="24" r="2.5" fill="#0284c7"/>
+    
+    <text x="52" y="24" font-size="11" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">GPS Check-In</text>
+    <text x="52" y="38" font-size="9" font-family="'Kanit', sans-serif" font-weight="bold" fill="#16a34a">✓ บันทึกเวลาแล้ว</text>
+  </g>
+
+  <!-- Top Right Floating Badge: Performance Award (PA Verified) -->
+  <g transform="translate(435, 45)" filter="url(#floatShadow)">
+    <rect x="0" y="0" width="130" height="60" rx="16" fill="#ffffff" stroke="#fef3c7" stroke-width="2"/>
+    <circle cx="28" cy="30" r="16" fill="url(#accentGold)"/>
+    <!-- Trophy / Medal Icon -->
+    <path d="M22 22 L34 22 L34 27 C34 30 31 33 28 33 C25 33 22 30 22 27 Z" fill="#ffffff"/>
+    <path d="M20 23 L22 23 L22 26 C21 26 20 25 20 23 Z" fill="#ffffff"/>
+    <path d="M36 23 L34 23 L34 26 C35 26 36 25 36 23 Z" fill="#ffffff"/>
+    <rect x="26" y="33" width="4" height="4" fill="#ffffff"/>
+    <rect x="24" y="37" width="8" height="2" rx="1" fill="#ffffff"/>
+
+    <text x="50" y="25" font-size="11" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">PA ประเมินผล</text>
+    <text x="50" y="40" font-size="9" font-family="'Kanit', sans-serif" font-weight="bold" fill="#d97706">ระดับดีเด่น (ว9)</text>
+  </g>
+
+  <!-- Bottom Floating Badge: E-Leave Approved (Center Bottom) -->
+  <g transform="translate(230, 395)" filter="url(#floatShadow)">
+    <rect x="0" y="0" width="145" height="50" rx="25" fill="#ffffff" stroke="#bbf7d0" stroke-width="2"/>
+    <circle cx="25" cy="25" r="15" fill="url(#successGrad)"/>
+    <path d="M20 25 L24 29 L31 20" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <text x="48" y="22" font-size="10" font-family="'Kanit', sans-serif" font-weight="bold" fill="#0f172a">ระบบขออนุญาตลา</text>
+    <text x="48" y="35" font-size="9" font-family="'Kanit', sans-serif" font-weight="bold" fill="#059669">อนุมัติเรียบร้อย</text>
+  </g>
+
+  <!-- Sparkling / Floating Tech Elements -->
+  <!-- Sparkle 1 -->
+  <path d="M505 170 Q515 170 515 160 Q515 170 525 170 Q515 170 515 180 Q515 170 505 170" fill="#fbbf24"/>
+  <!-- Sparkle 2 -->
+  <path d="M95 160 Q102 160 102 153 Q102 160 109 160 Q102 160 102 167 Q102 160 95 160" fill="#38bdf8"/>
+  <!-- Sparkle 3 -->
+  <path d="M410 370 Q418 370 418 362 Q418 370 426 370 Q418 370 418 378 Q418 370 410 370" fill="#34d399"/>
+</svg>

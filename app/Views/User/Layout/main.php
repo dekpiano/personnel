@@ -50,6 +50,7 @@ $uri = service('uri');
     <link rel="stylesheet" href="<?=base_url()?>/assets/css/demo.css?v=1" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/libs/apex-charts/apex-charts.css" />
@@ -83,6 +84,127 @@ $uri = service('uri');
             border-radius: 8px;
             margin-left: auto;
             margin-right: auto;
+        }
+
+        /* ====================================================
+           GLOBAL HIGH-CONTRAST BADGES & LABELS (.badge, .bg-label-*)
+           Fixes all invisible / blending text across entire User portal
+           ==================================================== */
+        .badge {
+            font-weight: 700 !important;
+            letter-spacing: 0.2px;
+        }
+
+        /* Label Primary (Sky Blue) */
+        .bg-label-primary {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
+        }
+
+        /* Label Secondary (Slate / Gray) */
+        .bg-label-secondary {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        /* Label Success (Emerald Green) */
+        .bg-label-success {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            border: 1px solid #a7f3d0 !important;
+        }
+
+        /* Label Danger (Red) */
+        .bg-label-danger {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            border: 1px solid #fecaca !important;
+        }
+
+        /* Label Warning (Amber / Orange) */
+        .bg-label-warning {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            border: 1px solid #fde68a !important;
+        }
+
+        /* Label Info (Cyan / Blue) */
+        .bg-label-info {
+            background-color: #e0f7fa !important;
+            color: #006064 !important;
+            border: 1px solid #b2ebf2 !important;
+        }
+
+        /* Label Dark */
+        .bg-label-dark {
+            background-color: #334155 !important;
+            color: #ffffff !important;
+            border: 1px solid #1e293b !important;
+        }
+
+        /* Solid Badges High-Contrast Fix */
+        .badge.bg-primary {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-secondary {
+            background-color: #475569 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-success {
+            background-color: #059669 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-danger {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-warning {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-info {
+            background-color: #0891b2 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-light {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        /* Avatar Initials with bg-label-* */
+        .avatar-initial.bg-label-primary {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            font-weight: 800;
+        }
+        .avatar-initial.bg-label-secondary {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            font-weight: 800;
+        }
+        .avatar-initial.bg-label-success {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            font-weight: 800;
+        }
+        .avatar-initial.bg-label-warning {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            font-weight: 800;
+        }
+        .avatar-initial.bg-label-danger {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: 800;
+        }
+        .avatar-initial.bg-label-info {
+            background-color: #e0f7fa !important;
+            color: #006064 !important;
+            font-weight: 800;
         }
     </style>
 
@@ -195,6 +317,190 @@ $uri = service('uri');
     
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+    <style>
+        /* บังคับแสดงลูกศรเปลี่ยนปีเสมอ ไม่ต้องรอเอาเมาส์ชี้ (Hover) */
+        .flatpickr-current-month .numInputWrapper span.arrowUp,
+        .flatpickr-current-month .numInputWrapper span.arrowDown {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
+    <style>
+        /* Flatpickr Airbnb Theme & Thai Year Dropdown (แบบเดียวกับ teacher2025 เป๊ะๆ) */
+        .flatpickr-calendar {
+            font-family: 'Sarabun', sans-serif !important;
+            border-radius: 14px !important;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18) !important;
+            border: 1.5px solid #cbd5e1 !important;
+        }
+
+        /* ตารางตัวเลขวัน - ให้เข้ม คมชัด ไม่ซีดจาง */
+        .flatpickr-day {
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+            border-radius: 8px !important;
+            transition: all 0.15s ease-in-out !important;
+        }
+
+        /* เอาเมาส์ชี้วัน (Hover) */
+        .flatpickr-day:hover {
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border-color: #7dd3fc !important;
+        }
+
+        /* วันปัจจุบัน (Today) */
+        .flatpickr-day.today {
+            border: 1.5px solid #0284c7 !important;
+            color: #0284c7 !important;
+            background: #f0f9ff !important;
+            font-weight: 800 !important;
+        }
+
+        /* วันที่เลือก (Selected / Range) - สีฟ้าเข้ม คมชัด โดดเด่น */
+        .flatpickr-day.selected, 
+        .flatpickr-day.startRange, 
+        .flatpickr-day.endRange {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.45) !important;
+        }
+
+        /* ช่วงวันที่เลือก (In Range) */
+        .flatpickr-day.inRange {
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            box-shadow: none !important;
+        }
+
+        /* วันของเดือนก่อน/หลัง - ให้มองเห็นแต่ต่างระดับ */
+        .flatpickr-day.prevMonthDay, 
+        .flatpickr-day.nextMonthDay {
+            color: #94a3b8 !important;
+            font-weight: 500 !important;
+        }
+
+        /* แถบชื่อวัน (จ. อ. พ. ...) */
+        span.flatpickr-weekday {
+            color: #334155 !important;
+            font-weight: 800 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .flatpickr-months .flatpickr-month {
+            color: #1e293b !important;
+        }
+        .flatpickr-current-month .cur-month {
+            font-weight: 800 !important;
+            color: #0f172a !important;
+        }
+        .flatpickr-year-be-select {
+            font-family: 'Sarabun', sans-serif !important;
+            font-size: 0.95rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            background: #f8fafc !important;
+            border: 1.5px solid #94a3b8 !important;
+            border-radius: 6px !important;
+            padding: 2px 8px !important;
+            cursor: pointer !important;
+            outline: none !important;
+            margin-left: 4px !important;
+        }
+        .flatpickr-year-be-select:focus {
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+        }
+    </style>
+    <script>
+    (function() {
+        if (typeof flatpickr === 'undefined') return;
+        flatpickr.localize(flatpickr.l10ns.th);
+
+        const thaiMonthsFull = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+
+        // Global Thai Buddhist Era Flatpickr Dropdown Render Function
+        window.renderThaiYearDropdown = function(instance) {
+            if (!instance || !instance.calendarContainer) return;
+            const currentYearAD = instance.currentYear;
+            const $container = $(instance.calendarContainer);
+            const $numInputWrapper = $container.find('.numInputWrapper');
+            
+            // Generate Year Options (-10 to +5 years around current year)
+            const baseYear = new Date().getFullYear();
+            let optionsHtml = '';
+            for (let y = baseYear - 10; y <= baseYear + 5; y++) {
+                const yBE = y + 543;
+                const isSelected = (y === currentYearAD) ? 'selected' : '';
+                optionsHtml += `<option value="${y}" ${isSelected}>${yBE}</option>`;
+            }
+
+            if ($numInputWrapper.length > 0) {
+                $numInputWrapper.hide();
+            }
+
+            let $yearSelect = $container.find('.flatpickr-year-be-select');
+            if ($yearSelect.length === 0) {
+                $yearSelect = $(`<select class="flatpickr-year-be-select" aria-label="เลือกปี พ.ศ.">${optionsHtml}</select>`);
+                $container.find('.flatpickr-current-month').append($yearSelect);
+
+                $yearSelect.on('change', function(e) {
+                    e.stopPropagation();
+                    const chosenYearAD = parseInt($(this).val(), 10);
+                    instance.changeYear(chosenYearAD);
+                });
+            } else {
+                $yearSelect.html(optionsHtml);
+                $yearSelect.val(currentYearAD);
+            }
+        };
+
+        flatpickr.setDefaults({
+            locale: 'th',
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j F Y',
+            formatDate: function(date, format, locale) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = thaiMonthsFull[date.getMonth()];
+                const yearBE = date.getFullYear() + 543;
+                return `${day} ${month} ${yearBE}`;
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                window.renderThaiYearDropdown(instance);
+                if (instance.config && instance.config.onMonthChange) {
+                    instance.config.onMonthChange.push(function(s, d, inst) {
+                        window.renderThaiYearDropdown(inst);
+                    });
+                }
+                if (instance.config && instance.config.onYearChange) {
+                    instance.config.onYearChange.push(function(s, d, inst) {
+                        window.renderThaiYearDropdown(inst);
+                    });
+                }
+            },
+            onOpen: function(selectedDates, dateStr, instance) {
+                window.renderThaiYearDropdown(instance);
+            }
+        });
+
+        // MutationObserver: ช่วยดักทุกครั้งที่ปฏิทินถูกสร้างหรือเปิดใหม่
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.classList && node.classList.contains('flatpickr-calendar')) {
+                        const instance = node._flatpickr;
+                        if (instance) window.renderThaiYearDropdown(instance);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
 
     <!-- DataTables JS -->

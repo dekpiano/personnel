@@ -8,70 +8,20 @@
         --warning: #f59e0b;
         --card-shadow: 0 10px 30px rgba(79, 70, 229, 0.05);
     }
-    .page-header {
-        background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
-        padding: 2rem 2.5rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
-        color: white;
-    }
-    .page-header h1 { color: white; font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
-    .page-header p { color: rgba(255,255,255,0.85); margin-bottom: 0; font-size: 0.95rem; }
-    
-    .panel-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid #f3f4f6;
-        box-shadow: var(--card-shadow);
-        margin-bottom: 1.5rem;
-    }
-    
-    .selfie-thumb {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid #e5e7eb;
-    }
-    .selfie-thumb:hover {
-        transform: scale(1.12);
-        border-color: var(--primary);
-    }
-    
-    .status-badge {
-        font-weight: 600;
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-    }
-    .badge-checkin { background-color: #ecfdf5; color: #059669; }
-    .badge-checkout { background-color: #fef3c7; color: #d97706; }
-    
-    .coordinate-link {
-        color: #4f46e5;
-        text-decoration: none;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-    .coordinate-link:hover {
-        text-decoration: underline;
-    }
-</style>
-
-<div class="p-4">
-    <!-- Header -->
-    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <h1><i class="bi bi-person-check-fill me-2"></i>รายละเอียดการลงเวลา (SKJ Check-In)</h1>
-            <p>ตรวจสอบและประเมินภาพถ่ายใบหน้าพร้อมตำแหน่งที่ตั้ง GPS จริงของบุคลากรที่ทำการสแกนเวลางานผ่านมือถือ</p>
-        </div>
+<!-- Hero Banner Card -->
+<div class="page-header p-4 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+            <i class="bx bx-mobile-alt me-1"></i> SKJ Check-In
+        </span>
     </div>
+    <h3 class="fw-extrabold text-white mb-2 text-shadow">
+        รายละเอียดการลงเวลาออนไลน์ (SKJ Check-In)
+    </h3>
+    <p class="text-white text-opacity-90 mb-0" style="max-width: 650px; font-size: 0.92rem; line-height: 1.5;">
+        ตรวจสอบและประเมินภาพถ่ายใบหน้าพร้อมตำแหน่งที่ตั้ง GPS จริงของบุคลากรที่ทำการสแกนเวลางานผ่านมือถือ
+    </p>
+</div>
 
     <!-- Date Filter & Quick Switcher -->
     <div class="panel-card">

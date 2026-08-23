@@ -22,7 +22,30 @@ class ConAdminHoliday extends BaseController
         $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         $data['uri'] = service('uri');
         $data['title'] = "จัดการวันหยุดราชการ";
-        $data['holidays'] = $this->holidayModel->orderBy('holiday_date', 'DESC')->findAll();
+
+        // Query distinct available years from holiday_date
+        $yearsQuery = $this->holidayModel->select("DISTINCT(YEAR(holiday_date)) as h_year", false)->orderBy('h_year', 'DESC')->findAll();
+        $available_years = array_filter(array_column($yearsQuery, 'h_year'));
+        
+        $currentYear = date('Y');
+        if (!in_array($currentYear, $available_years)) {
+            array_unshift($available_years, (int)$currentYear);
+        }
+        rsort($available_years);
+        $data['available_years'] = $available_years;
+
+        // Selected year filter (default: current year, or 'all')
+        $selected_year = $this->request->getGet('year');
+        if ($selected_year === null) {
+            $selected_year = (string)$currentYear;
+        }
+        $data['selected_year'] = $selected_year;
+
+        $builder = $this->holidayModel->orderBy('holiday_date', 'ASC');
+        if ($selected_year !== 'all' && !empty($selected_year)) {
+            $builder->where("YEAR(holiday_date)", $selected_year);
+        }
+        $data['holidays'] = $builder->findAll();
 
         return view('Admin/PageAdminHoliday/AdminHolidayMain', $data);
     }

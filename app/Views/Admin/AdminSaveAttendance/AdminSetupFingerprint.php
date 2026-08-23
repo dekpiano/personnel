@@ -1,42 +1,25 @@
 <?= $this->extend('Admin/Layout/main') ?>
 
 <?= $this->section('content') ?>
-<style>
-    :root {
-        --primary: #03c3ec;
-        --success: #28a745;
-        --card-shadow: 0 4px 20px rgba(0, 123, 255, 0.08);
-    }
-    .page-header {
-        background: linear-gradient(135deg, var(--primary) 0%, #0056b3 100%);
-        padding: 2rem 2.5rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-    .page-header h1 { color: white; font-size: 1.75rem; font-weight: 700; }
-    .page-header p { color: rgba(255,255,255,0.8); margin-bottom: 0; }
-    
-    .section-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid #e9ecef;
-        box-shadow: var(--card-shadow);
-    }
-</style>
-
-<div class="p-4">
-    <div class="page-header">
-        <h1><i class="bi bi-fingerprint me-2"></i>ตั้งค่ารหัสเครื่องสแกนนิ้ว</h1>
-        <p>เชื่อมโยงรหัสบุคลากรกับรหัสที่ได้จากเครื่องสแกนนิ้ว (Attendance Machine)</p>
+<!-- Hero Banner Card -->
+<div class="page-header p-4 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+            <i class="bx bx-fingerprint me-1"></i> ระบบสแกนนิ้ว
+        </span>
     </div>
+    <h3 class="fw-extrabold text-white mb-2 text-shadow">
+        ตั้งค่ารหัสเครื่องสแกนนิ้ว (Attendance Machine)
+    </h3>
+    <p class="text-white text-opacity-90 mb-0" style="max-width: 650px; font-size: 0.92rem; line-height: 1.5;">
+        เชื่อมโยงและจับคู่รหัสบุคลากรกับรหัสที่บันทึกจากเครื่องสแกนลายนิ้วมือ
+    </p>
+</div>
 
-    <div class="section-card">
+<div class="card border-0 shadow-sm" style="border-radius: 16px;">
+    <div class="card-body p-3">
         <div class="table-responsive">
-            <table class="table table-hover table-bordered w-100" id="tbFingerprint">
+            <table class="table table-hover align-middle w-100" id="tbFingerprint">
                 <thead class="table-light">
                     <tr>
                         <th width="10%">ลำดับ</th>

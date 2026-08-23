@@ -1,175 +1,162 @@
 <?= $this->extend('Admin/Layout/main') ?>
 
+<?= $this->section('title') ?><?= $title ?? 'ตั้งค่าพิกัดเช็คชื่อและช่วงเวลาทำงาน' ?><?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <!-- Include Leaflet.js for interactive mapping -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<style>
-    :root {
-        --primary: #4f46e5;
-        --success: #10b981;
-        --card-shadow: 0 10px 30px rgba(79, 70, 229, 0.05);
-    }
-    .page-header {
-        background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
-        padding: 2rem 2.5rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
-        color: white;
-    }
-    .page-header h1 { color: white; font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
-    .page-header p { color: rgba(255,255,255,0.85); margin-bottom: 0; font-size: 0.95rem; }
-    
-    .panel-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid #f3f4f6;
-        box-shadow: var(--card-shadow);
-        height: 100%;
-    }
-    
-    #map {
-        height: 450px;
-        width: 100%;
-        border-radius: 15px;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-        border: 1px solid #e5e7eb;
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #374151;
-        font-size: 0.9rem;
-    }
-    
-    .input-group-text-custom {
-        background-color: #f9fafb;
-        font-weight: 600;
-        color: #4b5563;
-    }
 
+<style>
+    #map {
+        height: 460px;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        z-index: 1;
+    }
+    
     .time-slot-card {
-        background: #f9fafb;
+        background: #f8fafc;
         border-radius: 12px;
-        padding: 1.25rem;
-        border: 1px solid #f3f4f6;
+        padding: 1.15rem;
+        border: 1px solid #e2e8f0;
     }
 </style>
 
-<div class="p-4">
-    <!-- Header -->
-    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <h1><i class="bi bi-geo-alt-fill me-2"></i>ตั้งค่าพิกัดเช็คชื่อและช่วงเวลาทำงาน</h1>
-            <p>กำหนดจุดพิกัดโรงเรียน รัศมีเช็คชื่อที่อนุญาต และช่วงเวลาสำหรับการลงเวลาปฏิบัติงานผ่าน GPS</p>
-        </div>
+<!-- Hero Banner Card -->
+<div class="page-header p-4 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-1 text-uppercase fw-bold" style="font-size: 0.75rem;">
+            <i class="bx bx-map-pin me-1"></i> ระบบ GPS Check-In
+        </span>
     </div>
+    <h3 class="fw-extrabold text-white mb-2 text-shadow">
+        ตั้งค่าพิกัดเช็คชื่อและช่วงเวลาทำงาน (Location & GPS)
+    </h3>
+    <p class="text-white text-opacity-90 mb-0" style="max-width: 650px; font-size: 0.92rem; line-height: 1.5;">
+        กำหนดจุดพิกัดโรงเรียน รัศมีเช็คชื่อที่อนุญาต และช่วงเวลาสำหรับการลงเวลาปฏิบัติงานผ่าน GPS
+    </p>
+</div>
 
-    <!-- Map & Form Grid -->
-    <div class="row g-4">
-        <!-- Leaflet Map Container -->
-        <div class="col-12 col-lg-7">
-            <div class="panel-card d-flex flex-column gap-3">
-                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-map-fill text-primary me-2"></i>แผนที่ระบุพิกัดศูนย์กลางโรงเรียน</span>
-                    <span class="badge bg-light-primary text-primary px-3 py-2 rounded-pill small fw-normal"><i class="bi bi-info-circle me-1"></i>คลิกแผนที่หรือลากหมุดเพื่อปรับพิกัด</span>
+<!-- Map & Form Grid -->
+<div class="row g-4">
+    <!-- Leaflet Map Container -->
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+            <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h5 class="fw-bold mb-0 fs-6 text-dark d-flex align-items-center">
+                    <i class="bx bx-map text-primary me-2 fs-5"></i> แผนที่ระบุพิกัดศูนย์กลางโรงเรียน
                 </h5>
+                <span class="badge bg-label-primary px-3 py-1 rounded-pill small fw-bold">
+                    <i class="bx bx-info-circle me-1"></i> คลิกแผนที่หรือลากหมุดเพื่อปรับพิกัด
+                </span>
+            </div>
+            <div class="card-body p-3 d-flex flex-column gap-3">
                 <div id="map"></div>
-                <div class="alert alert-light border d-flex align-items-center gap-2 mb-0 py-2.5 px-3" style="border-radius: 10px;">
-                    <i class="bi bi-compass text-info fs-5"></i>
+                <div class="alert alert-light border d-flex align-items-center gap-2 mb-0 py-2 px-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <i class="bx bx-compass text-primary fs-4"></i>
                     <div class="small text-secondary">
-                        พิกัดปัจจุบัน: <strong id="map-telemetry">กำลังโหลดแผนที่...</strong>
+                        พิกัดปัจจุบัน: <strong id="map-telemetry" class="text-dark">กำลังโหลดแผนที่...</strong>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Settings Form Container -->
-        <div class="col-12 col-lg-5">
-            <div class="panel-card">
-                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-sliders me-2 text-primary"></i>รายละเอียดการตั้งค่า</h5>
-                
+    <!-- Settings Form Container -->
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h5 class="fw-bold mb-0 fs-6 text-dark d-flex align-items-center">
+                    <i class="bx bx-slider-alt me-2 text-primary fs-5"></i> รายละเอียดการตั้งค่า
+                </h5>
+            </div>
+            <div class="card-body p-3">
                 <form id="formLocationConfig">
                     <!-- System Switch Active Toggle -->
-                    <div class="form-check form-switch mb-4 p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between" style="gap: 1rem;">
+                    <div class="form-check form-switch mb-3 p-3 border rounded-3 d-flex align-items-center justify-content-between" style="background: #f0fdf4; border-color: #bbf7d0 !important; gap: 1rem;">
                         <div class="ps-2">
                             <label class="form-check-label fw-bold text-dark d-block" for="is_active" style="cursor: pointer;">
-                                <i class="bi bi-power text-danger me-1"></i> สถานะระบบ SKJ Check-In
+                                <i class="bx bx-power-off text-success me-1"></i> สถานะระบบ SKJ Check-In
                             </label>
-                            <small class="text-muted small">เปิดเพื่อเปิดใช้งานลงเวลาผ่าน GPS / ปิดชั่วคราวเพื่อปิดระบบ</small>
+                            <small class="text-muted small">เปิดใช้งานลงเวลาผ่าน GPS / ปิดเพื่อระงับการเช็คชื่อชั่วคราว</small>
                         </div>
-                        <input class="form-check-input fs-3" type="checkbox" role="switch" name="is_active" id="is_active" 
+                        <input class="form-check-input fs-4" type="checkbox" role="switch" name="is_active" id="is_active" 
                                value="1" <?= (empty($location) || !isset($location->is_active) || $location->is_active == 1) ? 'checked' : '' ?> style="cursor: pointer; margin-left: 0;">
                     </div>
 
                     <!-- Geolocation coordinates -->
-                    <div class="row g-3 mb-4">
+                    <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <label class="form-label">ละติจูด (Latitude)</label>
-                            <input type="number" step="any" name="lat" id="lat" class="form-control py-2.5" 
+                            <label class="form-label fw-bold small text-dark mb-1">ละติจูด (Latitude)</label>
+                            <input type="number" step="any" name="lat" id="lat" class="form-control shadow-none bg-light" 
                                    value="<?= esc($location ? $location->lat : 15.7060416) ?>" required readonly>
                         </div>
                         <div class="col-6">
-                            <label class="form-label">ลองจิจูด (Longitude)</label>
-                            <input type="number" step="any" name="lng" id="lng" class="form-control py-2.5" 
+                            <label class="form-label fw-bold small text-dark mb-1">ลองจิจูด (Longitude)</label>
+                            <input type="number" step="any" name="lng" id="lng" class="form-control shadow-none bg-light" 
                                    value="<?= esc($location ? $location->lng : 100.1280556) ?>" required readonly>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">รัศมีที่อนุญาตให้ลงเวลางาน (เมตร)</label>
-                            <div class="input-group">
-                                <input type="number" name="radius_m" id="radius_m" class="form-control py-2.5" 
+                        <div class="col-12 mt-2">
+                            <label class="form-label fw-bold small text-dark mb-1">รัศมีที่อนุญาตให้ลงเวลางาน (เมตร)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="radius_m" id="radius_m" class="form-control shadow-none fw-bold" 
                                        value="<?= esc($location ? $location->radius_m : 200) ?>" min="0" max="5000" required>
-                                <span class="input-group-text input-group-text-custom">เมตร</span>
+                                <span class="input-group-text bg-light fw-bold">เมตร</span>
                             </div>
-                            <span class="small text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>ใส่เลข <strong>0</strong> เพื่อเปิดระบบบันทึกเวลาอิสระ (ไม่จำกัดระยะทาง)</span>
+                            <span class="small text-muted mt-1 d-block" style="font-size: 0.78rem;">
+                                <i class="bx bx-info-circle me-1 text-primary"></i>ใส่เลข <strong>0</strong> เพื่อเปิดระบบบันทึกเวลาอิสระ (ไม่จำกัดระยะทาง)
+                            </span>
                         </div>
                     </div>
 
                     <!-- Work check-in time configuration -->
-                    <div class="time-slot-card mb-3">
-                        <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
-                            <span class="p-1 rounded bg-success bg-opacity-10 text-success"><i class="bi bi-box-arrow-in-right"></i></span>
+                    <div class="time-slot-card mb-2">
+                        <h6 class="fw-bold text-dark d-flex align-items-center gap-1 mb-2 fs-6">
+                            <i class="bx bx-log-in-circle text-success fs-5"></i>
                             ช่วงเวลาเช็คอินเข้างาน (Check-In)
                         </h6>
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="small text-muted mb-1">เริ่มลงเวลาได้ตั้งแต่</label>
-                                <input type="time" name="check_in_start" class="form-control" 
+                                <input type="time" name="check_in_start" class="form-control form-control-sm shadow-none" 
                                        value="<?= date('H:i', strtotime($location ? $location->check_in_start : '06:00:00')) ?>" required>
                             </div>
                             <div class="col-6">
                                 <label class="small text-muted mb-1">สิ้นสุดช่วงเช็คอิน</label>
-                                <input type="time" name="check_in_end" class="form-control" 
+                                <input type="time" name="check_in_end" class="form-control form-control-sm shadow-none" 
                                        value="<?= date('H:i', strtotime($location ? $location->check_in_end : '08:00:00')) ?>" required>
                             </div>
                         </div>
-                        <span class="d-block mt-2 small text-muted"><i class="bi bi-info-circle me-1"></i>หากเช็คชื่อหลังสิ้นสุดช่วงเช็คอิน ระบบจะบันทึกสถานะเป็น "มาสาย"</span>
+                        <span class="d-block mt-1 text-muted" style="font-size: 0.75rem;">
+                            <i class="bx bx-time me-1"></i>หากเช็คชื่อหลังเวลาสิ้นสุด ระบบจะบันทึกสถานะเป็น "มาสาย"
+                        </span>
                     </div>
 
                     <!-- Work check-out time configuration -->
-                    <div class="time-slot-card mb-4">
-                        <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
-                            <span class="p-1 rounded bg-warning bg-opacity-10 text-warning"><i class="bi bi-box-arrow-right"></i></span>
+                    <div class="time-slot-card mb-3">
+                        <h6 class="fw-bold text-dark d-flex align-items-center gap-1 mb-2 fs-6">
+                            <i class="bx bx-log-out-circle text-warning fs-5"></i>
                             ช่วงเวลาเช็คเอาต์ออกงาน (Check-Out)
                         </h6>
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="small text-muted mb-1">เริ่มลงเวลาออกได้</label>
-                                <input type="time" name="check_out_start" class="form-control" 
+                                <input type="time" name="check_out_start" class="form-control form-control-sm shadow-none" 
                                        value="<?= date('H:i', strtotime($location ? $location->check_out_start : '16:00:00')) ?>" required>
                             </div>
                             <div class="col-6">
                                 <label class="small text-muted mb-1">สิ้นสุดช่วงเช็คเอาต์</label>
-                                <input type="time" name="check_out_end" class="form-control" 
+                                <input type="time" name="check_out_end" class="form-control form-control-sm shadow-none" 
                                        value="<?= date('H:i', strtotime($location ? $location->check_out_end : '18:30:00')) ?>" required>
                             </div>
                         </div>
                     </div>
 
                     <!-- Action buttons -->
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" id="btn-save" style="border-radius: 12px;">
-                        <i class="bi bi-save2 me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด
+                    <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm rounded-pill" id="btn-save">
+                        <i class="bx bx-save me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด
                     </button>
                 </form>
             </div>
@@ -206,9 +193,9 @@
 
         // Create circle representing allowed radius
         let circle = L.circle([initialLat, initialLng], {
-            color: '#4f46e5',
-            fillColor: '#818cf8',
-            fillOpacity: initialRadius === 0 ? 0 : 0.15,
+            color: '#0284c7',
+            fillColor: '#38bdf8',
+            fillOpacity: initialRadius === 0 ? 0 : 0.18,
             opacity: initialRadius === 0 ? 0 : 1,
             radius: initialRadius
         }).addTo(map);
@@ -217,7 +204,7 @@
         function updateTelemetry(lat, lng) {
             $('#lat').val(lat.toFixed(7));
             $('#lng').val(lng.toFixed(7));
-            $('#map-telemetry').html(`Latitude: <strong>${lat.toFixed(7)}</strong>, Longitude: <strong>${lng.toFixed(7)}</strong>`);
+            $('#map-telemetry').html(`Lat: <strong>${lat.toFixed(7)}</strong>, Lng: <strong>${lng.toFixed(7)}</strong>`);
         }
 
         // Initialize telemetry view
@@ -244,7 +231,7 @@
             if (radVal === 0) {
                 circle.setStyle({fillOpacity: 0, opacity: 0});
             } else {
-                circle.setStyle({fillOpacity: 0.15, opacity: 1, color: '#4f46e5', fillColor: '#818cf8'});
+                circle.setStyle({fillOpacity: 0.18, opacity: 1, color: '#0284c7', fillColor: '#38bdf8'});
                 circle.setRadius(radVal);
             }
         });
@@ -309,7 +296,7 @@
                             text: res.message,
                             confirmButtonText: 'ตกลง'
                         });
-                        btn.prop('disabled', false).html('<i class="bi bi-save2 me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
+                        btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -317,7 +304,7 @@
                             text: res.message,
                             confirmButtonText: 'ตกลง'
                         });
-                        btn.prop('disabled', false).html('<i class="bi bi-save2 me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
+                        btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
                     }
                 },
                 error: function() {
@@ -327,7 +314,7 @@
                         text: 'ไม่สามารถติดต่อกับทางเซิร์ฟเวอร์ได้',
                         confirmButtonText: 'ตกลง'
                     });
-                    btn.prop('disabled', false).html('<i class="bi bi-save2 me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
+                    btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูลการตั้งค่าทั้งหมด');
                 }
             });
         });

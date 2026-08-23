@@ -20,7 +20,7 @@
 ?>
 
 <!-- Header Banner -->
-<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #025588 0%, #01345b 100%); color: white; border-radius: 16px;">
+<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #0369a1 100%); color: white; border-radius: 16px;">
     <div class="card-body p-4">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div>

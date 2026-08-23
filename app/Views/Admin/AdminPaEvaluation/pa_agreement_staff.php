@@ -4,144 +4,331 @@
 
 <?= $this->section('content') ?>
 <style>
-    .stat-card-lux {
-        border-radius: 12px;
-        border: 1px solid #e7e7e8;
-        background: #fff;
-        padding: 1.25rem;
-        transition: all 0.2s ease-in-out;
+    /* ====================================================
+       LUXURY DESIGN SYSTEM FOR PA AGREEMENT MANAGEMENT
+       Theme: Signature Royal/Ocean Blue & Modern Luxury Cards
+       ==================================================== */
+    :root {
+        --pa-blue-grad: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #075985 100%);
+        --pa-card-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.1), 0 8px 10px -6px rgba(2, 132, 199, 0.06);
     }
-    .stat-card-lux:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+
+    /* Hero Banner Card */
+    .pa-hero-card {
+        background: var(--pa-blue-grad) !important;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px -5px rgba(2, 132, 199, 0.35);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .dropzone-box-modal {
-        border: 2px dashed #d9dee3;
-        border-radius: 10px;
-        padding: 28px 16px;
-        text-align: center;
-        background-color: #fafbfc;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
+
+    .pa-hero-card::before {
+        content: '';
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+        top: -80px;
+        right: -60px;
+        pointer-events: none;
     }
-    .dropzone-box-modal:hover, .dropzone-box-modal.dragover {
-        border-color: #696cff;
-        background-color: #f8f9ff;
+
+    .pa-hero-card::after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(56, 189, 248, 0) 70%);
+        bottom: -50px;
+        left: 20%;
+        pointer-events: none;
     }
-    .table-responsive {
-        overflow-x: auto;
-        overflow-y: visible !important;
+
+    .glass-badge {
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ffffff !important;
+        font-weight: 700;
+        border-radius: 30px;
     }
-    .learning-section-card {
-        border: 1px solid #e0e4ec;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
+
+    /* Stat KPI Cards */
+    .pa-stat-card {
         background: #ffffff;
-        box-shadow: 0 2px 6px rgba(67, 89, 113, 0.04);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.25rem 1.4rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
         overflow: hidden;
     }
+
+    .pa-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(2, 132, 199, 0.12);
+        border-color: #bae6fd;
+    }
+
+    .stat-icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.65rem;
+        transition: transform 0.3s ease;
+    }
+
+    .pa-stat-card:hover .stat-icon-wrap {
+        transform: scale(1.1) rotate(4deg);
+    }
+
+    /* Learning Group Accordion Section Cards */
+    .learning-section-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        margin-bottom: 1.25rem;
+        background: #ffffff;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .learning-section-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    }
+
     .learning-section-header {
-        background: #f8f9fb;
-        border-bottom: 1px solid #e0e4ec;
-        padding: 0.85rem 1.25rem;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.95rem 1.4rem;
         cursor: pointer;
         user-select: none;
+        transition: background-color 0.2s ease;
     }
+
     .learning-section-header:hover {
-        background: #f1f3f7;
+        background: #e2e8f0;
+    }
+
+    .transition-arrow {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .collapsed .transition-arrow {
+        transform: rotate(-90deg);
+    }
+
+    /* Table Styling */
+    .table-lux thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+    }
+
+    .table-lux tbody td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .table-lux tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    .table-lux tbody tr:hover {
+        background-color: #f0f9ff !important;
+    }
+
+    /* Modal Dropzone */
+    .dropzone-box-modal {
+        border: 2px dashed #93c5fd;
+        border-radius: 16px;
+        padding: 32px 20px;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+    }
+
+    .dropzone-box-modal:hover, .dropzone-box-modal.dragover {
+        border-color: #0284c7;
+        background-color: #e0f2fe;
+        transform: scale(1.01);
+    }
+
+    /* High Contrast Status Badges */
+    .badge-pa-uploaded {
+        background-color: #dcfce7 !important;
+        color: #166534 !important;
+        border: 1px solid #86efac !important;
+        font-weight: 750;
+    }
+
+    .badge-pa-pending {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border: 1px solid #fcd34d !important;
+        font-weight: 750;
     }
 </style>
 
-<!-- Header Banner -->
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-        <h4 class="fw-bold m-0"><i class="bx bx-file text-primary me-2"></i>จัดการข้อตกลง PA (รายคน)</h4>
-        <small class="text-muted">สำหรับเจ้าหน้าที่งานบุคลากร จัดการไฟล์บันทึกข้อตกลง PA ข้าราชการครู (แยกตามกลุ่มสาระการเรียนรู้)</small>
-    </div>
-    <div class="d-flex gap-2 align-items-center flex-wrap">
-        <form method="GET" action="<?= base_url('Admin/PaAgreement'); ?>" class="d-flex align-items-center me-2">
-            <label for="fiscal_year" class="me-2 fw-semibold text-nowrap mb-0"><i class="bx bx-calendar me-1 text-primary"></i>ปีงบประมาณ:</label>
-            <select name="fiscal_year" id="fiscal_year" class="form-select form-select-sm fw-bold shadow-none" onchange="this.form.submit()">
-                <?php foreach ($available_years as $y): ?>
-                    <option value="<?= $y; ?>" <?= ($y == $fiscal_year) ? 'selected' : ''; ?>>
-                        ปีงบประมาณ <?= $y; ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </form>
-        <button type="button" class="btn btn-sm btn-outline-danger shadow-none" id="btnCleanJunkFiles">
-            <i class="bx bx-trash me-1"></i> ล้างไฟล์ขยะ
-        </button>
+<!-- Hero Banner Card -->
+<div class="pa-hero-card p-4 mb-4">
+    <div class="row align-items-center position-relative" style="z-index: 2;">
+        <div class="col-lg-8 col-md-7 mb-3 mb-md-0">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <span class="glass-badge px-3 py-1 text-uppercase" style="font-size: 0.75rem;">
+                    <i class="bx bx-award me-1"></i> ระบบประเมิน PA 1
+                </span>
+                <span class="glass-badge px-3 py-1" style="font-size: 0.75rem;">
+                    <i class="bx bx-calendar me-1"></i> ปีงบประมาณ พ.ศ. <?= $fiscal_year; ?>
+                </span>
+            </div>
+            <h3 class="fw-extrabold text-white mb-2 text-shadow">
+                จัดการข้อตกลงในการพัฒนางาน (PA) รายบุคคล
+            </h3>
+            <p class="text-white text-opacity-90 mb-0" style="max-width: 650px; font-size: 0.92rem; line-height: 1.5;">
+                ศูนย์จัดการและนำเข้าไฟล์แบบบันทึกข้อตกลง PA1 ของข้าราชการครู แยกตามกลุ่มสาระการเรียนรู้ ประจำปีงบประมาณ พ.ศ. <?= $fiscal_year; ?>
+            </p>
+        </div>
+
+        <div class="col-lg-4 col-md-5 d-flex justify-content-md-end justify-content-start align-items-center flex-wrap gap-2">
+            <!-- Year Selector Form -->
+            <form method="GET" action="<?= base_url('Admin/PaAgreement'); ?>" class="d-flex align-items-center">
+                <div class="input-group input-group-sm shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <span class="input-group-text bg-white border-0 fw-bold text-primary" style="font-size: 0.82rem;">
+                        <i class="bx bx-calendar-event me-1"></i> ปีงบฯ
+                    </span>
+                    <select name="fiscal_year" id="fiscal_year" class="form-select form-select-sm border-0 fw-bold bg-white text-dark shadow-none" onchange="this.form.submit()">
+                        <?php foreach ($available_years as $y): ?>
+                            <option value="<?= $y; ?>" <?= ($y == $fiscal_year) ? 'selected' : ''; ?>>
+                                พ.ศ. <?= $y; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </form>
+
+            <button type="button" class="btn btn-sm btn-danger shadow-sm fw-bold px-3 py-2" id="btnCleanJunkFiles" style="border-radius: 10px;">
+                <i class="bx bx-trash me-1"></i> ล้างไฟล์ขยะ
+            </button>
+        </div>
     </div>
 </div>
 
 <!-- Quick Stat Cards -->
+<?php 
+    $percentUploaded = $total_teachers > 0 ? round(($uploaded_count / $total_teachers) * 100, 1) : 0;
+?>
 <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-4">
-        <div class="stat-card-lux" style="background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);">
+    <!-- Card 1: Total Teachers -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="pa-stat-card">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted fw-semibold small d-block mb-1">ข้าราชการครูทั้งหมด</span>
-                    <h3 class="fw-bold mb-0 text-primary"><?= number_format($total_teachers); ?> <span class="fs-6 text-muted fw-normal">คน</span></h3>
+                    <span class="text-muted fw-bold small d-block mb-1">ข้าราชการครูทั้งหมด</span>
+                    <h3 class="fw-bold mb-0 text-dark" data-counter="<?= $total_teachers; ?>"><?= number_format($total_teachers); ?></h3>
+                    <div class="x-small text-muted mt-1">ประจำปีงบฯ พ.ศ. <?= $fiscal_year ?></div>
                 </div>
-                <div class="avatar avatar-md bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="bx bx-group fs-3"></i>
+                <div class="stat-icon-wrap" style="background: #e0f2fe; color: #0284c7;">
+                    <i class="bx bx-group"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-4">
-        <div class="stat-card-lux" style="background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);">
+
+    <!-- Card 2: Uploaded -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="pa-stat-card">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted fw-semibold small d-block mb-1">นำเข้าไฟล์ PA แล้ว</span>
-                    <h3 class="fw-bold mb-0 text-success"><?= number_format($uploaded_count); ?> <span class="fs-6 text-muted fw-normal">คน</span></h3>
+                    <span class="text-muted fw-bold small d-block mb-1">ส่งไฟล์ PA1 แล้ว</span>
+                    <h3 class="fw-bold mb-0 text-success" data-counter="<?= $uploaded_count; ?>"><?= number_format($uploaded_count); ?></h3>
+                    <div class="x-small text-success fw-bold mt-1">คิดเป็น <?= $percentUploaded ?>%</div>
                 </div>
-                <div class="avatar avatar-md bg-white text-success rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="bx bx-check-double fs-3"></i>
+                <div class="stat-icon-wrap" style="background: #dcfce7; color: #16a34a;">
+                    <i class="bx bx-check-double"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-4">
-        <div class="stat-card-lux" style="background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);">
+
+    <!-- Card 3: Pending -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="pa-stat-card">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <span class="text-muted fw-semibold small d-block mb-1">ยังไม่มีไฟล์ PA (รอดำเนินการ)</span>
-                    <h3 class="fw-bold mb-0 text-warning"><?= number_format($pending_count); ?> <span class="fs-6 text-muted fw-normal">คน</span></h3>
+                    <span class="text-muted fw-bold small d-block mb-1">ยังไม่มีไฟล์ (รอดำเนินการ)</span>
+                    <h3 class="fw-bold mb-0 text-warning" data-counter="<?= $pending_count; ?>"><?= number_format($pending_count); ?></h3>
+                    <div class="x-small text-warning fw-bold mt-1">เหลืออีก <?= number_format($pending_count); ?> คน</div>
                 </div>
-                <div class="avatar avatar-md bg-white text-warning rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="bx bx-time-five fs-3"></i>
+                <div class="stat-icon-wrap" style="background: #fef3c7; color: #d97706;">
+                    <i class="bx bx-time-five"></i>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Progress Indicator -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="pa-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted fw-bold small">อัตราความสำเร็จรวม</span>
+                <span class="fw-bold text-primary fs-6"><?= $percentUploaded ?>%</span>
+            </div>
+            <div class="progress" style="height: 8px; border-radius: 10px; background-color: #f1f5f9;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $percentUploaded ?>%; border-radius: 10px;"></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center x-small text-muted mt-2">
+                <span>ส่งแล้ว <?= $uploaded_count ?>/<?= $total_teachers ?> คน</span>
+                <span class="text-primary fw-bold">เป้าหมาย 100%</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Search & Filters -->
-<div class="card border-0 shadow-sm mb-4">
+<!-- Search & Filtering Hub -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
     <div class="card-body p-3">
         <div class="row g-2 align-items-center">
-            <div class="col-md-5">
+            <div class="col-lg-5 col-md-6">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white"><i class="bx bx-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ค้นหาชื่อ - สกุล หรือตำแหน่ง...">
+                    <span class="input-group-text bg-light border-0 ps-3"><i class="bx bx-search text-muted"></i></span>
+                    <input type="text" id="searchInput" class="form-control bg-light border-0 py-2 shadow-none" placeholder="ค้นหาชื่อ - สกุล, ตำแหน่ง หรือรหัสบุคลากร...">
                 </div>
             </div>
-            <div class="col-md-4">
-                <select id="filterLearning" class="form-select form-select-sm">
-                    <option value="">-- แสดงทุกกลุ่มสาระฯ --</option>
+            <div class="col-lg-4 col-md-6">
+                <select id="filterLearning" class="form-select form-select-sm bg-light border-0 py-2 shadow-none fw-semibold">
+                    <option value="">-- แสดงทุกกลุ่มสาระการเรียนรู้ --</option>
                     <?php foreach ($grouped_teachers as $g): ?>
                         <option value="<?= esc($g['lear_id']); ?>"><?= esc($g['lear_name']); ?> (<?= $g['total'] ?> คน)</option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-3">
-                <select id="filterStatus" class="form-select form-select-sm">
-                    <option value="">-- สถานะไฟล์ PA ทั้งหมด --</option>
-                    <option value="uploaded">มีไฟล์แล้ว</option>
-                    <option value="pending">ยังไม่มีไฟล์</option>
+            <div class="col-lg-3 col-md-12 d-flex gap-2">
+                <select id="filterStatus" class="form-select form-select-sm bg-light border-0 py-2 shadow-none fw-semibold">
+                    <option value="">-- สถานะทั้งหมด --</option>
+                    <option value="uploaded">เฉพาะที่มีไฟล์แล้ว (<?= $uploaded_count ?>)</option>
+                    <option value="pending">เฉพาะที่ยังไม่มีไฟล์ (<?= $pending_count ?>)</option>
                 </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap px-3" id="btnToggleAllGroups" title="ขยาย/ยุบกลุ่มทั้งหมด">
+                    <i class="bx bx-expand-vertical"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -150,41 +337,55 @@
 <!-- Teachers Grouped by Learning Area -->
 <div id="learningGroupsContainer">
     <?php if (empty($grouped_teachers)): ?>
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
             <div class="card-body text-center py-5 text-muted">
-                <i class="bx bx-user-x fs-1 mb-2"></i>
-                <div>ไม่พบข้อมูลข้าราชการครู</div>
+                <i class="bx bx-user-x fs-1 mb-2 text-secondary"></i>
+                <div class="fw-bold">ไม่พบข้อมูลข้าราชการครูในปีงบประมาณนี้</div>
             </div>
         </div>
     <?php else: ?>
         <?php foreach ($grouped_teachers as $grpKey => $grp): ?>
+            <?php 
+                $grpPercent = $grp['total'] > 0 ? round(($grp['uploaded'] / $grp['total']) * 100) : 0;
+            ?>
             <div class="learning-section-card" data-lear-id="<?= esc($grp['lear_id']) ?>">
-                <div class="learning-section-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseGrp_<?= $grpKey ?>">
+                <!-- Group Header -->
+                <div class="learning-section-header d-flex justify-content-between align-items-center flex-wrap gap-2" data-bs-toggle="collapse" data-bs-target="#collapseGrp_<?= $grpKey ?>">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bx bxs-folder-open text-primary fs-4"></i>
-                        <span class="fw-bold text-dark fs-6"><?= esc($grp['lear_name']); ?></span>
-                        <span class="badge bg-label-secondary rounded-pill px-2 py-1 small"><?= $grp['total'] ?> คน</span>
+                        <div class="avatar avatar-xs bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                            <i class="bx bxs-folder"></i>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-dark fs-6"><?= esc($grp['lear_name']); ?></span>
+                            <span class="badge bg-label-secondary rounded-pill ms-1 px-2 py-0" style="font-size: 0.72rem;"><?= $grp['total'] ?> คน</span>
+                        </div>
                     </div>
+
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-label-success rounded-pill px-2 py-1 small">
+                        <span class="badge badge-pa-uploaded rounded-pill px-2 py-1 small">
                             <i class="bx bx-check me-1"></i>ส่งแล้ว: <span class="grp-uploaded-cnt"><?= $grp['uploaded'] ?></span>
                         </span>
-                        <span class="badge bg-label-warning rounded-pill px-2 py-1 small">
+                        <span class="badge badge-pa-pending rounded-pill px-2 py-1 small">
                             <i class="bx bx-time me-1"></i>รอส่ง: <span class="grp-pending-cnt"><?= $grp['pending'] ?></span>
                         </span>
-                        <i class="bx bx-chevron-down fs-4 text-muted transition-arrow"></i>
+                        <span class="badge bg-label-primary rounded-pill px-2 py-1 small">
+                            <?= $grpPercent ?>%
+                        </span>
+                        <i class="bx bx-chevron-down fs-4 text-muted transition-arrow ms-1"></i>
                     </div>
                 </div>
+
+                <!-- Table Content -->
                 <div id="collapseGrp_<?= $grpKey ?>" class="collapse show">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                        <table class="table table-hover table-lux align-middle mb-0">
+                            <thead>
                                 <tr>
                                     <th class="ps-3" style="width: 50px;">#</th>
-                                    <th>ชื่อ - นามสกุล</th>
+                                    <th>ข้าราชการครูผู้รับการประเมิน</th>
                                     <th>ตำแหน่ง / วิทยฐานะ</th>
                                     <th class="text-center" style="width: 170px;">สถานะไฟล์ PA</th>
-                                    <th class="text-center pe-3" style="width: 170px;">จัดการไฟล์</th>
+                                    <th class="text-center pe-3" style="width: 180px;">จัดการไฟล์ PA</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -198,28 +399,28 @@
                                     <tr class="teacher-row" 
                                         data-lear-id="<?= esc($grp['lear_id']) ?>" 
                                         data-status="<?= $hasFile ? 'uploaded' : 'pending' ?>">
-                                        <td class="ps-3 text-muted"><?= $idx++ ?></td>
+                                        <td class="ps-3 text-muted fw-bold"><?= $idx++ ?></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar avatar-sm bg-label-primary rounded-circle me-2 d-flex align-items-center justify-content-center fw-bold">
+                                                <div class="avatar avatar-sm bg-label-primary rounded-circle me-2 d-flex align-items-center justify-content-center fw-bold text-primary">
                                                     <?= mb_substr($t['pers_firstname'], 0, 1, 'UTF-8') ?>
                                                 </div>
                                                 <div>
                                                     <div class="fw-bold text-dark teacher-name"><?= esc($fullName) ?></div>
-                                                    <div class="x-small text-muted">รหัส: <?= esc($t['pers_id']) ?></div>
+                                                    <div class="x-small text-muted">รหัสประจำตัว: <?= esc($t['pers_id']) ?></div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-label-secondary small"><?= esc($t['posi_name'] ?? 'ครู') ?></span>
+                                            <span class="badge bg-label-secondary small fw-bold"><?= esc($t['posi_name'] ?? 'ครู') ?></span>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($hasFile): ?>
-                                                <span class="badge bg-label-success rounded-pill px-3 py-1">
+                                                <span class="badge badge-pa-uploaded rounded-pill px-3 py-1">
                                                     <i class="bx bx-check-circle me-1"></i> มีไฟล์แล้ว
                                                 </span>
                                             <?php else: ?>
-                                                <span class="badge bg-label-warning rounded-pill px-3 py-1">
+                                                <span class="badge badge-pa-pending rounded-pill px-3 py-1">
                                                     <i class="bx bx-time-five me-1"></i> ยังไม่มีไฟล์
                                                 </span>
                                             <?php endif; ?>
@@ -229,30 +430,33 @@
                                                 <?php if ($hasFile): ?>
                                                     <a href="<?= env('upload.server.baseurl.pa_agreement') . $fiscal_year . '/pa1/' . $fileName ?>" 
                                                        target="_blank" 
-                                                       class="btn btn-sm btn-icon btn-label-primary rounded-pill" 
-                                                       title="เปิดดูไฟล์ PA">
+                                                       class="btn btn-sm btn-icon btn-label-primary rounded-pill shadow-none" 
+                                                       data-bs-toggle="tooltip"
+                                                       title="เปิดดูไฟล์ข้อตกลง PA">
                                                         <i class="bx bx-show"></i>
                                                     </a>
                                                     <button type="button" 
-                                                            class="btn btn-sm btn-icon btn-label-info rounded-pill btn-open-upload-modal" 
+                                                            class="btn btn-sm btn-icon btn-label-info rounded-pill shadow-none btn-open-upload-modal" 
                                                             data-teacher-id="<?= esc($t['pers_id']) ?>" 
                                                             data-teacher-name="<?= esc($fullName) ?>" 
                                                             data-has-file="1" 
                                                             data-file-name="<?= esc($fileName) ?>" 
+                                                            data-bs-toggle="tooltip"
                                                             title="อัปโหลดไฟล์ใหม่แทนที่">
                                                         <i class="bx bx-upload"></i>
                                                     </button>
                                                     <button type="button" 
-                                                            class="btn btn-sm btn-icon btn-label-danger rounded-pill btn-delete-pa" 
+                                                            class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-none btn-delete-pa" 
                                                             data-pa-id="<?= esc($paId) ?>" 
                                                             data-teacher-id="<?= esc($t['pers_id']) ?>" 
                                                             data-teacher-name="<?= esc($fullName) ?>" 
+                                                            data-bs-toggle="tooltip"
                                                             title="ลบไฟล์ PA">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
                                                 <?php else: ?>
                                                     <button type="button" 
-                                                            class="btn btn-sm btn-primary rounded-pill px-3 btn-open-upload-modal" 
+                                                            class="btn btn-sm btn-primary rounded-pill px-3 py-1 btn-open-upload-modal shadow-sm fw-bold" 
                                                             data-teacher-id="<?= esc($t['pers_id']) ?>" 
                                                             data-teacher-name="<?= esc($fullName) ?>" 
                                                             data-has-file="0">
@@ -275,22 +479,22 @@
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadPaModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow-lg">
-            <div class="modal-header border-bottom py-3">
-                <h5 class="modal-title fw-bold" id="uploadModalTitle">
-                    <i class="bx bx-cloud-upload text-primary me-2"></i>อัปโหลดไฟล์ข้อตกลง PA
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+            <div class="modal-header py-3 px-4" style="background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%); color: #ffffff;">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="uploadModalTitle">
+                    <i class="bx bx-cloud-upload fs-4"></i> อัปโหลดไฟล์ข้อตกลง PA (PA1)
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="p-3 bg-label-primary rounded-3 mb-3 border border-primary border-opacity-25">
+                <div class="p-3 rounded-3 mb-3" style="background: #f0f9ff; border: 1px solid #bae6fd;">
                     <div class="small text-muted mb-1">คุณครูผู้รับการประเมิน:</div>
-                    <h6 class="fw-bold text-primary mb-0" id="modalTeacherName">-</h6>
-                    <div class="x-small text-muted mt-1">ประจำปีงบประมาณ: <span class="fw-bold text-dark"><?= $fiscal_year ?></span></div>
+                    <h6 class="fw-bold text-primary mb-0 fs-6" id="modalTeacherName">-</h6>
+                    <div class="x-small text-muted mt-1">ประจำปีงบประมาณ: <span class="fw-bold text-dark">พ.ศ. <?= $fiscal_year ?></span></div>
                 </div>
 
-                <div id="existingFileAlert" class="alert alert-warning py-2 px-3 small d-none">
-                    <i class="bx bx-info-circle me-1"></i> มีไฟล์เดิมในระบบแล้ว หากอัปโหลดใหม่ไฟล์เดิมจะถูกเขียนทับ
+                <div id="existingFileAlert" class="alert alert-warning py-2 px-3 small d-none" style="border-radius: 10px;">
+                    <i class="bx bx-info-circle me-1"></i> มีไฟล์เดิมในระบบแล้ว หากอัปโหลดใหม่ไฟล์เดิมจะถูกเขียนทับโดยอัตโนมัติ
                 </div>
 
                 <input type="file" id="modalFileInput" accept=".pdf" class="d-none">
@@ -310,19 +514,19 @@
                                 <div class="x-small text-muted" id="selectedFileSize">-</div>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary" id="modalRemoveFile">
+                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary rounded-circle" id="modalRemoveFile">
                             <i class="bx bx-x"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="progress mt-3 d-none" id="modalProgress" style="height: 8px;">
-                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                <div class="progress mt-3 d-none" id="modalProgress" style="height: 10px; border-radius: 8px;">
+                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated fw-bold" role="progressbar" style="width: 0%; font-size: 0.7rem;"></div>
                 </div>
             </div>
-            <div class="modal-footer border-top py-2 px-4">
+            <div class="modal-footer border-top py-2 px-4 bg-light">
                 <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">ยกเลิก</button>
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" id="modalSubmitBtn" disabled>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold" id="modalSubmitBtn" disabled>
                     <i class="bx bx-save me-1"></i> บันทึกไฟล์ PA
                 </button>
             </div>
@@ -338,6 +542,43 @@
         const CHUNK_SIZE = 512 * 1024; // 512KB per chunk (bypass 1MB server limit)
         let currentTargetTeacherId = null;
         let selectedFile = null;
+
+        // Animated Counters
+        $('[data-counter]').each(function() {
+            const $this = $(this);
+            const target = parseInt($this.attr('data-counter'), 10) || 0;
+            if (target === 0) return;
+            $({ countNum: 0 }).animate({ countNum: target }, {
+                duration: 1000,
+                easing: 'swing',
+                step: function() {
+                    $this.text(Math.floor(this.countNum).toLocaleString());
+                },
+                complete: function() {
+                    $this.text(target.toLocaleString());
+                }
+            });
+        });
+
+        // Initialize Bootstrap Tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Toggle Expand/Collapse All Groups
+        let allExpanded = true;
+        $('#btnToggleAllGroups').on('click', function() {
+            if (allExpanded) {
+                $('.learning-section-card .collapse').collapse('hide');
+                $(this).html('<i class="bx bx-collapse-vertical"></i>');
+                allExpanded = false;
+            } else {
+                $('.learning-section-card .collapse').collapse('show');
+                $(this).html('<i class="bx bx-expand-vertical"></i>');
+                allExpanded = true;
+            }
+        });
 
         // Filter Functionality
         function filterRows() {
@@ -406,7 +647,7 @@
             $('#modalFileInput').val('');
             $('#modalFileIndicator').addClass('d-none');
             $('#modalDropzone').show();
-            $('#modalProgress').addClass('d-none').find('.progress-bar').css('width', '0%');
+            $('#modalProgress').addClass('d-none').find('.progress-bar').css('width', '0%').text('0%');
             $('#modalSubmitBtn').prop('disabled', true).html('<i class="bx bx-save me-1"></i> บันทึกไฟล์ PA');
         }
 
@@ -452,7 +693,7 @@
 
         $('#modalRemoveFile').on('click', resetModalForm);
 
-        // Upload Helper
+        // Upload Helper (Chunked Upload)
         async function uploadChunked(file, teacherId) {
             const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             const timestamp = Math.floor(Date.now() / 1000);
@@ -548,11 +789,11 @@
 
             Swal.fire({
                 title: 'ยืนยันการลบไฟล์ PA?',
-                text: `คุณต้องการลบไฟล์บันทึกข้อตกลง PA ของ "${teacherName}" ประจำปีงบประมาณ ${year} ใช่หรือไม่?`,
+                text: `คุณต้องการลบไฟล์บันทึกข้อตกลง PA ของ "${teacherName}" ประจำปีงบประมาณ พ.ศ. ${year} ใช่หรือไม่?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#8592a3',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'ใช่, ลบเลย',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
@@ -586,8 +827,8 @@
                 text: 'ระบบจะล้างไฟล์ชั่วคราว (Chunks) ที่อัปโหลดตกค้างบนเซิร์ฟเวอร์',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#e6381a',
-                cancelButtonColor: '#8592a3',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'ล้างไฟล์ขยะทันที',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {

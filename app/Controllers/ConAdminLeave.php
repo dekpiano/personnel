@@ -35,15 +35,26 @@ class ConAdminLeave extends BaseController
     }
 
     /**
-     * หน้าหลัก รายการขอลาทั้งหมด
+     * หน้าหลัก รายการขอลาทั้งหมด (กรองตามปีงบประมาณปัจจุบันโดยอัตโนมัติ)
      */
     public function index()
     {
         $data = $this->DataMain();
         $data['title'] = "จัดการข้อมูลการลาบุคลากร";
+
+        // ดึงข้อมูลปีงบประมาณปัจจุบันอัตโนมัติ
+        $currentFiscalInfo = $this->leaveYearModel->getFiscalYearInfo();
+        $data['currentFiscalInfo'] = $currentFiscalInfo;
+
+        // รับค่าตัวกรองปีงบประมาณ (ถ้าไม่ได้เลือก ให้ใช้ปีงบประมาณปัจจุบันโดยอัตโนมัติ)
+        $selectedFiscalYear = $this->request->getGet('fiscal_year') ?: $currentFiscalInfo['fiscal_year_be'];
+        $data['selectedFiscalYear'] = $selectedFiscalYear;
+
+        // ดึงรายการปีงบประมาณทั้งหมดที่มีในระบบ เพื่อใช้ใน Dropdown
+        $data['availableFiscalYears'] = $this->leaveRequestModel->getAvailableFiscalYears();
         
-        // ดึงรายการลาทั้งหมด
-        $data['leaveRequests'] = $this->leaveRequestModel->getLeaveDetails();
+        // ดึงรายการลาตามปีงบประมาณที่เลือก
+        $data['leaveRequests'] = $this->leaveRequestModel->getLeaveDetails(null, $selectedFiscalYear);
         
         // ดึงประเภทการลาสำหรับใช้กรอง
         $data['leaveTypes'] = $this->leaveTypeModel->findAll();
@@ -297,12 +308,13 @@ class ConAdminLeave extends BaseController
 
     /**
      * รายละเอียดการลา (AJAX สำหรับ Modal)
+     * คำนวณปีงบประมาณอัตโนมัติ: 23 วัน/ปีงบประมาณ และ 45 วัน/รอบ 2 ปีงบประมาณ
      */
     public function GetLeaveRequest($id)
     {
         $db = \Config\Database::connect();
         $leave = $db->table('tb_leave_requests')
-            ->select('tb_leave_requests.*, tb_leave_types.leave_type_name, tb_leave_types.leave_type_quota, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname')
+            ->select('tb_leave_requests.*, tb_leave_types.leave_type_name, tb_leave_types.leave_type_quota, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_img')
             ->join('tb_leave_types', 'tb_leave_types.leave_type_id = tb_leave_requests.leave_type_id')
             ->join('tb_personnel', 'tb_personnel.pers_id = tb_leave_requests.pers_id')
             ->where('leave_id', $id)
@@ -312,22 +324,186 @@ class ConAdminLeave extends BaseController
             return $this->response->setStatusCode(404)->setJSON(['message' => 'ไม่พบข้อมูล']);
         }
 
-        // ดึงปีการศึกษาที่ active
-        $activeYear = $this->leaveYearModel->getActiveYear();
-        $startDate = $activeYear['ly_start_date'] ?? null;
-        $endDate = $activeYear['ly_end_date'] ?? null;
+        // 1. คำนวณปีงบประมาณอัตโนมัติจากวันที่เริ่มต้นขอลา (1 ต.ค. - 30 ก.ย.)
+        $fiscalInfo = $this->leaveYearModel->getFiscalYearInfo($leave['leave_start_date']);
 
-        // ดึงสถิติโควตา โดยใช้ช่วงวันที่ของปีการศึกษา
-        $usedDays = $this->leaveRequestModel->getLeaveStats($leave['pers_id'], $leave['leave_type_id'], $startDate, $endDate);
-        $leave['used_days'] = floatval($usedDays);
-        $leave['quota_total'] = intval($leave['leave_type_quota']);
-        $leave['quota_remaining'] = $leave['quota_total'] - $leave['used_days'];
-        $leave['active_year_name'] = $activeYear['ly_name'] ?? 'ไม่ได้กำหนดปีการศึกษา';
-        
-        $leave['start_date_th'] = $this->DateThai($leave['leave_start_date']);
-        $leave['end_date_th'] = $this->DateThai($leave['leave_end_date']);
+        // 2. คำนวณวันลาของ "ประเภทนี้" ในปีงบประมาณปัจจุบัน
+        $usedTypeDays = $this->leaveRequestModel->getLeaveStats(
+            $leave['pers_id'], 
+            $leave['leave_type_id'], 
+            $fiscalInfo['start_date'], 
+            $fiscalInfo['end_date']
+        );
+
+        // 3. คำนวณวันลา "รวมทุกประเภท" ในปีงบประมาณปัจจุบัน (จำกัด 23 วัน/ปีงบ)
+        $totalYearUsed = $this->leaveRequestModel->getTotalApprovedDays(
+            $leave['pers_id'], 
+            $fiscalInfo['start_date'], 
+            $fiscalInfo['end_date']
+        );
+
+        // 4. คำนวณวันลา "รวมทุกประเภท" ในรอบ 2 ปีงบประมาณ (จำกัด 45 วัน/2 ปีงบ)
+        $totalTwoYearUsed = $this->leaveRequestModel->getTotalApprovedDays(
+            $leave['pers_id'], 
+            $fiscalInfo['two_year_start'], 
+            $fiscalInfo['two_year_end']
+        );
+
+        $typeQuota = (float)$leave['leave_type_quota'];
+        $leave['used_days'] = $usedTypeDays;
+        $leave['quota_total'] = $typeQuota;
+        $leave['quota_remaining'] = max(0, $typeQuota - $usedTypeDays);
+
+        // ข้อมูลปีงบประมาณและสถิติภาพรวม
+        $leave['fiscal_year_be'] = $fiscalInfo['fiscal_year_be'];
+        $leave['fiscal_year_name'] = $fiscalInfo['fiscal_year_name'];
+        $leave['fiscal_start_th'] = thai_date_medium($fiscalInfo['start_date']);
+        $leave['fiscal_end_th'] = thai_date_medium($fiscalInfo['end_date']);
+
+        // สรุป 1 ปีงบประมาณ (โควตาสูงสุด 23 วัน)
+        $leave['fiscal_max_days'] = $fiscalInfo['yearly_max_days']; // 23 วัน
+        $leave['fiscal_used_days'] = $totalYearUsed;
+        $leave['fiscal_remaining_days'] = max(0, $fiscalInfo['yearly_max_days'] - $totalYearUsed);
+
+        // สรุป 2 ปีงบประมาณ (โควตาสูงสุด 45 วัน)
+        $leave['two_year_max_days'] = $fiscalInfo['two_year_max_days']; // 45 วัน
+        $leave['two_year_used_days'] = $totalTwoYearUsed;
+        $leave['two_year_remaining_days'] = max(0, $fiscalInfo['two_year_max_days'] - $totalTwoYearUsed);
+        $leave['two_year_period_text'] = "ปีงบ {$fiscalInfo['prev_fiscal_year_be']} - {$fiscalInfo['fiscal_year_be']}";
+
+        // รูปแบบวันที่ภาษาไทย
+        $leave['start_date_th'] = thai_date_medium($leave['leave_start_date']);
+        $leave['end_date_th'] = thai_date_medium($leave['leave_end_date']);
 
         return $this->response->setJSON($leave);
+    }
+
+    /**
+     * พิมพ์ใบลา (A4 แบบฟอร์มราชการครู เหมือนระบบ teacher2025)
+     * URL: /Admin/Leave/Print/(:num) หรือ /leave/print/(:num)
+     */
+    public function Print($id)
+    {
+        $db = \Config\Database::connect();
+        
+        // 1. ดึงข้อมูลคำขอลา
+        $leave = $db->table('tb_leave_requests')
+            ->select('tb_leave_requests.*, tb_leave_types.leave_type_name, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_img, tb_personnel.pers_phone, tb_personnel.pers_address, tb_personnel.pers_groupleade, tb_personnel.pers_position')
+            ->join('tb_leave_types', 'tb_leave_types.leave_type_id = tb_leave_requests.leave_type_id')
+            ->join('tb_personnel', 'tb_personnel.pers_id = tb_leave_requests.pers_id')
+            ->where('leave_id', $id)
+            ->get()->getRowArray();
+
+        if (!$leave) {
+            return redirect()->back()->with('error', 'ไม่พบข้อมูลคำขอลา');
+        }
+
+        // 2. ดึงข้อมูลตำแหน่งและกลุ่มสาระฯ
+        $posi = $db->table('skjacth_skj.tb_position')
+            ->where('posi_id', $leave['pers_position'] ?? '')
+            ->get()->getRowArray();
+        $position = $posi['posi_name'] ?? 'ครู';
+
+        $learningGroup = $leave['pers_groupleade'] ?? 'กลุ่มสาระการเรียนรู้';
+
+        // 3. ดึงสถิติการลาในรอบปีงบประมาณของคำขอนี้
+        $fiscalInfo = $this->leaveYearModel->getFiscalYearInfo($leave['leave_start_date']);
+        $fiscalStart = $fiscalInfo['start_date'];
+        $fiscalEnd = $fiscalInfo['end_date'];
+
+        $leaveTypes = ['ลาป่วย', 'ลากิจส่วนตัว', 'ลาคลอดบุตร'];
+        $leaveStats = [];
+
+        foreach ($leaveTypes as $typeName) {
+            // ค้นหาประเภทการลาที่ตรงหรือมีชื่อประเภทนี้ (เช่น 'ลาป่วย', 'ป่วย', 'ลากิจ', 'ลากิจส่วนตัว')
+            $shortName = str_replace('ลา', '', $typeName);
+            $typeRows = $db->table('tb_leave_types')
+                ->groupStart()
+                    ->where('leave_type_name', $typeName)
+                    ->orLike('leave_type_name', $shortName)
+                ->groupEnd()
+                ->get()->getResultArray();
+            $typeIds = array_column($typeRows, 'leave_type_id');
+
+            $usedBefore = 0.0;
+            if (!empty($typeIds)) {
+                // รวมวันลาของคนนี้ ในปีงบประมาณนี้ ที่ไม่ใช่คำขอปัจจุบัน และไม่ถูกปฏิเสธ (approved หรือ pending ที่ขอก่อนหน้า)
+                $builder = $db->table('tb_leave_requests')
+                    ->where('pers_id', $leave['pers_id'])
+                    ->whereIn('leave_type_id', $typeIds)
+                    ->whereIn('leave_status', ['approved', 'pending'])
+                    ->where('leave_id !=', $leave['leave_id'])
+                    ->where('leave_start_date >=', $fiscalStart)
+                    ->where('leave_start_date <=', $fiscalEnd);
+
+                $row = $builder->selectSum('leave_total_days')->get()->getRowArray();
+                $usedBefore = (float)($row['leave_total_days'] ?? 0);
+            }
+
+            $leaveStats[$typeName] = [
+                'used_before' => $usedBefore
+            ];
+        }
+
+        // 4. คำขอลาครั้งก่อนหน้า (Last Leave)
+        $lastLeave = $db->table('tb_leave_requests')
+            ->select('tb_leave_requests.*, tb_leave_types.leave_type_name')
+            ->join('tb_leave_types', 'tb_leave_types.leave_type_id = tb_leave_requests.leave_type_id')
+            ->where('pers_id', $leave['pers_id'])
+            ->where('leave_id <', $leave['leave_id'])
+            ->whereIn('leave_status', ['approved', 'pending'])
+            ->orderBy('leave_id', 'DESC')
+            ->get()->getRowArray();
+
+        // 5. ดึงข้อมูลผู้อนุมัติ (Inspector) / รองผู้อำนวยการ / ผู้อำนวยการ
+        $approver = null;
+        if (!empty($leave['approved_by'])) {
+            $approver = $db->table('tb_personnel')
+                ->where('pers_id', $leave['approved_by'])
+                ->get()->getRowArray();
+        }
+
+        // ผู้อำนวยการสถานศึกษา (ตำแหน่ง posi_001)
+        $director = $db->table('tb_personnel')
+            ->select('pers_prefix, pers_firstname, pers_lastname')
+            ->where('pers_position', 'posi_001')
+            ->where('pers_status', 'กำลังใช้งาน')
+            ->get()->getRowArray();
+
+        // รองผู้อำนวยการสถานศึกษา (ตำแหน่ง posi_002)
+        $deputyDirector = $db->table('tb_personnel')
+            ->select('pers_prefix, pers_firstname, pers_lastname, "รองผู้อำนวยการสถานศึกษา" as role_position')
+            ->where('pers_position', 'posi_002')
+            ->where('pers_status', 'กำลังใช้งาน')
+            ->get()->getRowArray();
+
+        $data = [
+            'title'          => "พิมพ์ใบขออนุญาตลา - " . $leave['pers_prefix'].$leave['pers_firstname'].' '.$leave['pers_lastname'],
+            'leave'          => $leave,
+            'fullName'       => $leave['pers_prefix'].$leave['pers_firstname'].' '.$leave['pers_lastname'],
+            'position'       => $position,
+            'groupName'      => $learningGroup,
+            'createdDate'    => strtotime($leave['created_at'] ?? $leave['leave_start_date']),
+            'startDate'      => strtotime($leave['leave_start_date']),
+            'endDate'        => strtotime($leave['leave_end_date']),
+            'contactPhone'   => $leave['pers_phone'] ?? '',
+            'contactAddress' => $leave['pers_address'] ?? '',
+            'lastLeave'      => $lastLeave,
+            'leaveStats'     => $leaveStats,
+            'fiscalYearBE'   => $fiscalInfo['fiscal_year_be'],
+            'fiscalStartTh'  => thai_date_medium($fiscalStart),
+            'fiscalEndTh'    => thai_date_medium($fiscalEnd),
+            'approver'       => $approver,
+            'deputyDirector' => $deputyDirector,
+            'director'       => $director,
+            'thaiMonths'     => [
+                1 => 'มกราคม', 2 => 'กุมภาพันธ์', 3 => 'มีนาคม', 4 => 'เมษายน',
+                5 => 'พฤษภาคม', 6 => 'มิถุนายน', 7 => 'กรกฎาคม', 8 => 'สิงหาคม',
+                9 => 'กันยายน', 10 => 'ตุลาคม', 11 => 'พฤศจิกายน', 12 => 'ธันวาคม'
+            ]
+        ];
+
+        return view('Admin/PageAdminLeave/AdminLeavePrint', $data);
     }
 
     private function DateThai($strDate)
