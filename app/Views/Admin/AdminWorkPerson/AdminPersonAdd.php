@@ -170,8 +170,8 @@
                     <div class="row g-4">
                         <div class="col-md-4">
                             <div class="form-floating mb-1">
-                                <select class="form-select" id="pers_prefix" name="pers_prefix" required="">
-                                    <option value="">เลือกประเภท...</option>
+                                <select class="form-select select2Personnel" id="pers_prefix" name="pers_prefix" required="">
+                                    <option value="">เลือกคำนำหน้า...</option>
                                     <option value="นาย">นาย</option>
                                     <option value="นาง">นาง</option>
                                     <option value="นางสาว">นางสาว</option>
@@ -301,7 +301,7 @@
         }
     };
 </script>
-<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=16.3"></script>
-<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1.2"></script>
+<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=21.0"></script>
+<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=2.0"></script>
 <?= $this->endSection() ?>
 

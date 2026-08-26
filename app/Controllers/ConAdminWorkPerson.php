@@ -234,10 +234,23 @@ class ConAdminWorkPerson extends BaseController
         $data['AddrReg'] = $DBAddr->where(['pers_id' => $IDPres, 'addr_type' => 'ทะเบียนบ้าน'])->get()->getRow();
         $data['AddrCurr'] = $DBAddr->where(['pers_id' => $IDPres, 'addr_type' => 'ปัจจุบัน'])->get()->getRow();
 
-        $PosiMain = $DBPosiMain->where('work_id', $data['Pers']?->pers_workother_id ?? "")
-        ->get()->getRow();
-        $data['PosiMain'] = $DBPosiMain->where('posi_id',$PosiMain->posi_id ?? "")
-        ->get()->getResult();
+        $persPosiId = $data['Pers']?->pers_position ?? '';
+        $posRow = !empty($persPosiId) ? $DBPosi->where('posi_id', $persPosiId)->get()->getRow() : null;
+        
+        $builder = $DBPosiMain->groupStart()->where('posi_id', $persPosiId);
+        if ($posRow && isset($posRow->p_id) && !empty($posRow->p_id)) {
+            $builder->orWhere('posi_id', $posRow->p_id);
+        }
+        $builder->groupEnd();
+        $data['PosiMain'] = $builder->get()->getResult();
+
+        // Fallback: If not found by pers_position, try by pers_workother_id
+        if (empty($data['PosiMain']) && !empty($data['Pers']?->pers_workother_id)) {
+            $PosiMainRow = $DBPosiMain->where('work_id', $data['Pers']->pers_workother_id)->get()->getRow();
+            if ($PosiMainRow && !empty($PosiMainRow->posi_id)) {
+                $data['PosiMain'] = $DBPosiMain->where('posi_id', $PosiMainRow->posi_id)->get()->getResult();
+            }
+        }
 
         // Fetch Personnel Documents
         $this->checkDocumentsTable($DB_Personnel);
@@ -271,6 +284,12 @@ class ConAdminWorkPerson extends BaseController
         
         $faction = $this->request->getVar('pers_faction');
         $factionStr = is_array($faction) ? implode(',', $faction) : ($faction ?? "");
+        $position = $this->request->getVar('pers_position');
+        $workother_id = $this->request->getVar('pers_workother_id') ?? "";
+
+        // If position is teacher or executive, clear workother_id; if support, clear learning/academic/groupleade/faction
+        $isTeacher = in_array($position, ['posi_003', 'posi_004', 'posi_005', 'posi_006']);
+        $isExecutive = in_array($position, ['posi_001', 'posi_002']);
 
         $data = [
             'pers_status' => $this->request->getVar('pers_status'),
@@ -279,14 +298,16 @@ class ConAdminWorkPerson extends BaseController
             'pers_lastname' => $this->request->getVar('pers_lastname'),
             'pers_username' => $this->request->getVar('pers_username'),
             'pers_phone' => $this->request->getVar('pers_phone'),
-            'pers_position' => $this->request->getVar('pers_position'),
-            'pers_learning' => $this->request->getVar('pers_learning'),
-            'pers_academic' => $this->request->getVar('pers_academic'),
-            'pers_groupleade' => $this->request->getVar('pers_groupleade'),
-            'pers_faction' => $factionStr,
-            'pers_workother_id' => $this->request->getVar('pers_workother_id') ?? "",
+            'pers_position' => $position,
+            'pers_learning' => $isTeacher ? ($this->request->getVar('pers_learning') ?? "") : "",
+            'pers_academic' => ($isTeacher || $isExecutive) ? ($this->request->getVar('pers_academic') ?? "") : "",
+            'pers_groupleade' => $isTeacher ? ($this->request->getVar('pers_groupleade') ?? "") : "",
+            'pers_faction' => ($position == 'posi_002') ? $factionStr : "",
+            'pers_workother_id' => (!$isTeacher && !$isExecutive) ? $workother_id : "",
+            'pers_dataUpdate' => date('Y-m-d H:i:s'),
+            'pers_userEdit' => $session->get('id') ?? ""
         ];
-        $DBPers->where('pers_id', $this->request->getVar('pers_id'));
+        $DBPers->where('pers_id', $pers_id);
         if ($DBPers->update($data)) {
             return $this->response->setJSON(['status' => 'success', 'message' => 'อัปเดตข้อมูลสำเร็จ']);
         } else {
@@ -711,13 +732,25 @@ class ConAdminWorkPerson extends BaseController
      public function GetPositionData(){
         $session = session();
         $DB_SKJ = \Config\Database::connect('skj');
+        $DBPosiMain = $DB_SKJ->table('tb_position_main');
         $DBPosi = $DB_SKJ->table('tb_position');
 
-        $positionId = $this->request->getPost('position_id');
-        $data = $DBPosi->select('work_id,work_name')
-        ->where('tb_position.posi_id',$positionId)
-        ->join('skjacth_skj.tb_position_main','skjacth_skj.tb_position_main.posi_id = skjacth_skj.tb_position.p_id')
-        ->get()->getResult();
+        $positionId = $this->request->getPost('position_id') ?? $this->request->getGet('position_id');
+        if (empty($positionId)) {
+            return $this->response->setJSON([]);
+        }
+
+        $posRow = $DBPosi->where('posi_id', $positionId)->get()->getRow();
+
+        $builder = $DBPosiMain->select('work_id, work_name, posi_id')
+            ->groupStart()
+                ->where('posi_id', $positionId);
+        if ($posRow && isset($posRow->p_id) && !empty($posRow->p_id)) {
+            $builder->orWhere('posi_id', $posRow->p_id);
+        }
+        $builder->groupEnd();
+
+        $data = $builder->get()->getResult();
         return $this->response->setJSON($data);
      }
      

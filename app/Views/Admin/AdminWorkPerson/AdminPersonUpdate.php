@@ -242,7 +242,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <select class="form-select" id="work_change_type" name="work_change_type">
+                            <select class="form-select select2-tags" id="work_change_type" name="work_change_type">
                                 <option value="" selected disabled>เลือกรายการ</option>
                                 <option value="บรรจุกลับเข้ารับราชการ">บรรจุกลับเข้ารับราชการ</option>
                                 <option value="เริ่มรับราชการ">เริ่มรับราชการ</option>
@@ -345,7 +345,7 @@
                     <div class="row g-4">
                         <div class="col-12">
                             <div class="form-floating">
-                                <select class="form-select" id="edu_level" required>
+                                <select class="form-select select2-tags" id="edu_level" required>
                                     <option value="" selected disabled>เลือกระดับการศึกษา</option>
                                     <option value="ต่ำกว่าปริญญาตรี">ต่ำกว่าปริญญาตรี</option>
                                     <option value="ปริญญาตรี">ปริญญาตรี</option>
@@ -533,7 +533,7 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <select class="form-select" id="leave_type" name="leave_type" required>
+                            <select class="form-select select2Personnel" id="leave_type" name="leave_type" required>
                                 <option value="" selected disabled>เลือกประเภทการลา</option>
                                 <option value="ลาป่วย">ลาป่วย</option>
                                 <option value="ลากิจส่วนตัว">ลากิจส่วนตัว</option>
@@ -587,6 +587,6 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=16.4"></script>
-<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=1.2"></script>
+<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnalMain.js?v=21.0"></script>
+<script src="<?= base_url() ?>/assets/js/Admin/AdminPersonnal/AdminPersonnelApiProvince.js?v=2.0"></script>
 <?= $this->endSection() ?>

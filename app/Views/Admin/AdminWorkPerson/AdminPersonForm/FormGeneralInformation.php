@@ -62,7 +62,7 @@
             <div class="col-md-8">
                 <div class="form-floating">
                     <?php $status = array('กำลังใช้งาน', 'ย้ายสถานศึกษา', 'ลาออก', 'เกษียรอายุ'); ?>
-                    <select class="form-select border-0 shadow-none fw-semibold" id="pers_status" name="pers_status" required="">
+                    <select class="form-select select2Personnel fw-semibold" id="pers_status" name="pers_status" required="">
                         <option value="">เลือกสถานะ...</option>
                         <?php foreach ($status as $key => $value) : ?>
                         <option value="<?= $value ?>" <?= ($Pers->pers_status == $value) ? 'selected' : '' ?>><?= $value ?></option>
@@ -88,8 +88,8 @@
         <div class="col-md-3">
             <div class="form-floating">
                 <?php $prefix = array('นาย', 'นาง', 'นางสาว', 'ว่าที่ร้อยตรี', 'ว่าที่ร้อยตรีหญิง'); ?>
-                <select class="form-select" id="pers_prefix" name="pers_prefix" required="">
-                    <option value="">เลือก...</option>
+                <select class="form-select select2Personnel" id="pers_prefix" name="pers_prefix" required="">
+                    <option value="">เลือกคำนำหน้า...</option>
                     <?php foreach ($prefix as $key => $value) : ?>
                     <option value="<?= $value ?>" <?= ($Pers->pers_prefix == $value) ? 'selected' : '' ?>><?= $value ?></option>
                     <?php endforeach; ?>
@@ -130,6 +130,12 @@
     <div class="form-group-title">
         <i class='bx bx-id-card'></i> ข้อมูลตำแหน่งและวิทยฐานะ
     </div>
+    <?php 
+    $isTeacher = in_array($Pers->pers_position, ['posi_003', 'posi_004', 'posi_005', 'posi_006']);
+    $isDirector = ($Pers->pers_position === 'posi_001');
+    $isDeputy = ($Pers->pers_position === 'posi_002');
+    $isSupport = (!$isTeacher && !$isDirector && !$isDeputy && !empty($Pers->pers_position)) || !empty($Pers->pers_workother_id);
+    ?>
     <div class="row g-4">
         <div class="col-md-6">
             <div class="form-floating">
@@ -145,15 +151,17 @@
             </div>
         </div>
 
-        <div class="col-md-6" style="display: <?= ($Pers->pers_workother_id) ? 'block' : 'none' ?>" id="show_position">
+        <div class="col-md-6" style="display: <?= $isSupport ? 'block' : 'none' ?>" id="show_position">
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_workother_id" name="pers_workother_id">
-                    <option value="0">เลือกสายงาน...</option>
-                    <?php foreach ($PosiMain as $key => $value) : ?>
-                    <option value="<?= $value->work_id; ?>" <?= ($Pers->pers_workother_id == $value->work_id) ? 'selected' : '' ?>>
-                        <?= $value->work_name; ?>
-                    </option>
-                    <?php endforeach; ?>
+                    <option value="">เลือกสายงาน...</option>
+                    <?php if (!empty($PosiMain)) : ?>
+                        <?php foreach ($PosiMain as $key => $value) : ?>
+                        <option value="<?= $value->work_id; ?>" <?= ((string)$Pers->pers_workother_id === (string)$value->work_id) ? 'selected' : '' ?>>
+                            <?= $value->work_name; ?>
+                        </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
                 <label for="pers_workother_id">สายงาน/ตำแหน่งย่อย</label>
             </div>
@@ -161,7 +169,7 @@
     </div>
 
     <div class="row g-4 mt-1">
-        <div class="col-md-4" style="display: <?= ($Pers->pers_learning && !in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_learning">
+        <div class="col-md-4" style="display: <?= $isTeacher ? 'block' : 'none' ?>" id="show_learning">
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_learning" name="pers_learning">
                     <option value="">เลือกกลุ่มสาระ...</option>
@@ -174,7 +182,7 @@
                 <label for="pers_learning">กลุ่มสาระการเรียนรู้</label>
             </div>
         </div>
-        <div class="col-md-4" style="display: <?= ($Pers->pers_academic || in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_academic">
+        <div class="col-md-4" style="display: <?= ($isTeacher || $isDirector || $isDeputy) ? 'block' : 'none' ?>" id="show_academic">
             <?php $degee = array('ชำนาญการ', 'ชำนาญการพิเศษ', 'เชี่ยวชาญ', 'เชี่ยวชาญพิเศษ'); ?>
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_academic" name="pers_academic">
@@ -186,7 +194,7 @@
                 <label for="pers_academic">วิทยฐานะ</label>
             </div>
         </div>
-        <div class="col-md-4" style="display: <?= ($Pers->pers_groupleade && !in_array($Pers->pers_position, ['posi_001', 'posi_002'])) ? 'block' : 'none' ?>" id="show_groupleade">
+        <div class="col-md-4" style="display: <?= $isTeacher ? 'block' : 'none' ?>" id="show_groupleade">
             <?php $grouplead = array('หัวหน้ากลุ่มสาระ', 'รองหัวหน้ากลุ่มสาระ'); ?>
             <div class="form-floating">
                 <select class="form-select select2Personnel" id="pers_groupleade" name="pers_groupleade">
@@ -198,7 +206,7 @@
                 <label for="pers_groupleade">หัวหน้า/รองหัวหน้า</label>
             </div>
         </div>
-        <div class="col-md-4" style="display: <?= ($Pers->pers_position == 'posi_002') ? 'block' : 'none' ?>" id="show_faction">
+        <div class="col-md-4" style="display: <?= $isDeputy ? 'block' : 'none' ?>" id="show_faction">
             <?php 
             $factions = array('กลุ่มบริหารวิชาการ', 'กลุ่มบริหารงบประมาณ', 'กลุ่มบริหารงานบุคคล', 'กลุ่มบริหารทั่วไป'); 
             $selectedFactions = isset($Pers->pers_faction) ? explode(',', $Pers->pers_faction) : [];

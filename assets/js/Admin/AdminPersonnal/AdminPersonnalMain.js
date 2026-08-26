@@ -1,24 +1,61 @@
-$(".select2Personnel").select2({
-  placeholder: "เลือกตัวเลือก",
-  allowClear: true,
-  dropdownParent: $(".content-wrapper"), // Ensure it works in modals/tabs if needed
+function initSelect2Elements(container) {
+  var $scope = container ? $(container) : $(document);
+
+  $scope.find(".select2Personnel").each(function () {
+    var $el = $(this);
+    if ($el.hasClass("select2-hidden-accessible")) return;
+    var $modal = $el.closest(".modal");
+    $el.select2({
+      placeholder: $el.data("placeholder") || $el.find("option:first").text() || "เลือกตัวเลือก",
+      allowClear: false,
+      width: "100%",
+      dropdownParent: $modal.length > 0 ? $modal : $(document.body),
+    });
+  });
+
+  $scope.find(".select2-tags").each(function () {
+    var $el = $(this);
+    if ($el.hasClass("select2-hidden-accessible")) return;
+    var $modal = $el.closest(".modal");
+    $el.select2({
+      tags: true,
+      width: "100%",
+      placeholder: $el.data("placeholder") || "เลือกหรือพิมพ์เพิ่ม...",
+      allowClear: true,
+      language: "th",
+      dropdownParent: $modal.length > 0 ? $modal : $(document.body),
+    });
+  });
+}
+
+// Initial Select2 Load
+initSelect2Elements();
+
+$(document).on("shown.bs.modal", ".modal", function () {
+  initSelect2Elements(this);
+});
+
+$(document).on("shown.bs.tab", "button[data-bs-toggle='pill'], button[data-bs-toggle='tab'], a[data-bs-toggle='pill'], a[data-bs-toggle='tab']", function () {
+  var target = $(this).attr("data-bs-target") || $(this).attr("href");
+  if (target) initSelect2Elements(target);
 });
 
 // Flatpickr initialization for B.E. (พ.ศ.)
 const flatpickrConfigBE = {
+    locale: "th",
     dateFormat: "Y-m-d",
     altInput: true,
-    altFormat: "d-m-Y",
+    altFormat: "d/m/Y",
     allowInput: true,
     formatDate: (date, format, locale) => {
         const d = date.getDate().toString().padStart(2, '0');
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
         let y = date.getFullYear();
-        if (format === "d-m-Y") {
-            y += 543;
-            return `${d}-${m}-${y}`;
+        if (format === "Y-m-d") {
+            return `${y}-${m}-${d}`;
         }
-        return `${y}-${m}-${d}`;
+        y += 543;
+        return `${d}/${m}/${y}`;
     },
     parseDate: (dateStr) => {
         if (!dateStr) return null;
@@ -39,7 +76,7 @@ const flatpickrConfigBE = {
     onYearChange: (d, s, i) => window.applyThaiBE && window.applyThaiBE(i)
 };
 
-$(".selectorEdit").flatpickr(flatpickrConfigBE);
+$(".selectorEdit, .selector, .selectorLeave").flatpickr(flatpickrConfigBE);
 
 // Function to safely set date for flatpickr from AJAX
 function setFlatpickrDate(selector, value) {
@@ -48,7 +85,16 @@ function setFlatpickrDate(selector, value) {
     setTimeout(() => {
         const el = document.querySelector(selector);
         if (el && el._flatpickr) {
-            el._flatpickr.setDate(value, true);
+            let dateVal = value;
+            if (value.includes("/")) {
+                const p = value.split("/");
+                if (p.length === 3) {
+                    let y = parseInt(p[2]);
+                    if (y > 2400) y -= 543;
+                    dateVal = `${y}-${p[1]}-${p[0]}`;
+                }
+            }
+            el._flatpickr.setDate(dateVal, true);
         } else {
             $(selector).val(value);
         }
@@ -324,6 +370,15 @@ $(document).on("cropped", 'input[name="pers_img"]', function (e, blob) {
 });
 
 function adjustFieldsByPosition(positionId) {
+  if (!positionId) {
+    $("#show_learning").hide();
+    $("#show_academic").hide();
+    $("#show_groupleade").hide();
+    $("#show_faction").hide();
+    $("#show_position").hide();
+    return;
+  }
+
   if (positionId === "posi_001") { // ผอ.รร
     $("#show_academic").show();
     $("#show_learning").hide();
@@ -336,29 +391,18 @@ function adjustFieldsByPosition(positionId) {
     $("#show_learning").hide();
     $("#show_groupleade").hide();
     $("#show_position").hide();
-  } else {
-    var option = $("#pers_position option[value='" + positionId + "']");
-    var index = $("#pers_position option").index(option);
-    
-    if (index > 0 && index <= 6) { // Teachers (posi_003 to posi_006)
-      $("#show_learning").show();
-      $("#show_academic").show();
-      $("#show_groupleade").show();
-      $("#show_faction").hide();
-      $("#show_position").hide();
-    } else if (index >= 7) { // Support/Other
-      $("#show_position").show();
-      $("#show_learning").hide();
-      $("#show_academic").hide();
-      $("#show_groupleade").hide();
-      $("#show_faction").hide();
-    } else { // None
-      $("#show_learning").hide();
-      $("#show_academic").hide();
-      $("#show_groupleade").hide();
-      $("#show_faction").hide();
-      $("#show_position").hide();
-    }
+  } else if (["posi_003", "posi_004", "posi_005", "posi_006"].includes(positionId)) { // Teachers
+    $("#show_learning").show();
+    $("#show_academic").show();
+    $("#show_groupleade").show();
+    $("#show_faction").hide();
+    $("#show_position").hide();
+  } else { // Support / Other positions (posi_007+)
+    $("#show_position").show();
+    $("#show_learning").hide();
+    $("#show_academic").hide();
+    $("#show_groupleade").hide();
+    $("#show_faction").hide();
   }
 }
 
@@ -406,10 +450,6 @@ function loadPersonnelData(id) {
         $("#pers_faction").val(selectedFactions).trigger("change");
       } else {
         $("#pers_faction").val(null).trigger("change");
-      }
-      
-      if (window.pendingWorkOtherId) {
-        $("#pers_workother_id").val(window.pendingWorkOtherId).trigger("change");
       }
 
       //$('#pers_workother_id').append(new Option(data[0].work_name, data[0].work_name, true, true)).trigger('change');
@@ -1365,35 +1405,29 @@ $(document).ready(function () {
   }
 });
 
-// เมื่อมีการเปลี่ยนแปลงค่าของ select แรก
+// เมื่อมีการเปลี่ยนแปลงค่าของตำแหน่งหลัก
 $("#pers_position").on("change", function () {
   var selectedPosition = $(this).val();
   adjustFieldsByPosition(selectedPosition);
 
-  var option = $(this).find("option[value='" + selectedPosition + "']");
-  var index = $(this).find("option").index(option);
+  var isSupport = selectedPosition && !["posi_001", "posi_002", "posi_003", "posi_004", "posi_005", "posi_006"].includes(selectedPosition);
 
-  if ($("#key_update").val() === "Update") {
-    var urlUpdate =
-      "../../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData";
-  } else {
-    var urlUpdate =
-      "../../../Admin/WorkPerson/Personnel/DB/Select/GetPositionData";
-  }
-
-  if (index >= 7) {
+  if (isSupport) {
     if (selectedPosition !== "") {
+      var targetWorkOther = window.pendingWorkOtherId || $("#pers_workother_id").val();
+
       $.ajax({
-        url: urlUpdate,
+        url: "/Admin/WorkPerson/Personnel/DB/Select/GetPositionData",
         type: "POST",
         data: { position_id: selectedPosition },
+        dataType: "json",
         success: function (response) {
           var data = response;
           var secondSelect = $("#pers_workother_id");
           secondSelect.empty();
 
-          if (data.length > 0) {
-            secondSelect.append('<option value="">--เลือกข้อมูล--</option>');
+          secondSelect.append('<option value="">เลือกสายงาน...</option>');
+          if (data && data.length > 0) {
             $.each(data, function (index, item) {
               secondSelect.append(
                 '<option value="' +
@@ -1403,19 +1437,30 @@ $("#pers_position").on("change", function () {
                   "</option>"
               );
             });
-            if (window.pendingWorkOtherId) {
-              secondSelect.val(window.pendingWorkOtherId).trigger("change");
-              window.pendingWorkOtherId = null;
+
+            if (targetWorkOther) {
+              secondSelect.val(String(targetWorkOther)).trigger("change");
+            } else {
+              secondSelect.trigger("change");
             }
           } else {
-            secondSelect.append('<option value="">ไม่มีข้อมูล</option>');
+            secondSelect.append('<option value="">ไม่มีข้อมูลสายงาน</option>');
+            secondSelect.val("").trigger("change");
           }
+          window.pendingWorkOtherId = null;
         },
+        error: function(err) {
+          console.error("GetPositionData error:", err);
+          var secondSelect = $("#pers_workother_id");
+          secondSelect.empty().append('<option value="">--ไม่สามารถโหลดข้อมูลได้--</option>');
+          secondSelect.trigger("change");
+        }
       });
     } else {
       $("#pers_workother_id")
         .empty()
-        .append('<option value="">--กรุณาเลือกตำแหน่งก่อน--</option>');
+        .append('<option value="">--กรุณาเลือกตำแหน่งก่อน--</option>')
+        .trigger("change");
     }
   } else {
     $("#pers_workother_id").removeAttr("required").val("").trigger("change");

@@ -4,7 +4,7 @@ const apiUrl = assetsPath + 'js/api_province_with_amphure_tambon.json';
 let data = []; // Change to array to avoid map errors
 
 $(document).ready(function() {
-    $('.province, .district, .subdistrict').select2();
+    $('.province, .district, .subdistrict').select2({ width: '100%' });
 
     fetch(apiUrl)
         .then(res => {
@@ -68,7 +68,7 @@ $(document).ready(function() {
 
 
 $(document).ready(function() {
-    $('.curr_province, .curr_district, .curr_subdistrict').select2();
+    $('.curr_province, .curr_district, .curr_subdistrict').select2({ width: '100%' });
 
     // Use already loaded data instead of fetching again
     if (Array.isArray(data) && data.length > 0) {

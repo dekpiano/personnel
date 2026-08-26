@@ -26,9 +26,9 @@
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/theme-blue.css?v=1.1"
+    <link rel="stylesheet" href="<?=base_url()?>/assets/vendor/css/theme-blue.css?v=2.0"
         class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=3.2" />
+    <link rel="stylesheet" href="<?=base_url()?>/assets/css/select2.css?v=10.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
     <link rel="stylesheet" href="<?=base_url()?>/assets/css/demo.css?v=1.1" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -800,16 +800,16 @@
         const thaiMonthsFull = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
         // Global Thai Buddhist Era Flatpickr Dropdown Render Function
-        window.renderThaiYearDropdown = function(instance) {
+        window.applyThaiBE = function(instance) {
             if (!instance || !instance.calendarContainer) return;
             const currentYearAD = instance.currentYear;
             const $container = $(instance.calendarContainer);
             const $numInputWrapper = $container.find('.numInputWrapper');
             
-            // Generate Year Options (-10 to +5 years around current year)
+            // Generate Year Options (-80 to +10 years around current year for full birth year support)
             const baseYear = new Date().getFullYear();
             let optionsHtml = '';
-            for (let y = baseYear - 10; y <= baseYear + 5; y++) {
+            for (let y = baseYear - 80; y <= baseYear + 10; y++) {
                 const yBE = y + 543;
                 const isSelected = (y === currentYearAD) ? 'selected' : '';
                 optionsHtml += `<option value="${y}" ${isSelected}>${yBE}</option>`;
@@ -834,33 +834,57 @@
                 $yearSelect.val(currentYearAD);
             }
         };
+        window.renderThaiYearDropdown = window.applyThaiBE;
 
         flatpickr.setDefaults({
             locale: 'th',
             dateFormat: 'Y-m-d',
             altInput: true,
-            altFormat: 'j F Y',
+            altFormat: 'd/m/Y',
+            allowInput: true,
             formatDate: function(date, format, locale) {
                 const day = String(date.getDate()).padStart(2, '0');
-                const month = thaiMonthsFull[date.getMonth()];
+                const month = String(date.getMonth() + 1).padStart(2, '0');
                 const yearBE = date.getFullYear() + 543;
-                return `${day} ${month} ${yearBE}`;
+                if (format === 'Y-m-d') {
+                    return `${date.getFullYear()}-${month}-${day}`;
+                }
+                return `${day}/${month}/${yearBE}`;
+            },
+            parseDate: function(dateStr, format) {
+                if (!dateStr) return null;
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
+                const p = dateStr.split(/[-/]/);
+                if (p.length === 3) {
+                    let y = parseInt(p[2]);
+                    let m = parseInt(p[1]) - 1;
+                    let d = parseInt(p[0]);
+                    if (y > 2400) y -= 543;
+                    return new Date(y, m, d);
+                }
+                return new Date(dateStr);
             },
             onReady: function(selectedDates, dateStr, instance) {
-                window.renderThaiYearDropdown(instance);
+                window.applyThaiBE(instance);
                 if (instance.config && instance.config.onMonthChange) {
                     instance.config.onMonthChange.push(function(s, d, inst) {
-                        window.renderThaiYearDropdown(inst);
+                        window.applyThaiBE(inst);
                     });
                 }
                 if (instance.config && instance.config.onYearChange) {
                     instance.config.onYearChange.push(function(s, d, inst) {
-                        window.renderThaiYearDropdown(inst);
+                        window.applyThaiBE(inst);
                     });
                 }
             },
             onOpen: function(selectedDates, dateStr, instance) {
-                window.renderThaiYearDropdown(instance);
+                window.applyThaiBE(instance);
+            },
+            onMonthChange: function(selectedDates, dateStr, instance) {
+                window.applyThaiBE(instance);
+            },
+            onYearChange: function(selectedDates, dateStr, instance) {
+                window.applyThaiBE(instance);
             }
         });
 
@@ -870,7 +894,7 @@
                 mutation.addedNodes.forEach(function(node) {
                     if (node.classList && node.classList.contains('flatpickr-calendar')) {
                         const instance = node._flatpickr;
-                        if (instance) window.renderThaiYearDropdown(instance);
+                        if (instance) window.applyThaiBE(instance);
                     }
                 });
             });

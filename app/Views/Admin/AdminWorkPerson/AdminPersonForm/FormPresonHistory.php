@@ -98,8 +98,8 @@
     <div class="row g-4">
         <div class="col-md-3">
             <div class="form-floating">
-                <select class="form-select pers_prefix auto-save" id="pers_prefix_hist" name="pers_prefix">
-                    <option value="">เลือกเค้าโครง...</option>
+                <select class="form-select select2Personnel pers_prefix auto-save" id="pers_prefix_hist" name="pers_prefix">
+                    <option value="">เลือกคำนำหน้า...</option>
                     <option value="นาย" <?= $Pers->pers_prefix == 'นาย' ? 'selected' : '' ?>>นาย</option>
                     <option value="นาง" <?= $Pers->pers_prefix == 'นาง' ? 'selected' : '' ?>>นาง</option>
                     <option value="นางสาว" <?= $Pers->pers_prefix == 'นางสาว' ? 'selected' : '' ?>>นางสาว</option>
@@ -183,8 +183,8 @@
         </div>
         <div class="col-md-3">
             <div class="form-floating">
-                <select class="form-select auto-save" id="pers_blood_type" name="pers_blood_type">
-                    <option value="">เลือก...</option>
+                <select class="form-select select2Personnel auto-save" id="pers_blood_type" name="pers_blood_type">
+                    <option value="">เลือกกรุ๊ปเลือด...</option>
                     <option value="A" <?= $Pers->pers_blood_type == 'A' ? 'selected' : '' ?>>A</option>
                     <option value="B" <?= $Pers->pers_blood_type == 'B' ? 'selected' : '' ?>>B</option>
                     <option value="AB" <?= $Pers->pers_blood_type == 'AB' ? 'selected' : '' ?>>AB</option>
@@ -363,7 +363,7 @@
     <div class="row g-4 align-items-end">
         <div class="col-md-6">
             <div class="form-floating">
-                <select class="form-select auto-save" id="pers_marital_status" name="pers_marital_status">
+                <select class="form-select select2Personnel auto-save" id="pers_marital_status" name="pers_marital_status">
                     <option value="">เลือกสถานภาพ...</option>
                     <option value="โสด" <?= $Pers->pers_marital_status == 'โสด' ? 'selected' : '' ?>>โสด</option>
                     <option value="สมรส" <?= $Pers->pers_marital_status == 'สมรส' ? 'selected' : '' ?>>สมรส</option>
