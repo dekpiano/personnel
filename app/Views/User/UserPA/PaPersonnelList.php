@@ -114,9 +114,40 @@
                         <?php foreach ($personnel as $person): ?>
                             <?php 
                                 $agreement = $person['pa_agreement'] ?? null;
-                                $has_pres = !empty($agreement['pa_presentation_link']);
+                                $has_pres_file = !empty($agreement['pa_file_presentation']);
+                                $has_pres_link = !empty($agreement['pa_presentation_link']);
+                                $has_pres = $has_pres_file || $has_pres_link;
                                 $has_plan = !empty($agreement['pa_file_lesson_plan']);
                                 $has_pa1  = !empty($agreement['pa_file_pa1']);
+                                
+                                $pres_file_name = $agreement['pa_file_presentation'] ?? '';
+                                $raw_pres = trim($agreement['pa_presentation_link'] ?? '', " \t\n\r\0\x0B\"'");
+                                $pres_url = '';
+                                $pres_type = '';
+                                $pres_display = '';
+
+                                if ($has_pres_file) {
+                                    $pres_type = 'uploaded_file';
+                                    $pres_url = $pa_upload_baseurl . $selected_year . '/presentation/' . $pres_file_name;
+                                    $pres_display = $pres_file_name;
+                                } elseif ($has_pres_link) {
+                                    $pres_display = $raw_pres;
+                                    if (preg_match('#^([a-zA-Z]:[\\\\/]|file:///)#i', $raw_pres)) {
+                                        $pres_type = 'local_file';
+                                        $pres_url = 'local_file';
+                                    } elseif (preg_match('#^(https?://|www\.|canva\.com|drive\.google\.com|docs\.google\.com|onedrive|sharepoint|youtu)#i', $raw_pres)) {
+                                        $pres_type = 'web_link';
+                                        $pres_url = preg_match('#^https?://#i', $raw_pres) ? $raw_pres : ('https://' . $raw_pres);
+                                    } elseif (preg_match('#\.(pptx?|pdf|zip|rar|key|mp4|mov|doc|docx|xlsx)$#i', $raw_pres)) {
+                                        $clean_name = basename(str_replace('\\', '/', $raw_pres));
+                                        $pres_type = 'uploaded_file';
+                                        $pres_url = $pa_upload_baseurl . $selected_year . '/presentation/' . $clean_name;
+                                    } else {
+                                        $pres_type = 'web_link';
+                                        $pres_url = preg_match('#^https?://#i', $raw_pres) ? $raw_pres : ('https://' . $raw_pres);
+                                    }
+                                }
+
                                 $plan_url = $has_plan ? ($pa_upload_baseurl . $selected_year . '/lesson_plan/' . $agreement['pa_file_lesson_plan']) : '';
                                 $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . $selected_year . '/pa1/' . $agreement['pa_file_pa1']) : '';
                             ?>
@@ -157,10 +188,18 @@
                                 <td class="text-center text-nowrap">
                                     <?php if ($agreement && ($has_pres || $has_plan || $has_pa1)): ?>
                                         <div class="d-inline-flex align-items-center gap-1">
-                                            <!-- สื่อนำเสนอ -->
-                                            <?php if ($has_pres): ?>
-                                                <a href="<?= esc($agreement['pa_presentation_link']); ?>" target="_blank" class="btn btn-xs btn-outline-primary px-2 py-1 rounded shadow-none" title="คลิกเพื่อดูสื่อนำเสนอ (Canva / PPT)" data-bs-toggle="tooltip">
-                                                    <i class="bx bx-slideshow fs-6 me-1"></i>สื่อ
+                                            <!-- สื่อนำเสนอ (รองรับทั้งลิงก์ออนไลน์ Canva/Drive และไฟล์ที่อัปโหลด) -->
+                                            <?php if ($has_pres && $pres_type === 'local_file'): ?>
+                                                <button type="button" class="btn btn-xs btn-outline-warning px-2 py-1 rounded shadow-none text-dark" onclick="Swal.fire('แจ้งเตือน', 'ครูแนบเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว (<?= esc(addslashes($pres_display)) ?>)', 'warning')" title="ครูแนบเป็นพาธไฟล์ในเครื่อง" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-error fs-6 me-1 text-warning"></i>สื่อ (ในเครื่อง)
+                                                </button>
+                                            <?php elseif ($has_pres && $pres_type === 'uploaded_file'): ?>
+                                                <a href="<?= esc($pres_url); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary px-2 py-1 rounded shadow-none" title="ดาวน์โหลดไฟล์สื่อนำเสนอ (<?= esc($pres_display) ?>)" data-bs-toggle="tooltip" download>
+                                                    <i class="bx bx-download fs-6 me-1"></i>สื่อ (ไฟล์)
+                                                </a>
+                                            <?php elseif ($has_pres && !empty($pres_url)): ?>
+                                                <a href="<?= esc($pres_url); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-primary px-2 py-1 rounded shadow-none" title="เปิดดูสื่อนำเสนอออนไลน์ (Canva / Slides / Drive)" data-bs-toggle="tooltip">
+                                                    <i class="bx bx-slideshow fs-6 me-1"></i>สื่อ (ลิงก์)
                                                 </a>
                                             <?php else: ?>
                                                 <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบสื่อนำเสนอ" data-bs-toggle="tooltip">
@@ -195,7 +234,9 @@
                                                 data-name="<?= esc($person['pers_prefix'] . $person['pers_firstname'] . ' ' . $person['pers_lastname']); ?>"
                                                 data-posi="<?= esc($person['posi_name'] ?? '-'); ?>"
                                                 data-academic="<?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?>"
-                                                data-pres="<?= esc($agreement['pa_presentation_link'] ?? ''); ?>"
+                                                data-pres="<?= esc($pres_url); ?>"
+                                                data-pres-type="<?= esc($pres_type); ?>"
+                                                data-pres-name="<?= esc($pres_display); ?>"
                                                 data-plan="<?= esc($plan_url); ?>"
                                                 data-plan-name="<?= esc($agreement['pa_file_lesson_plan'] ?? ''); ?>"
                                                 data-pa1="<?= esc($pa1_url); ?>"
@@ -373,6 +414,7 @@ $(document).ready(function() {
         const posi = btn.data('posi');
         const academic = btn.data('academic');
         const pres = btn.data('pres');
+        const presType = btn.data('pres-type');
         const plan = btn.data('plan');
         const planName = btn.data('plan-name');
         const pa1 = btn.data('pa1');
@@ -385,11 +427,17 @@ $(document).ready(function() {
         $('#modalUpdatedAt').text(updated ? ('อัปเดตล่าสุด: ' + updated) : '');
 
         // Presentation
-        if (pres && pres.trim() !== '') {
+        if (presType === 'local_file') {
+            $('#modalPresLinkText').html('<span class="text-warning"><i class="bx bx-error me-1"></i>พาธไฟล์ในเครื่อง: ' + pres + '</span>');
+            $('#modalPresAction').html('<span class="badge bg-label-warning text-dark border">ไฟล์ในเครื่อง (เปิดไม่ได้)</span>');
+        } else if (presType === 'uploaded_file' && pres) {
+            $('#modalPresLinkText').html('<i class="bx bx-file me-1"></i>' + pres);
+            $('#modalPresAction').html('<a href="' + pres + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold" download><i class="bx bx-download me-1"></i>ดาวน์โหลดไฟล์สื่อ</a>');
+        } else if (pres && pres.trim() !== '') {
             $('#modalPresLinkText').html('<i class="bx bx-link-external me-1"></i>' + pres);
-            $('#modalPresAction').html('<a href="' + pres + '" target="_blank" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-link-external me-1"></i>เปิดสื่อนำเสนอ</a>');
+            $('#modalPresAction').html('<a href="' + pres + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-link-external me-1"></i>เปิดสื่อนำเสนอออนไลน์</a>');
         } else {
-            $('#modalPresLinkText').text('ยังไม่ได้ระบุลิงก์');
+            $('#modalPresLinkText').text('ยังไม่ได้ระบุลิงก์หรือไฟล์');
             $('#modalPresAction').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
         }
 

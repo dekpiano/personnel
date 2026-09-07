@@ -168,6 +168,8 @@ $routes->post('Admin/PaAgreement/upload-chunk', 'ConAdminPaAgreement::uploadChun
 $routes->post('Admin/PaAgreement/save-file', 'ConAdminPaAgreement::savePaFile');
 $routes->post('Admin/PaAgreement/delete-file', 'ConAdminPaAgreement::deletePaFile');
 $routes->post('Admin/PaAgreement/clean-junk', 'ConAdminPaAgreement::cleanupOrphanFiles');
+$routes->get('Admin/PaAgreement/exportExcel', 'ConAdminPaAgreement::exportExcel');
+$routes->get('Admin/PaAgreement/exportExcel/(:segment)', 'ConAdminPaAgreement::exportExcel/$1');
 
 $routes->get('Admin/PaConfig', 'ConAdminPaConfig::index');
 $routes->post('Admin/PaConfig/save', 'ConAdminPaConfig::saveScope');

@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div>
-                <a href="<?= base_url('pa-personnel'); ?>" class="btn btn-light rounded-pill shadow-sm text-dark fw-bold btn-md">
+                <a href="<?= base_url('pa-personnel?fiscal_year=' . ($fiscal_year_be ?? (date('Y') + 543))); ?>" class="btn btn-light rounded-pill shadow-sm text-dark fw-bold btn-md">
                     <i class="bx bx-arrow-back me-1"></i>ย้อนกลับหน้ารายชื่อ
                 </a>
             </div>
@@ -54,24 +54,26 @@
                 <div class="col-md-6">
                     <label for="evaluationPeriod" class="form-label fw-bold text-dark fs-6"><i class="bx bx-calendar me-1 text-primary"></i>รอบการประเมิน</label>
                     <select id="evaluationPeriod" name="evaluationPeriod" class="form-select border shadow-none bg-white text-dark fw-bold">
-                        <option value="1" selected>รอบการประเมิน (1 ตุลาคม <?= (date('Y') + 542) ?> - 30 กันยายน <?= (date('Y') + 543) ?>)</option>
+                        <option value="1" selected>รอบการประเมิน (1 ตุลาคม <?= (($fiscal_year_be ?? (date('Y') + 543)) - 1) ?> - 30 กันยายน <?= ($fiscal_year_be ?? (date('Y') + 543)) ?>)</option>
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีการศึกษาประจำแบบประเมิน</label>
                     <input type="text" class="form-control border shadow-none bg-white fw-bold text-dark fs-6" id="academicYear" name="academicYear"
-                        placeholder="ระบุปีการศึกษา" value="<?= esc($fiscal_year_be ?? (date('Y') + 543)); ?>">
+                        placeholder="ระบุปีการศึกษา" value="<?= esc($fiscal_year_be ?? (date('Y') + 543)); ?>" readonly>
                 </div>
             </div>
 
             <!-- PA Agreement Reference Documents Card -->
             <?php 
-                $agreement = $paAgreement ?? null;
-                $has_pres = !empty($agreement['pa_presentation_link']);
+                $agreement = $paAgreement ?? [];
+                $has_pres_file = !empty($agreement['pa_file_presentation']);
+                $has_pres_link = !empty($agreement['pa_presentation_link']);
+                $has_pres = $has_pres_file || $has_pres_link;
                 $has_plan = !empty($agreement['pa_file_lesson_plan']);
                 $has_pa1  = !empty($agreement['pa_file_pa1']);
-                $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/lesson_plan/' . $agreement['pa_file_lesson_plan']) : '';
-                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/pa1/' . $agreement['pa_file_pa1']) : '';
+                $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/lesson_plan/' . ($agreement['pa_file_lesson_plan'] ?? '')) : '';
+                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/pa1/' . ($agreement['pa_file_pa1'] ?? '')) : '';
             ?>
             <div class="card border border-primary-subtle shadow-sm mb-4" style="border-radius: 14px; background: #fbfdff;">
                 <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
@@ -97,14 +99,43 @@
                                         </div>
                                         <div>
                                             <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">1. สื่อนำเสนอ PA</span>
-                                            <small class="text-muted" style="font-size: 0.75rem;">Canva / PowerPoint / Slides</small>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Canva / PowerPoint / Slides / ไฟล์ PDF</small>
                                         </div>
                                     </div>
                                     <div>
                                         <?php if ($has_pres): ?>
-                                            <a href="<?= esc($agreement['pa_presentation_link']); ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold">
-                                                <i class="bx bx-link-external me-1"></i>เปิดดูสื่อนำเสนอ
-                                            </a>
+                                            <?php 
+                                                $pres_file_name = $agreement['pa_file_presentation'] ?? '';
+                                                $raw_pres = trim($agreement['pa_presentation_link'] ?? '', " \t\n\r\0\x0B\"'");
+                                                $is_local = (bool) preg_match('#^([a-zA-Z]:[\\\\/]|file:///)#i', $raw_pres);
+                                                $is_file  = $has_pres_file || (bool) preg_match('#\.(pptx?|pdf|zip|rar|key|mp4|mov)$#i', $raw_pres);
+                                                
+                                                if ($has_pres_file) {
+                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/presentation/' . $pres_file_name;
+                                                } elseif ($is_local) {
+                                                    $pres_url = 'local';
+                                                } elseif ($is_file) {
+                                                    $clean_name = basename(str_replace('\\', '/', $raw_pres));
+                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/presentation/' . $clean_name;
+                                                } elseif (preg_match('#^https?://#i', $raw_pres)) {
+                                                    $pres_url = $raw_pres;
+                                                } else {
+                                                    $pres_url = 'https://' . $raw_pres;
+                                                }
+                                            ?>
+                                            <?php if ($is_local && !$has_pres_file): ?>
+                                                <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill fw-bold" onclick="Swal.fire('แจ้งเตือน', 'ครูระบุเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว ไม่สามารถเปิดออนไลน์ได้', 'warning')">
+                                                    <i class="bx bx-error me-1"></i>ไฟล์ในเครื่องส่วนตัว
+                                                </button>
+                                            <?php elseif ($is_file): ?>
+                                                <a href="<?= esc($pres_url); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold" download>
+                                                    <i class="bx bx-download me-1"></i>ดาวน์โหลดไฟล์สื่อนำเสนอ
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="<?= esc($pres_url); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold">
+                                                    <i class="bx bx-link-external me-1"></i>เปิดดูสื่อนำเสนอออนไลน์
+                                                </a>
+                                            <?php endif; ?>
                                         <?php else: ?>
                                             <button class="btn btn-light btn-sm w-100 rounded-pill text-muted border" disabled>ยังไม่ได้แนบสื่อ</button>
                                         <?php endif; ?>
@@ -394,7 +425,7 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm text-white h-100 p-3" style="background: #025588;">
+                        <div class="card border-0 shadow-sm text-white h-100 p-3" style="background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #075985 100%); border-radius: 14px;">
                             <span class="text-white fs-6 fw-bold d-block mb-1">รวมคะแนนทั้งหมด</span>
                             <h1 class="fw-bold text-white mb-0"><span id="totalScore"><?= isset($evaluatorScore['es_total_score']) ? esc($evaluatorScore['es_total_score']) : '0'; ?></span> <span class="fs-6 text-white font-normal">/ 100.00</span></h1>
                             <input type="hidden" name="totalScore" value="<?= isset($evaluatorScore['es_total_score']) ? esc($evaluatorScore['es_total_score']) : '0'; ?>">
@@ -402,25 +433,62 @@
                     </div>
                 </div>
 
-                <div class="row align-items-center justify-content-between">
-                    <div class="col-md-6">
-                        <label for="evaluatorName" class="form-label fw-bold fs-6 text-dark"><i class="bx bx-user-check me-1 text-primary"></i>กรรมการผู้ประเมิน</label>
-                        <?php if ($evaluator): ?>
-                            <input type="text" class="form-control border shadow-none bg-white fw-bold text-dark fs-6" id="evaluatorName"
-                                value="<?= esc($evaluator['e_first_name'] . ' ' . $evaluator['e_last_name']); ?>" readonly>
+                <div class="row align-items-center justify-content-between g-3">
+                    <div class="col-lg-7">
+                        <label for="evaluatorSelect" class="form-label fw-bold fs-6 text-dark d-flex align-items-center gap-1">
+                            <i class="bx bx-user-check text-primary fs-5"></i>
+                            <span>กรรมการผู้ประเมิน</span>
+                            <?php if (!empty($isSuperOrAdmin)): ?>
+                                <span class="badge bg-label-primary rounded-pill ms-2 px-2 py-1 fw-bold" style="font-size: 0.72rem;">
+                                    <i class="bx bx-shield-quarter me-1"></i>สิทธิ์ผู้ดูแลระบบ (Admin)
+                                </span>
+                            <?php endif; ?>
+                        </label>
+                        <?php if (!empty($isSuperOrAdmin) && !empty($availableEvaluators)): ?>
+                            <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                <span class="input-group-text bg-light border-end-0 text-primary">
+                                    <i class="bx bx-user-pin fs-5"></i>
+                                </span>
+                                <select name="evaluator_id" id="evaluatorSelect" class="form-select border-start-0 py-2 fw-bold text-dark fs-6" onchange="changeEvaluator(this.value)">
+                                    <?php foreach ($availableEvaluators as $ev): 
+                                        $isSelected = ($evaluator && $evaluator['e_id'] === $ev['e_id']);
+                                        $evalStatus = $ev['has_evaluated'] ? (' [ประเมินแล้ว: ' . ($ev['score_info']['es_total_score'] ?? '') . ' คะแนน]') : ' [ยังไม่ประเมิน]';
+                                        $assignLabel = !empty($ev['is_assigned']) ? '★ กรรมการที่ได้รับมอบหมาย - ' : '';
+                                    ?>
+                                        <option value="<?= esc($ev['e_id']); ?>" <?= $isSelected ? 'selected' : ''; ?>>
+                                            <?= esc($assignLabel . $ev['e_first_name'] . ' ' . $ev['e_last_name'] . ' (' . ($ev['e_position'] ?: 'กรรมการ') . ')' . $evalStatus); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="text-muted small mt-1 d-flex align-items-center gap-1">
+                                <i class="bx bx-info-circle text-primary"></i>
+                                <span>สามารถสลับเลือกกรรมการผู้ประเมินเพื่อบันทึกหรือตรวจสอบผลคะแนนในนามกรรมการแต่ละท่านได้</span>
+                            </div>
+                        <?php elseif ($evaluator): ?>
+                            <div class="input-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                <span class="input-group-text bg-light border-end-0 text-primary">
+                                    <i class="bx bx-user-check fs-5"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 py-2 bg-white fw-bold text-dark fs-6" id="evaluatorName"
+                                    value="<?= esc($evaluator['e_first_name'] . ' ' . $evaluator['e_last_name'] . ' (' . ($evaluator['e_position'] ?: 'กรรมการผู้ประเมิน') . ')'); ?>" readonly>
+                            </div>
                             <input type="hidden" name="evaluator_id" value="<?= esc($evaluator['e_id']); ?>">
+                            <div class="text-success fw-bold small mt-1">
+                                <i class="bx bx-check-circle me-1"></i>กรรมการผู้ประเมินที่ได้รับมอบหมาย
+                            </div>
                         <?php else: ?>
                             <input type="text" class="form-control border shadow-none bg-white text-danger fw-bold fs-6" id="evaluatorName"
-                                value="ไม่พบข้อมูลผู้ประเมิน" readonly>
+                                value="ไม่พบข้อมูลผู้ประเมินที่ได้รับมอบหมาย" readonly>
                             <input type="hidden" name="evaluator_id" value="">
-                            <div class="text-danger fw-bold small mt-1"><i class="bx bx-error-circle me-1"></i>ไม่พบข้อมูลผู้ประเมิน กรุณาติดต่อผู้ดูแลระบบ</div>
+                            <div class="text-danger fw-bold small mt-1"><i class="bx bx-error-circle me-1"></i>ยังไม่มีการกำหนดกรรมการผู้ประเมินสำหรับบุคลากรท่านนี้ กรุณาตั้งค่าในระบบก่อน</div>
                         <?php endif; ?>
                     </div>
-                    <div class="col-md-6 text-end mt-3 mt-md-0">
-                        <a href="<?= base_url('pa-personnel'); ?>" class="btn btn-outline-dark rounded-pill px-4 me-2 fw-bold">
+                    <div class="col-lg-5 text-end mt-3 mt-lg-0">
+                        <a href="<?= base_url('pa-personnel?fiscal_year=' . ($fiscal_year_be ?? (date('Y') + 543))); ?>" class="btn btn-outline-dark rounded-pill px-4 me-2 fw-bold">
                             <i class="bx bx-x me-1"></i>ยกเลิก
                         </a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold btn-lg">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold btn-lg" <?= empty($evaluator) ? 'disabled' : '' ?>>
                             <i class="bx bx-save me-1"></i>บันทึกแบบประเมิน
                         </button>
                     </div>
@@ -583,6 +651,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         title: 'บันทึกสำเร็จ!',
                         text: result.message || 'ข้อมูลการประเมินถูกบันทึกเรียบร้อยแล้ว',
                         confirmButtonText: 'ตกลง'
+                    }).then(() => {
+                        window.location.reload();
                     });
                 } else {
                     Swal.fire({
@@ -598,5 +668,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function changeEvaluator(evalId) {
+    if (!evalId) return;
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('evaluator_id', evalId);
+    window.location.href = currentUrl.toString();
+}
 </script>
 <?= $this->endSection() ?>

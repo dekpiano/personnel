@@ -155,7 +155,12 @@
                         <ul class="menu-sub">
                             <li class="menu-item <?= ($uri->getSegment(2) == 'PaAgreement') ? 'active' : '' ?>">
                                 <a href="<?= base_url('Admin/PaAgreement') ?>" class="menu-link">
-                                    <div data-i18n="Without menu">จัดการข้อตกลง PA (รายคน)</div>
+                                    <div data-i18n="Without menu">ตรวจการส่งงาน & ข้อตกลง PA</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= ($uri->getSegment(1) == 'pa-personnel' || $uri->getSegment(1) == 'pa-form') ? 'active' : '' ?>">
+                                <a href="<?= base_url('pa-personnel') ?>" class="menu-link">
+                                    <div data-i18n="Without menu">ทำแบบประเมิน PA</div>
                                 </a>
                             </li>
                             <li class="menu-item <?= ($uri->getSegment(2) == "PaConfig" && $uri->getSegment(3) != "Rubrics") ? "active" : "" ?>">
