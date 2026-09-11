@@ -389,6 +389,23 @@
                 <span class="glass-badge-pill">
                     <i class="bx bx-calendar fs-6 me-1"></i> ปีงบประมาณ พ.ศ. <?= esc($fiscal_year); ?>
                 </span>
+                <?php if ($submission_status_key === 'open'): ?>
+                    <span class="glass-badge-pill" style="background: rgba(34, 197, 94, 0.28); border-color: rgba(74, 222, 128, 0.6);">
+                        <i class="bx bx-lock-open-alt fs-6 me-1 text-white"></i> ระบบเปิดรับส่งงาน
+                    </span>
+                <?php elseif ($submission_status_key === 'not_started'): ?>
+                    <span class="glass-badge-pill" style="background: rgba(234, 179, 8, 0.28); border-color: rgba(250, 204, 21, 0.6);">
+                        <i class="bx bx-time fs-6 me-1 text-warning"></i> ยังไม่ถึงกำหนดเวลาส่ง
+                    </span>
+                <?php elseif ($submission_status_key === 'expired'): ?>
+                    <span class="glass-badge-pill" style="background: rgba(239, 68, 68, 0.28); border-color: rgba(248, 113, 113, 0.6);">
+                        <i class="bx bx-lock-alt fs-6 me-1 text-white"></i> ปิดรับส่งงาน (หมดเวลา)
+                    </span>
+                <?php elseif ($submission_status_key === 'closed_manually'): ?>
+                    <span class="glass-badge-pill" style="background: rgba(100, 116, 139, 0.35); border-color: rgba(148, 163, 184, 0.6);">
+                        <i class="bx bx-power-off fs-6 me-1 text-white"></i> ปิดระบบชั่วคราว
+                    </span>
+                <?php endif; ?>
             </div>
             <h3 class="fw-bold text-white mb-2" style="font-size: 1.75rem; letter-spacing: -0.5px;">
                 ศูนย์ตรวจการส่งงานและข้อตกลง PA ข้าราชการครู
@@ -396,6 +413,21 @@
             <p class="text-white text-opacity-90 mb-0" style="max-width: 680px; font-size: 0.95rem; line-height: 1.55;">
                 ตรวจความครบถ้วนของเอกสาร PA (สื่อนำเสนอ, แผนการจัดการเรียนรู้, ข้อตกลง PA1) พร้อมพรีวิวและดาวน์โหลดไฟล์ แยกตามกลุ่มสาระการเรียนรู้
             </p>
+            <?php if (!empty($pa_config)): ?>
+                <?php
+                    $hasDates = !empty($pa_config['conf_start_datetime']) || !empty($pa_config['conf_end_datetime']);
+                    $thaiStart = !empty($pa_config['conf_start_datetime']) ? date('d/m/', strtotime($pa_config['conf_start_datetime'])) . (date('Y', strtotime($pa_config['conf_start_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($pa_config['conf_start_datetime'])) . ' น.' : 'เริ่มทันที';
+                    $thaiEnd = !empty($pa_config['conf_end_datetime']) ? date('d/m/', strtotime($pa_config['conf_end_datetime'])) . (date('Y', strtotime($pa_config['conf_end_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($pa_config['conf_end_datetime'])) . ' น.' : 'ไม่จำกัดเวลาสิ้นสุด';
+                ?>
+                <div class="mt-2 text-white text-opacity-90 small d-flex align-items-center flex-wrap gap-2">
+                    <?php if ($hasDates): ?>
+                        <span><i class="bx bx-time-five me-1"></i> <strong>ช่วงเวลาเปิดรับ:</strong> <?= $thaiStart ?> ถึง <?= $thaiEnd ?></span>
+                    <?php endif; ?>
+                    <?php if (!empty($pa_config['conf_note'])): ?>
+                        <span class="badge bg-white text-dark rounded-pill px-2 py-1"><i class="bx bx-info-circle me-1 text-primary"></i> <?= esc($pa_config['conf_note']) ?></span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
         <div class="col-lg-4 col-md-5 d-flex justify-content-md-end justify-content-start align-items-center flex-wrap gap-2">
@@ -414,6 +446,11 @@
                     </select>
                 </div>
             </form>
+
+            <!-- Config Submission Window Button -->
+            <button type="button" class="btn btn-sm btn-white text-primary shadow-sm fw-bold px-3 py-2 bg-white" data-bs-toggle="modal" data-bs-target="#paConfigModal" style="border-radius: 12px;" title="ตั้งค่ากำหนดวัน-เวลาส่งงาน PA">
+                <i class="bx bx-calendar-edit me-1"></i> กำหนดเวลาส่งงาน
+            </button>
 
             <!-- Export Excel Report Button -->
             <a href="<?= base_url('Admin/PaAgreement/exportExcel?fiscal_year=' . $fiscal_year); ?>" class="btn btn-sm btn-success shadow-sm fw-bold px-3 py-2 text-white" style="border-radius: 12px;" title="ดาวน์โหลดรายงานสรุปการส่งงานแบบ Excel">
@@ -961,9 +998,126 @@
         </div>
     </div>
 </div>
+
+<!-- 7. MODAL SETTINGS ตั้งค่ากำหนดวัน-เวลาส่งงาน PA -->
+<div class="modal fade" id="paConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+            <div class="modal-header py-3 px-4" style="background: var(--pa-blue-grad); color: #ffffff;">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
+                    <i class="bx bx-time-five fs-4 text-warning"></i> ตั้งค่ากำหนดส่งงาน PA ข้าราชการครู
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="paConfigForm">
+                <div class="modal-body p-4">
+                    <!-- Year Selection Header -->
+                    <div class="p-3 rounded-3 mb-3" style="background: #f0f9ff; border: 1.5px solid #bae6fd;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <label class="form-label fw-bold text-primary mb-1 small">
+                                    <i class="bx bx-calendar me-1"></i> ปีงบประมาณที่ต้องการตั้งค่า
+                                </label>
+                                <select name="conf_year" id="config_fiscal_year" class="form-select form-select-sm fw-bold border-primary shadow-none">
+                                    <?php foreach ($available_years as $y): ?>
+                                        <option value="<?= $y ?>" <?= ($y == $fiscal_year) ? 'selected' : '' ?>>
+                                            ปีงบประมาณ พ.ศ. <?= $y ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="ms-3 text-end">
+                                <span class="badge rounded-pill <?= $is_submission_open ? 'bg-success' : 'bg-danger' ?> px-3 py-2 fw-bold" id="configCurrentStatusBadge">
+                                    <?= $submission_status_text ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Open / Closed Switch -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark d-block mb-2">
+                            <i class="bx bx-toggle-left me-1 text-primary"></i> สถานะการเปิดระบบรับเอกสาร
+                        </label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="conf_status" id="conf_status_1" value="1" <?= (!isset($pa_config['conf_status']) || $pa_config['conf_status'] == 1) ? 'checked' : '' ?>>
+                                <label class="btn btn-outline-success w-100 py-2 rounded-3 text-center fw-bold" for="conf_status_1">
+                                    <i class="bx bx-check-circle me-1 fs-5 d-block mb-1"></i>
+                                    เปิดรับส่งงาน
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="conf_status" id="conf_status_0" value="0" <?= (isset($pa_config['conf_status']) && $pa_config['conf_status'] == 0) ? 'checked' : '' ?>>
+                                <label class="btn btn-outline-danger w-100 py-2 rounded-3 text-center fw-bold" for="conf_status_0">
+                                    <i class="bx bx-x-circle me-1 fs-5 d-block mb-1"></i>
+                                    ปิดรับส่งงาน
+                                </label>
+                            </div>
+                        </div>
+                        <div class="x-small text-muted mt-1">
+                            * หากเลือก "ปิดรับส่งงาน" ระบบจะปิดทันทีโดยไม่คำนึงถึงช่วงวันเวลา
+                        </div>
+                    </div>
+
+                    <!-- Start & End Date Time Pickers -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <i class="bx bx-calendar-plus text-success me-1"></i> วัน-เวลาเริ่มต้นเปิดรับส่งงาน
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light"><i class="bx bx-calendar"></i></span>
+                                <input type="text" class="form-control" name="conf_start_datetime" id="conf_start_datetime" 
+                                    placeholder="เลือกวันและเวลาเริ่มต้น..." 
+                                    value="<?= !empty($pa_config['conf_start_datetime']) ? esc($pa_config['conf_start_datetime']) : '' ?>">
+                                <button type="button" class="btn btn-outline-secondary btn-clear-dt" data-target="#conf_start_datetime" title="ล้างค่า">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                            <div class="x-small text-muted mt-1">เว้นว่างไว้หากต้องการให้เริ่มทันที</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <i class="bx bx-calendar-x text-danger me-1"></i> วัน-เวลาสิ้นสุดกำหนดส่งงาน (เดดไลน์)
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light"><i class="bx bx-time"></i></span>
+                                <input type="text" class="form-control" name="conf_end_datetime" id="conf_end_datetime" 
+                                    placeholder="เลือกวันและเวลาสิ้นสุด..." 
+                                    value="<?= !empty($pa_config['conf_end_datetime']) ? esc($pa_config['conf_end_datetime']) : '' ?>">
+                                <button type="button" class="btn btn-outline-secondary btn-clear-dt" data-target="#conf_end_datetime" title="ล้างค่า">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                            <div class="x-small text-muted mt-1">เมื่อเลยกำหนดเวลานี้ ระบบครูจะล็อกการส่งงานโดยอัตโนมัติ</div>
+                        </div>
+                    </div>
+
+                    <!-- Note for teachers -->
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-dark mb-1">
+                            <i class="bx bx-comment-detail text-primary me-1"></i> คำชี้แจง / หมายเหตุแจ้งคุณครู (ถ้ามี)
+                        </label>
+                        <textarea class="form-control form-control-sm" name="conf_note" id="conf_note" rows="2" placeholder="เช่น โปรดแนบไฟล์ข้อตกลง PA1 และสื่อนำเสนอความยาวไม่เกิน 10 นาที..."><?= !empty($pa_config['conf_note']) ? esc($pa_config['conf_note']) : '' ?></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2 px-4 bg-light">
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" id="btnSavePaConfig">
+                        <i class="bx bx-save me-1"></i> บันทึกการตั้งค่า
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
 <script>
     $(document).ready(function() {
         const year = '<?= $fiscal_year ?>';
@@ -1364,6 +1518,156 @@
                             Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'error');
                         }
                     });
+                }
+            });
+        });
+
+        // --- PA Submission Window Config JS ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open_config') === '1') {
+            $('#paConfigModal').modal('show');
+        }
+
+        $('#config_fiscal_year').on('change', function() {
+            const chosenYear = $(this).val();
+            location.href = '<?= base_url('Admin/PaAgreement') ?>?fiscal_year=' + chosenYear + '&open_config=1';
+        });
+
+        const applyThaiBEToPicker = (instance) => {
+            const yearInput = instance.calendarContainer?.querySelector(".cur-year");
+            if (!yearInput) return;
+            yearInput.style.color = "transparent";
+            let beWrap = yearInput.parentElement.querySelector(".be-year");
+            if (!beWrap) {
+                beWrap = document.createElement("span");
+                beWrap.className = "be-year";
+                beWrap.style.cssText = "position:absolute; left:0; width:100%; top:50%; transform:translateY(-50%); text-align:center; padding-right:15px; box-sizing:border-box; pointer-events:none; color:inherit; font-family:inherit; margin:0;";
+                yearInput.parentElement.appendChild(beWrap);
+                yearInput.parentElement.style.position = "relative";
+            }
+            let y = instance.currentYear;
+            beWrap.innerText = y > 2400 ? y : y + 543;
+        };
+
+        const dtOptions = {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "Y-m-d H:i:s",
+            altInput: true,
+            altFormat: "d/m/Y H:i",
+            locale: "th",
+            formatDate: (date, format) => {
+                if (format === "Y-m-d H:i:s" || format === "Y-m-d H:i") {
+                    const y = date.getFullYear();
+                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const d = date.getDate().toString().padStart(2, '0');
+                    const hh = date.getHours().toString().padStart(2, '0');
+                    const mm = date.getMinutes().toString().padStart(2, '0');
+                    const ss = date.getSeconds().toString().padStart(2, '0');
+                    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+                }
+                const d = date.getDate().toString().padStart(2, '0');
+                const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                const y = date.getFullYear() + 543;
+                const hh = date.getHours().toString().padStart(2, '0');
+                const mm = date.getMinutes().toString().padStart(2, '0');
+                return `${d}/${m}/${y} เวลา ${hh}:${mm} น.`;
+            },
+            parseDate: (dateStr, format) => {
+                if (!dateStr) return null;
+                const isoMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+                if (isoMatch) {
+                    let y = parseInt(isoMatch[1], 10);
+                    if (y > 2400) y -= 543;
+                    const m = parseInt(isoMatch[2], 10) - 1;
+                    const d = parseInt(isoMatch[3], 10);
+                    const hh = isoMatch[4] ? parseInt(isoMatch[4], 10) : 0;
+                    const mm = isoMatch[5] ? parseInt(isoMatch[5], 10) : 0;
+                    const ss = isoMatch[6] ? parseInt(isoMatch[6], 10) : 0;
+                    return new Date(y, m, d, hh, mm, ss);
+                }
+                const cleanStr = dateStr.replace(/เวลา|น\.?|\s+/g, ' ').trim();
+                const thMatch = cleanStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2}))?$/);
+                if (thMatch) {
+                    let y = parseInt(thMatch[3], 10);
+                    if (y > 2400) y -= 543;
+                    const m = parseInt(thMatch[2], 10) - 1;
+                    const d = parseInt(thMatch[1], 10);
+                    const hh = thMatch[4] ? parseInt(thMatch[4], 10) : 0;
+                    const mm = thMatch[5] ? parseInt(thMatch[5], 10) : 0;
+                    return new Date(y, m, d, hh, mm, 0);
+                }
+                return new Date(dateStr);
+            },
+            onReady: (d, s, i) => applyThaiBEToPicker(i),
+            onMonthChange: (d, s, i) => applyThaiBEToPicker(i),
+            onYearChange: (d, s, i) => applyThaiBEToPicker(i)
+        };
+
+        const startRaw = '<?= !empty($pa_config['conf_start_datetime']) ? esc($pa_config['conf_start_datetime']) : '' ?>';
+        const endRaw = '<?= !empty($pa_config['conf_end_datetime']) ? esc($pa_config['conf_end_datetime']) : '' ?>';
+
+        const fpStart = flatpickr("#conf_start_datetime", Object.assign({}, dtOptions, {
+            defaultDate: startRaw ? startRaw : null
+        }));
+        const fpEnd = flatpickr("#conf_end_datetime", Object.assign({}, dtOptions, {
+            defaultDate: endRaw ? endRaw : null
+        }));
+
+        $('.btn-clear-dt').on('click', function() {
+            const target = $(this).data('target');
+            if (target === '#conf_start_datetime' && fpStart) fpStart.clear();
+            if (target === '#conf_end_datetime' && fpEnd) fpEnd.clear();
+        });
+
+        $('#paConfigForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $('#btnSavePaConfig');
+            const origHtml = btn.html();
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> กำลังบันทึก...');
+
+            // Retrieve standard ISO string formatted from Flatpickr
+            const startVal = (fpStart && fpStart.selectedDates.length > 0)
+                ? fpStart.formatDate(fpStart.selectedDates[0], "Y-m-d H:i:s")
+                : '';
+            const endVal = (fpEnd && fpEnd.selectedDates.length > 0)
+                ? fpEnd.formatDate(fpEnd.selectedDates[0], "Y-m-d H:i:s")
+                : '';
+
+            const postPayload = {
+                conf_year: $('#config_fiscal_year').val(),
+                conf_status: $('input[name="conf_status"]:checked').val() || '1',
+                conf_start_datetime: startVal,
+                conf_end_datetime: endVal,
+                conf_note: $('#conf_note').val() || ''
+            };
+
+            $.ajax({
+                url: '<?= base_url('Admin/PaAgreement/save-config') ?>',
+                type: 'POST',
+                data: postPayload,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: res.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            const selYear = $('#config_fiscal_year').val();
+                            location.href = '<?= base_url('Admin/PaAgreement') ?>?fiscal_year=' + selYear;
+                        });
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', res.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อบันทึกการตั้งค่าได้', 'error');
+                },
+                complete: function() {
+                    btn.prop('disabled', false).html(origHtml);
                 }
             });
         });

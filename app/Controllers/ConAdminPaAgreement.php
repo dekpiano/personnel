@@ -10,6 +10,7 @@ class ConAdminPaAgreement extends BaseController
 
     public function __construct()
     {
+        helper(['url', 'form']);
         $this->session = session();
         if (!$this->session->get('username') || !in_array($this->session->get('status'), ["superadmin", "admin", "manager", "ผู้ดูแลระบบ"])) {
             header("Location:" . base_url());
@@ -22,7 +23,9 @@ class ConAdminPaAgreement extends BaseController
 
     private function DataMain()
     {
-        $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $data['full_url'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://{$host}{$uri}";
         $data['uri'] = service('uri');
         return $data;
     }
@@ -58,6 +61,33 @@ class ConAdminPaAgreement extends BaseController
         } catch (\Exception $e) {
             log_message('error', 'Error creating/updating tb_teacher_pa_agreement: ' . $e->getMessage());
         }
+
+        $this->ensureConfigTableExists();
+    }
+
+    /**
+     * Ensure PA Agreement Config table exists in personnel database
+     */
+    private function ensureConfigTableExists()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS `tb_teacher_pa_agreement_config` (
+            `conf_id` INT(11) NOT NULL AUTO_INCREMENT,
+            `conf_year` VARCHAR(10) NOT NULL,
+            `conf_status` TINYINT(1) NOT NULL DEFAULT 1,
+            `conf_start_datetime` DATETIME NULL,
+            `conf_end_datetime` DATETIME NULL,
+            `conf_note` TEXT NULL,
+            `conf_created_at` DATETIME NULL,
+            `conf_updated_at` DATETIME NULL,
+            PRIMARY KEY (`conf_id`),
+            UNIQUE KEY `idx_conf_year` (`conf_year`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+        try {
+            $this->db->query($sql);
+        } catch (\Exception $e) {
+            log_message('error', 'Error creating tb_teacher_pa_agreement_config: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -84,8 +114,9 @@ class ConAdminPaAgreement extends BaseController
         $data['title'] = "จัดการข้อตกลงในการพัฒนางาน (PA) รายบุคคล";
 
         // Fiscal Year Filter
+        $request = $this->request ?? service('request');
         $currentYear = $this->getCurrentFiscalYear();
-        $selectedYear = $this->request->getGet('fiscal_year');
+        $selectedYear = $request->getGet('fiscal_year');
         $fiscalYear = !empty($selectedYear) ? (int)$selectedYear : $currentYear;
 
         // Generate Available Years
@@ -214,6 +245,47 @@ class ConAdminPaAgreement extends BaseController
                 $groupedTeachers[$learKey]['pending']++;
             }
         }
+
+        // Fetch submission window configuration for this fiscal year
+        $paConfig = $this->db->table('tb_teacher_pa_agreement_config')
+            ->where('conf_year', (string)$fiscalYear)
+            ->get()
+            ->getRowArray();
+
+        $now = date('Y-m-d H:i:s');
+        $isSubmissionOpen = false;
+        $submissionStatusKey = 'no_config'; // 'open', 'not_started', 'expired', 'closed_manually', 'no_config'
+        $submissionStatusText = 'ยังไม่กำหนดเวลาส่ง';
+
+        if ($paConfig) {
+            $manualOpen = ((int)$paConfig['conf_status'] === 1);
+            $hasStart = !empty($paConfig['conf_start_datetime']);
+            $hasEnd = !empty($paConfig['conf_end_datetime']);
+
+            if (!$manualOpen) {
+                $submissionStatusKey = 'closed_manually';
+                $submissionStatusText = 'ปิดระบบชั่วคราว';
+            } elseif ($hasStart && $now < $paConfig['conf_start_datetime']) {
+                $submissionStatusKey = 'not_started';
+                $submissionStatusText = 'ยังไม่ถึงกำหนดเวลาส่ง';
+            } elseif ($hasEnd && $now > $paConfig['conf_end_datetime']) {
+                $submissionStatusKey = 'expired';
+                $submissionStatusText = 'สิ้นสุดกำหนดส่งแล้ว';
+            } else {
+                $isSubmissionOpen = true;
+                $submissionStatusKey = 'open';
+                $submissionStatusText = 'ระบบเปิดรับส่งงาน';
+            }
+        } else {
+            $isSubmissionOpen = true;
+            $submissionStatusKey = 'open';
+            $submissionStatusText = 'ระบบเปิดรับส่งงาน (ค่าเริ่มต้น)';
+        }
+
+        $data['pa_config'] = $paConfig;
+        $data['is_submission_open'] = $isSubmissionOpen;
+        $data['submission_status_key'] = $submissionStatusKey;
+        $data['submission_status_text'] = $submissionStatusText;
 
         $data['teachers'] = $teachers;
         $data['grouped_teachers'] = $groupedTeachers;
@@ -688,5 +760,132 @@ class ConAdminPaAgreement extends BaseController
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
         exit();
+    }
+
+    /**
+     * Parse Thai BE or standard datetime string to MySQL 'Y-m-d H:i:s' format
+     */
+    private function parseDateTimeInput($str)
+    {
+        if (empty($str)) {
+            return null;
+        }
+        $str = trim($str);
+
+        // 1. ISO format: 2026-09-01 08:30:00 or 2026-09-01 08:30
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/', $str, $m)) {
+            $year = (int)$m[1];
+            $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+            $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
+            $hour = isset($m[4]) ? str_pad($m[4], 2, '0', STR_PAD_LEFT) : '00';
+            $min = isset($m[5]) ? str_pad($m[5], 2, '0', STR_PAD_LEFT) : '00';
+            $sec = isset($m[6]) ? str_pad($m[6], 2, '0', STR_PAD_LEFT) : '00';
+
+            if ($year > 2400) {
+                $year -= 543;
+            }
+            return sprintf('%04d-%s-%s %s:%s:%s', $year, $month, $day, $hour, $min, $sec);
+        }
+
+        // 2. Thai DMY format: 01/09/2569 เวลา 08:30 น. or 01/09/2569 08:30:00 or 01-09-2569 08:30
+        $clean = preg_replace('/เวลา|น\.?|\s+/u', ' ', $str);
+        $clean = trim($clean);
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/', $clean, $m)) {
+            $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+            $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+            $year = (int)$m[3];
+            $hour = isset($m[4]) ? str_pad($m[4], 2, '0', STR_PAD_LEFT) : '00';
+            $min = isset($m[5]) ? str_pad($m[5], 2, '0', STR_PAD_LEFT) : '00';
+            $sec = isset($m[6]) ? str_pad($m[6], 2, '0', STR_PAD_LEFT) : '00';
+
+            if ($year > 2400) {
+                $year -= 543;
+            }
+            return sprintf('%04d-%s-%s %s:%s:%s', $year, $month, $day, $hour, $min, $sec);
+        }
+
+        $ts = strtotime($str);
+        if ($ts !== false) {
+            return date('Y-m-d H:i:s', $ts);
+        }
+
+        return null;
+    }
+
+    /**
+     * Save / Update Submission Window Configuration for PA Agreement
+     */
+    public function saveConfig()
+    {
+        $this->ensureConfigTableExists();
+        $request = $this->request ?? service('request');
+        $response = $this->response ?? service('response');
+
+        $year = trim($request->getPost('conf_year') ?? '');
+        $status = (int)($request->getPost('conf_status') ?? 1);
+        $startDatetime = trim($request->getPost('conf_start_datetime') ?? '');
+        $endDatetime = trim($request->getPost('conf_end_datetime') ?? '');
+        $note = trim($request->getPost('conf_note') ?? '');
+
+        if (empty($year)) {
+            return $response->setJSON([
+                'status' => 'error',
+                'message' => 'กรุณาระบุปีงบประมาณ'
+            ]);
+        }
+
+        // Validate and format datetime using robust multi-format parser
+        $cleanStart = $this->parseDateTimeInput($startDatetime);
+        $cleanEnd = $this->parseDateTimeInput($endDatetime);
+
+        if (!empty($startDatetime) && $cleanStart === null) {
+            return $response->setJSON([
+                'status' => 'error',
+                'message' => 'รูปแบบวัน-เวลาเริ่มต้นไม่ถูกต้อง: ' . esc($startDatetime)
+            ]);
+        }
+
+        if (!empty($endDatetime) && $cleanEnd === null) {
+            return $response->setJSON([
+                'status' => 'error',
+                'message' => 'รูปแบบวัน-เวลาสิ้นสุดไม่ถูกต้อง: ' . esc($endDatetime)
+            ]);
+        }
+
+        if ($cleanStart && $cleanEnd && $cleanStart > $cleanEnd) {
+            return $response->setJSON([
+                'status' => 'error',
+                'message' => 'วัน-เวลาเริ่มต้นต้องไม่มากกว่าวัน-เวลาสิ้นสุด'
+            ]);
+        }
+
+        $existing = $this->db->table('tb_teacher_pa_agreement_config')
+            ->where('conf_year', $year)
+            ->get()
+            ->getRowArray();
+
+        $now = date('Y-m-d H:i:s');
+        $saveData = [
+            'conf_year'           => $year,
+            'conf_status'         => $status,
+            'conf_start_datetime' => $cleanStart,
+            'conf_end_datetime'   => $cleanEnd,
+            'conf_note'           => !empty($note) ? $note : null,
+            'conf_updated_at'     => $now
+        ];
+
+        if ($existing) {
+            $this->db->table('tb_teacher_pa_agreement_config')
+                ->where('conf_id', $existing['conf_id'])
+                ->update($saveData);
+        } else {
+            $saveData['conf_created_at'] = $now;
+            $this->db->table('tb_teacher_pa_agreement_config')->insert($saveData);
+        }
+
+        return $response->setJSON([
+            'status' => 'success',
+            'message' => 'บันทึกการตั้งค่ากำหนดวัน-เวลาส่งงาน PA ประจำปีงบประมาณ พ.ศ. ' . $year . ' เรียบร้อยแล้ว'
+        ]);
     }
 }
