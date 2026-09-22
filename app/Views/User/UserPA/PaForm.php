@@ -508,6 +508,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const scoreRadios = document.querySelectorAll('input[type="radio"][name^="raw_score_"]');
     const pointsInputs = document.querySelectorAll('input[type="text"][name^="points_"]');
 
+    // ตัดทศนิยมตามจำนวนหลักที่กำหนด โดยไม่ปัดขึ้น/ลง
+    // เช่น 14.359 -> 14.35
+    function truncateScore(value, decimals = 2) {
+        const number = Number(value) || 0;
+        const factor = Math.pow(10, decimals);
+        return number >= 0
+            ? Math.floor((number * factor) + Number.EPSILON) / factor
+            : Math.ceil((number * factor) - Number.EPSILON) / factor;
+    }
+
+    function formatScore(value, decimals = 2) {
+        return truncateScore(value, decimals).toFixed(decimals);
+    }
+
     function calculateTotalScores() {
         let part1Total = 0;
         let part2Total = 0;
@@ -523,15 +537,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        document.getElementById('totalScore1').textContent = part1Total.toFixed(2);
-        document.querySelector('input[name="totalScore1"]').value = part1Total;
+        part1Total = truncateScore(part1Total);
+        part2Total = truncateScore(part2Total);
 
-        document.getElementById('totalScore2').textContent = part2Total.toFixed(2);
-        document.querySelector('input[name="totalScore2"]').value = part2Total;
+        document.getElementById('totalScore1').textContent = formatScore(part1Total);
+        document.querySelector('input[name="totalScore1"]').value = part1Total.toFixed(2);
 
-        const totalScore = part1Total + part2Total;
-        document.getElementById('totalScore').textContent = totalScore.toFixed(2);
-        document.querySelector('input[name="totalScore"]').value = totalScore;
+        document.getElementById('totalScore2').textContent = formatScore(part2Total);
+        document.querySelector('input[name="totalScore2"]').value = part2Total.toFixed(2);
+
+        const totalScore = truncateScore(part1Total + part2Total);
+        document.getElementById('totalScore').textContent = formatScore(totalScore);
+        document.querySelector('input[name="totalScore"]').value = totalScore.toFixed(2);
     }
 
     scoreRadios.forEach(radio => {
@@ -632,6 +649,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            const submitBtn = paForm.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+
+            const restoreButton = () => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml || '<i class="bx bx-save me-1"></i>บันทึกแบบประเมิน';
+                }
+            };
+
             const formData = new FormData(paForm);
 
             try {
@@ -643,9 +670,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                const result = await response.json();
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonErr) {
+                    const textResp = await response.text();
+                    result = { success: false, message: 'เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (' + (textResp ? textResp.substring(0, 100) : 'ว่าง') + ')' };
+                }
 
-                if (result.success) {
+                if (result && result.success) {
                     Swal.fire({
                         icon: 'success',
                         title: 'บันทึกสำเร็จ!',
@@ -655,15 +688,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.reload();
                     });
                 } else {
+                    restoreButton();
                     Swal.fire({
                         icon: 'error',
                         title: 'เกิดข้อผิดพลาด!',
-                        text: result.message || 'ไม่สามารถบันทึกข้อมูลการประเมินได้',
+                        text: (result && result.message) ? result.message : 'ไม่สามารถบันทึกข้อมูลการประเมินได้',
                         confirmButtonText: 'ตกลง'
                     });
                 }
             } catch (error) {
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message);
+                restoreButton();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ!',
+                    text: error.message || 'ไม่สามารถส่งข้อมูลไปยังเซิร์ฟเวอร์ได้',
+                    confirmButtonText: 'ตกลง'
+                });
             }
         });
     }

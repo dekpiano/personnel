@@ -30,6 +30,7 @@ Thumbs.db
 # IDE settings
 .vscode/
 .idea/
+.serena/
 *.sublime-project
 *.sublime-workspace
 

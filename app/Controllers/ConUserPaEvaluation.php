@@ -507,10 +507,14 @@ class ConUserPaEvaluation extends BaseController
     {
         $session = session();
         if (!$session->get('logged_in')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง']);
+            }
             return redirect()->to(base_url('pa-login'))->with('error', 'กรุณาเข้าสู่ระบบก่อน');
         }
 
-        if ($this->request->getMethod() === 'post') {
+        $method = strtoupper((string)$this->request->getMethod());
+        if ($this->request->is('post') || $method === 'POST') {
             $evaluationModel = new EvaluationModel();
             $evaluatorScoreModel = new EvaluatorScoreModel();
             $itemScoreModel = new ItemScoreModel();
@@ -527,11 +531,74 @@ class ConUserPaEvaluation extends BaseController
             log_message('debug', 'Person ID ' . $personId . ' exists in tb_personnel: ' . ($personExists ? 'true' : 'false'));
 
             if (!$personExists) {
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON(['success' => false, 'message' => 'ไม่พบข้อมูลผู้รับการประเมินในระบบบุคลากร.']);
+                }
                 throw new \Exception('ไม่พบข้อมูลผู้รับการประเมินในระบบบุคลากร.');
             }
 
+            $db = \Config\Database::connect('pa_evaluation');
+
             $evaluatorId = $this->request->getPost('evaluator_id');
+            $loggedInUserId = $session->get('id');
+            $loggedInPersId = $session->get('pers_id') ?: $loggedInUserId;
+            $loggedInEmail  = $session->get('email');
+
+            // หากไม่ได้รับ evaluator_id จากฟอร์ม ให้สืบค้นจากผู้ใช้งานที่ล็อกอินอยู่
             if (empty($evaluatorId)) {
+                $evalQuery = $db->table('tb_evaluators')->groupStart();
+                if (!empty($loggedInUserId)) {
+                    $evalQuery->orWhere('e_id', $loggedInUserId)->orWhere('e_Username', $loggedInUserId);
+                }
+                if (!empty($loggedInPersId)) {
+                    $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+                }
+                if (!empty($loggedInEmail)) {
+                    $evalQuery->orWhere('e_Username', $loggedInEmail);
+                }
+                $evalQuery->groupEnd();
+                $foundEv = $evalQuery->get()->getRowArray();
+                if ($foundEv) {
+                    $evaluatorId = $foundEv['e_id'];
+                }
+            }
+
+            // ตรวจสอบว่า evaluatorId มีอยู่ใน tb_evaluators หรือไม่ ถ้าไม่มีให้ลองจับคู่หรือลงทะเบียนให้อัตโนมัติ
+            if (!empty($evaluatorId)) {
+                $evRecord = $db->table('tb_evaluators')->where('e_id', $evaluatorId)->get()->getRowArray();
+                if (!$evRecord) {
+                    $evRecord2 = $db->table('tb_evaluators')->where('e_Username', $evaluatorId)->get()->getRowArray();
+                    if ($evRecord2) {
+                        $evaluatorId = $evRecord2['e_id'];
+                    } else {
+                        // ตรวจสอบกรณีเป็นครู/ผู้ดูแลระบบที่ส่ง pers_id เข้ามา
+                        $personData = $db_personnel->table('tb_personnel')->where('pers_id', $evaluatorId)->get()->getRowArray();
+                        if ($personData) {
+                            $uName = !empty($personData['pers_username']) ? $personData['pers_username'] : strtolower($personData['pers_firstname']);
+                            $existingByUsername = $db->table('tb_evaluators')->where('e_Username', $uName)->get()->getRowArray();
+                            if ($existingByUsername) {
+                                $evaluatorId = $existingByUsername['e_id'];
+                            } else {
+                                $newEid = 'e_' . $personData['pers_id'];
+                                $db->table('tb_evaluators')->insert([
+                                    'e_id' => $newEid,
+                                    'e_first_name' => $personData['pers_firstname'],
+                                    'e_last_name' => $personData['pers_lastname'],
+                                    'e_position' => 'กรรมการผู้ประเมิน',
+                                    'e_Username' => $uName,
+                                    'e_Password' => password_hash('123456', PASSWORD_DEFAULT),
+                                ]);
+                                $evaluatorId = $newEid;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (empty($evaluatorId)) {
+                if ($this->request->isAJAX()) {
+                    return $this->response->setJSON(['success' => false, 'message' => 'ไม่พบข้อมูลกรรมการผู้ประเมิน กรุณาระบุหรือเลือกกรรมการผู้ประเมินก่อนบันทึก.']);
+                }
                 throw new \Exception('ไม่พบข้อมูลกรรมการผู้ประเมิน กรุณาระบุหรือเลือกกรรมการผู้ประเมินก่อนบันทึก.');
             }
 
@@ -540,9 +607,19 @@ class ConUserPaEvaluation extends BaseController
             $strongPoints = $this->request->getPost('challengeDescription');
             $areasForImprovement = $this->request->getPost('challengeResult');
             $comments = $this->request->getPost('comments');
-            $totalScore1 = $this->request->getPost('totalScore1');
-            $totalScore2 = $this->request->getPost('totalScore2');
-            $totalScore = $this->request->getPost('totalScore');
+            // คะแนน PA ต้อง "ตัด" ทศนิยม ไม่ใช่ปัดเศษ
+            // เช่น 14.359 -> 14.35 (ไม่ใช่ 14.36)
+            $truncateScore = static function ($value, int $decimals = 2): float {
+                $factor = 10 ** $decimals;
+                $number = (float)$value;
+                return $number >= 0
+                    ? floor($number * $factor + 1e-9) / $factor
+                    : ceil($number * $factor - 1e-9) / $factor;
+            };
+
+            $totalScore1 = $truncateScore($this->request->getPost('totalScore1'));
+            $totalScore2 = $truncateScore($this->request->getPost('totalScore2'));
+            $totalScore = $truncateScore($totalScore1 + $totalScore2);
 
             // คำนวณช่วงวันที่เริ่มต้นและสิ้นสุดของปีงบประมาณไทย (1 ต.ค. - 30 ก.ย.)
             $yearInt = (int)$academicYear;
@@ -552,13 +629,17 @@ class ConUserPaEvaluation extends BaseController
             $endDate = $ad_end_year . '-09-30';
 
             // Start a transaction
-            $db = \Config\Database::connect('pa_evaluation');
             $db->transStart();
 
             try {
                 // 1. ตรวจสอบว่ามีการประเมินหลักสำหรับบุคลากรคนนี้ในรอบปีนี้แล้วหรือไม่
                 $existingEvaluation = $evaluationModel->where('t_id', $personId)
-                                                      ->where('ev_fiscal_year', $academicYear)
+                                                      ->groupStart()
+                                                          ->where('ev_fiscal_year', $academicYear)
+                                                          ->orWhere('ev_fiscal_year', (string)$academicYear)
+                                                          ->orWhere('ev_fiscal_year', $ad_end_year)
+                                                          ->orWhere('ev_fiscal_year', (string)$ad_end_year)
+                                                      ->groupEnd()
                                                       ->first();
 
                 $ev_id = $existingEvaluation['ev_id'] ?? uniqid('EV_');
@@ -625,11 +706,11 @@ class ConUserPaEvaluation extends BaseController
                 foreach ($this->request->getPost() as $key => $value) {
                     if (strpos($key, 'points_') === 0) {
                         $ri_id = str_replace('points_', '', $key);
-                        $is_calculated_score = (float)$value; // Cast to float
+                        $is_calculated_score = $truncateScore((float)$value); // ตัดทศนิยม 2 ตำแหน่ง ไม่ปัดเศษ
                         $is_score = $this->request->getPost('raw_score_' . $ri_id); // This is the raw radio button value
 
                         // Only save if a raw score (radio button) was selected
-                        if (!empty($is_score)) {
+                        if ($is_score !== null && $is_score !== '') {
                             $itemScoreData = [
                                 'is_id' => uniqid('IS_'),
                                 'es_id' => $es_id,
@@ -652,20 +733,20 @@ class ConUserPaEvaluation extends BaseController
                 if ($db->transStatus() === false) {
                     // Transaction failed
                     if ($this->request->isAJAX()) {
-                        return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล.']);
+                        return $this->response->setJSON(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูลในฐานข้อมูล']);
                     } else {
-                        return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล.');
+                        return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูลในฐานข้อมูล');
                     }
                 } else {
                     // Transaction successful
                     if ($this->request->isAJAX()) {
-                        return $this->response->setJSON(['success' => true, 'message' => 'บันทึกแบบประเมินสำเร็จ!']);
+                        return $this->response->setJSON(['success' => true, 'message' => 'บันทึกแบบประเมินสำเร็จเรียบร้อยแล้ว']);
                     } else {
-                        return redirect()->to(base_url('user/pa-evaluation/success'))->with('success', 'บันทึกแบบประเมินสำเร็จ!');
+                        return redirect()->to(base_url('user/pa-evaluation/success'))->with('success', 'บันทึกแบบประเมินสำเร็จเรียบร้อยแล้ว');
                     }
                 }
 
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $db->transRollback();
                 log_message('error', 'PA Evaluation Save Error: ' . $e->getMessage());
                 if ($this->request->isAJAX()) {
@@ -677,10 +758,9 @@ class ConUserPaEvaluation extends BaseController
         }
 
         if ($this->request->isAJAX()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request method.']);
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request method: ' . $this->request->getMethod()]);
         } else {
             return redirect()->back()->with('error', 'Invalid request method.');
         }
     }
-    
 }

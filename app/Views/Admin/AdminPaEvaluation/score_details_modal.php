@@ -3,6 +3,16 @@ $rubricItems = $evaluation_data['rubric_items'] ?? [];
 $itemScores = $evaluation_data['item_scores'] ?? [];
 $calculatedScores = $evaluation_data['calculated_scores'] ?? [];
 $summary = $evaluation_data['summary'] ?? [];
+
+// คะแนน PA ต้องแสดงแบบตัดทศนิยม 2 ตำแหน่ง ไม่ใช่ปัดเศษ
+$formatPaScore = static function ($value, int $decimals = 2): string {
+    $factor = 10 ** $decimals;
+    $number = (float)($value ?? 0);
+    $truncated = $number >= 0
+        ? floor($number * $factor + 1e-9) / $factor
+        : ceil($number * $factor - 1e-9) / $factor;
+    return number_format($truncated, $decimals, '.', ',');
+};
 ?>
 
 <?php if (empty($rubricItems) || empty($summary)): ?>
@@ -45,7 +55,7 @@ $summary = $evaluation_data['summary'] ?? [];
                         style="background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%); border-start: 4px solid #03c3ec !important;">
                         <div class="card-body p-3">
                             <span class="text-muted fw-semibold small d-block mb-1">รวมคะแนนส่วนที่ 1</span>
-                            <h3 class="fw-bold mb-0 text-primary"><?= number_format($summary['es_part1_score'] ?? 0, 2) ?>
+                            <h3 class="fw-bold mb-0 text-primary"><?= $formatPaScore($summary['es_part1_score'] ?? 0) ?>
                                 <span class="fs-6 text-muted fw-normal">/ 60.00</span></h3>
                         </div>
                     </div>
@@ -55,7 +65,7 @@ $summary = $evaluation_data['summary'] ?? [];
                         style="background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%); border-start: 4px solid #2e7d32 !important;">
                         <div class="card-body p-3">
                             <span class="text-muted fw-semibold small d-block mb-1">รวมคะแนนส่วนที่ 2</span>
-                            <h3 class="fw-bold mb-0 text-success"><?= number_format($summary['es_part2_score'] ?? 0, 2) ?>
+                            <h3 class="fw-bold mb-0 text-success"><?= $formatPaScore($summary['es_part2_score'] ?? 0) ?>
                                 <span class="fs-6 text-muted fw-normal">/ 40.00</span></h3>
                         </div>
                     </div>
@@ -65,7 +75,7 @@ $summary = $evaluation_data['summary'] ?? [];
                         style="background: linear-gradient(135deg, #03c3ec 0%, #0288d1 100%);">
                         <div class="card-body p-3">
                             <span class="text-white-50 fw-semibold small d-block mb-1">รวมคะแนนทั้งหมด</span>
-                            <h2 class="fw-bold mb-0 text-white"><?= number_format($summary['es_total_score'] ?? 0, 2) ?>
+                            <h2 class="fw-bold mb-0 text-white"><?= $formatPaScore($summary['es_total_score'] ?? 0) ?>
                                 <span class="fs-6 text-white-50 fw-normal">/ 100.00</span></h2>
                         </div>
                     </div>
@@ -147,7 +157,7 @@ $summary = $evaluation_data['summary'] ?? [];
                                         </td>
                                     <?php endfor; ?>
                                     <td class="text-center align-middle fw-bold text-primary py-1 px-1">
-                                        <?= isset($calculatedScores[$item['ri_id']]) ? number_format($calculatedScores[$item['ri_id']], 2) : '0.00' ?>
+                                        <?= isset($calculatedScores[$item['ri_id']]) ? $formatPaScore($calculatedScores[$item['ri_id']]) : '0.00' ?>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -197,7 +207,7 @@ $summary = $evaluation_data['summary'] ?? [];
                                         </td>
                                     <?php endfor; ?>
                                     <td class="text-center align-middle fw-bold text-success py-1 px-1">
-                                        <?= isset($calculatedScores[$item['ri_id']]) ? number_format($calculatedScores[$item['ri_id']], 2) : '0.00' ?>
+                                        <?= isset($calculatedScores[$item['ri_id']]) ? $formatPaScore($calculatedScores[$item['ri_id']]) : '0.00' ?>
                                     </td>
                                 </tr>
                             <?php endif; ?>

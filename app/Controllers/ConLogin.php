@@ -151,11 +151,21 @@ class ConLogin extends BaseController
                                 if (str_contains($ret, 'pa-personnel') || str_contains($ret, 'pa-form') || str_contains($ret, 'pa-login')) {
                                     $DB_PA = \Config\Database::connect('pa_evaluation');
                                     
-                                    $evalRow = $DB_PA->table('tb_evaluators')->where('e_Username', $email)->get()->getRowArray();
+                                    $evalQuery = $DB_PA->table('tb_evaluators')->groupStart();
+                                    $evalQuery->where('e_Username', $email);
+                                    if (!empty($User['pers_username'])) {
+                                        $evalQuery->orWhere('e_Username', $User['pers_username']);
+                                    }
+                                    if (!empty($User['pers_id'])) {
+                                        $evalQuery->orWhere('e_id', $User['pers_id']);
+                                    }
+                                    $evalQuery->groupEnd();
+                                    $evalRow = $evalQuery->get()->getRowArray();
+
                                     $possibleAssessorIds = array_filter([$User['pers_id'], $evalRow['e_id'] ?? null]);
-                                    $hasScope = $DB_PA->table('tb_assessor_scope')->whereIn('assessor_e_id', $possibleAssessorIds)->countAllResults() > 0;
+                                    $hasScope = !empty($possibleAssessorIds) && $DB_PA->table('tb_assessor_scope')->whereIn('assessor_e_id', $possibleAssessorIds)->countAllResults() > 0;
                                     
-                                    $isAdmin = in_array($userStatus, ["superadmin", "admin", "manager"]);
+                                    $isAdmin = in_array($userStatus, ["superadmin", "admin", "manager", "adminpersonnel", "managerpersonnel"]);
                                     $hasPaRole = isset($User2['admin_rloes_nanetype']) && str_contains($User2['admin_rloes_nanetype'], 'งานประเมิน pa');
 
                                     if ($evalRow || $hasScope || $isAdmin || $hasPaRole) {
@@ -343,6 +353,8 @@ class ConLogin extends BaseController
                     $newdata = [
                         'username'  => $loggedInUsername,
                         'id'        => $loggedInId,
+                        'pers_id'   => $loggedInId,
+                        'email'     => $evaluator['e_Username'] ?? ($personnelUser['pers_username'] ?? ''),
                         'img'       => (isset($user['pers_img']) ? $user['pers_img'] : ''),
                         'fname'     => (isset($user['pers_firstname']) ? $user['pers_firstname'] : (isset($user['e_first_name']) ? $user['e_first_name'] : '')),
                         'lname'     => (isset($user['pers_lastname']) ? $user['pers_lastname'] : (isset($user['e_last_name']) ? $user['e_last_name'] : '')),
