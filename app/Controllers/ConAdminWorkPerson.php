@@ -302,7 +302,7 @@ class ConAdminWorkPerson extends BaseController
             'pers_learning' => $isTeacher ? ($this->request->getVar('pers_learning') ?? "") : "",
             'pers_academic' => ($isTeacher || $isExecutive) ? ($this->request->getVar('pers_academic') ?? "") : "",
             'pers_groupleade' => $isTeacher ? ($this->request->getVar('pers_groupleade') ?? "") : "",
-            'pers_faction' => ($position == 'posi_002') ? $factionStr : "",
+            'pers_faction' => $factionStr,
             'pers_workother_id' => (!$isTeacher && !$isExecutive) ? $workother_id : "",
             'pers_dataUpdate' => date('Y-m-d H:i:s'),
             'pers_userEdit' => $session->get('id') ?? ""

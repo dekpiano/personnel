@@ -374,7 +374,7 @@ function adjustFieldsByPosition(positionId) {
     $("#show_learning").hide();
     $("#show_academic").hide();
     $("#show_groupleade").hide();
-    $("#show_faction").hide();
+    $("#show_faction").show();
     $("#show_position").hide();
     return;
   }
@@ -383,7 +383,7 @@ function adjustFieldsByPosition(positionId) {
     $("#show_academic").show();
     $("#show_learning").hide();
     $("#show_groupleade").hide();
-    $("#show_faction").hide();
+    $("#show_faction").show();
     $("#show_position").hide();
   } else if (positionId === "posi_002") { // รอง ผอ.
     $("#show_academic").show();
@@ -395,14 +395,14 @@ function adjustFieldsByPosition(positionId) {
     $("#show_learning").show();
     $("#show_academic").show();
     $("#show_groupleade").show();
-    $("#show_faction").hide();
+    $("#show_faction").show();
     $("#show_position").hide();
   } else { // Support / Other positions (posi_007+)
     $("#show_position").show();
     $("#show_learning").hide();
     $("#show_academic").hide();
     $("#show_groupleade").hide();
-    $("#show_faction").hide();
+    $("#show_faction").show();
   }
 }
 

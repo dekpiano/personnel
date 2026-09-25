@@ -206,7 +206,7 @@
                 <label for="pers_groupleade">หัวหน้า/รองหัวหน้า</label>
             </div>
         </div>
-        <div class="col-md-4" style="display: <?= $isDeputy ? 'block' : 'none' ?>" id="show_faction">
+        <div class="col-md-4" style="display: block" id="show_faction">
             <?php 
             $factions = array('กลุ่มบริหารวิชาการ', 'กลุ่มบริหารงบประมาณ', 'กลุ่มบริหารงานบุคคล', 'กลุ่มบริหารทั่วไป'); 
             $selectedFactions = isset($Pers->pers_faction) ? explode(',', $Pers->pers_faction) : [];
