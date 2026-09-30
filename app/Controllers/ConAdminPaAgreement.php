@@ -356,10 +356,30 @@ class ConAdminPaAgreement extends BaseController
     {
         $teacherId = $this->request->getPost('teacher_id');
         $year = $this->request->getPost('pa_year');
-        $filename = $this->request->getPost('uploaded_pa1_filename');
+        $filename = $this->request->getPost('uploaded_filename');
+        $fileType = $this->request->getPost('file_type'); // pa1, lesson_plan, presentation
+        $presentationLink = $this->request->getPost('presentation_link');
 
-        if (empty($teacherId) || empty($year) || empty($filename)) {
+        if (empty($teacherId) || empty($year) || empty($fileType)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'ข้อมูลไม่ครบถ้วน กรุณาลองใหม่อีกครั้ง']);
+        }
+
+        if ($fileType !== 'presentation' && empty($filename)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'กรุณาอัปโหลดไฟล์']);
+        }
+        if ($fileType === 'presentation' && empty($filename) && empty($presentationLink)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'กรุณาอัปโหลดไฟล์ หรือระบุลิงก์ผลงาน']);
+        }
+
+        $column = '';
+        if ($fileType === 'pa1') {
+            $column = 'pa_file_pa1';
+        } elseif ($fileType === 'lesson_plan') {
+            $column = 'pa_file_lesson_plan';
+        } elseif ($fileType === 'presentation') {
+            $column = 'pa_file_presentation';
+        } else {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ประเภทไฟล์ไม่ถูกต้อง']);
         }
 
         $existing = $this->db->table('tb_teacher_pa_agreement')
@@ -367,21 +387,23 @@ class ConAdminPaAgreement extends BaseController
             ->where('pa_year', $year)
             ->get()->getRowArray();
 
+        $updateData = ['pa_updated_at' => date('Y-m-d H:i:s')];
+        if (!empty($filename)) {
+            $updateData[$column] = $filename;
+        }
+        if ($fileType === 'presentation' && isset($presentationLink)) {
+            $updateData['pa_presentation_link'] = $presentationLink;
+        }
+
         if ($existing) {
             $this->db->table('tb_teacher_pa_agreement')
                 ->where('pa_id', $existing['pa_id'])
-                ->update([
-                    'pa_file_pa1'   => $filename,
-                    'pa_updated_at' => date('Y-m-d H:i:s')
-                ]);
+                ->update($updateData);
         } else {
-            $this->db->table('tb_teacher_pa_agreement')->insert([
-                'pa_teacher_id' => $teacherId,
-                'pa_year'       => $year,
-                'pa_file_pa1'   => $filename,
-                'pa_created_at' => date('Y-m-d H:i:s'),
-                'pa_updated_at' => date('Y-m-d H:i:s')
-            ]);
+            $updateData['pa_teacher_id'] = $teacherId;
+            $updateData['pa_year'] = $year;
+            $updateData['pa_created_at'] = date('Y-m-d H:i:s');
+            $this->db->table('tb_teacher_pa_agreement')->insert($updateData);
         }
 
         return $this->response->setJSON([
@@ -398,6 +420,7 @@ class ConAdminPaAgreement extends BaseController
         $paId = $this->request->getPost('pa_id');
         $teacherId = $this->request->getPost('teacher_id');
         $year = $this->request->getPost('pa_year');
+        $fileType = $this->request->getPost('file_type') ?: 'all'; // pa1, lesson_plan, presentation, all
 
         $builder = $this->db->table('tb_teacher_pa_agreement');
         if (!empty($paId)) {
@@ -413,17 +436,27 @@ class ConAdminPaAgreement extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลไฟล์ในระบบ']);
         }
 
-        // Optionally send delete request to remote server
-        if (!empty($row['pa_file_pa1'])) {
+        $filesToDelete = [];
+        if ($fileType === 'all' || $fileType === 'pa1') {
+            if (!empty($row['pa_file_pa1'])) $filesToDelete['pa1'] = $row['pa_file_pa1'];
+        }
+        if ($fileType === 'all' || $fileType === 'lesson_plan') {
+            if (!empty($row['pa_file_lesson_plan'])) $filesToDelete['lesson_plan'] = $row['pa_file_lesson_plan'];
+        }
+        if ($fileType === 'all' || $fileType === 'presentation') {
+            if (!empty($row['pa_file_presentation'])) $filesToDelete['presentation'] = $row['pa_file_presentation'];
+        }
+
+        foreach ($filesToDelete as $type => $filename) {
             try {
                 $client = \Config\Services::curlrequest();
                 $deleteUrl = env('upload.server.delete.url') ?: 'https://skj.nsnpao.go.th/delete.php';
-                $targetPath = 'personnel/teacher/pa_agreement/' . $row['pa_year'] . '/pa1';
+                $targetPath = 'personnel/teacher/pa_agreement/' . $row['pa_year'] . '/' . $type;
                 
                 $client->post($deleteUrl, [
                     'json' => [
                         'path'  => $targetPath,
-                        'files' => [$row['pa_file_pa1']]
+                        'files' => [$filename]
                     ],
                     'headers' => [
                         'Content-Type' => 'application/json',
@@ -432,23 +465,33 @@ class ConAdminPaAgreement extends BaseController
                     'http_errors' => false
                 ]);
             } catch (\Exception $e) {
-                // Ignore remote delete error to allow db update
+                // Ignore remote delete error
             }
         }
 
-        // If no other data, delete record or update pa_file_pa1 to null
-        if (empty($row['pa_presentation_link']) && empty($row['pa_file_lesson_plan'])) {
+        if ($fileType === 'all') {
             $this->db->table('tb_teacher_pa_agreement')->where('pa_id', $row['pa_id'])->delete();
         } else {
-            $this->db->table('tb_teacher_pa_agreement')->where('pa_id', $row['pa_id'])->update([
-                'pa_file_pa1'   => null,
-                'pa_updated_at' => date('Y-m-d H:i:s')
-            ]);
+            $updateData = ['pa_updated_at' => date('Y-m-d H:i:s')];
+            if ($fileType === 'pa1') $updateData['pa_file_pa1'] = null;
+            if ($fileType === 'lesson_plan') $updateData['pa_file_lesson_plan'] = null;
+            if ($fileType === 'presentation') {
+                $updateData['pa_file_presentation'] = null;
+                $updateData['pa_presentation_link'] = null;
+            }
+            
+            $this->db->table('tb_teacher_pa_agreement')->where('pa_id', $row['pa_id'])->update($updateData);
+
+            // Check if record is empty
+            $checkRow = $this->db->table('tb_teacher_pa_agreement')->where('pa_id', $row['pa_id'])->get()->getRowArray();
+            if (empty($checkRow['pa_file_pa1']) && empty($checkRow['pa_file_lesson_plan']) && empty($checkRow['pa_file_presentation']) && empty($checkRow['pa_presentation_link'])) {
+                $this->db->table('tb_teacher_pa_agreement')->where('pa_id', $row['pa_id'])->delete();
+            }
         }
 
         return $this->response->setJSON([
             'status'  => 'success',
-            'message' => 'ลบไฟล์ข้อตกลง PA เรียบร้อยแล้ว'
+            'message' => 'ลบไฟล์เรียบร้อยแล้ว'
         ]);
     }
 
@@ -462,52 +505,35 @@ class ConAdminPaAgreement extends BaseController
         try {
             $this->ensureTableExists();
 
-            // 1. Get all PA files currently recorded in DB for this year
-            $usedFilesRows = $this->db->table('tb_teacher_pa_agreement')
-                ->select('pa_file_pa1')
-                ->where('pa_year', $year)
-                ->where('pa_file_pa1 IS NOT NULL')
-                ->where('pa_file_pa1 !=', '')
-                ->get()
-                ->getResultArray();
+            $folders = [
+                'pa1' => 'pa_file_pa1',
+                'lesson_plan' => 'pa_file_lesson_plan',
+                'presentation' => 'pa_file_presentation'
+            ];
 
-            $usedFiles = array_filter(array_column($usedFilesRows, 'pa_file_pa1'));
-
+            $totalDeletedCount = 0;
             $client = \Config\Services::curlrequest();
             $deleteUrl = env('upload.server.delete.url') ?: 'https://skj.nsnpao.go.th/delete.php';
             $token = env('upload.server.token') ?: 'Dekpiano2025!!';
-            $targetPath = 'personnel/teacher/pa_agreement/' . $year . '/pa1';
 
-            // 2. Ask remote server to list all existing files in this year's folder
-            $scanRes = $client->post($deleteUrl, [
-                'json' => [
-                    'action' => 'scan_files',
-                    'path'   => $targetPath
-                ],
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'X-Auth-Token' => $token
-                ],
-                'http_errors' => false
-            ]);
+            foreach ($folders as $folder => $column) {
+                // 1. Get all files currently recorded in DB for this year and folder
+                $usedFilesRows = $this->db->table('tb_teacher_pa_agreement')
+                    ->select($column)
+                    ->where('pa_year', $year)
+                    ->where($column . ' IS NOT NULL')
+                    ->where($column . ' !=', '')
+                    ->get()
+                    ->getResultArray();
 
-            $scanData = json_decode($scanRes->getBody(), true);
-            $serverFiles = $scanData['files'] ?? [];
+                $usedFiles = array_filter(array_column($usedFilesRows, $column));
+                $targetPath = 'personnel/teacher/pa_agreement/' . $year . '/' . $folder;
 
-            // 3. Find orphan files (files on server that are NOT in DB)
-            $orphanFiles = [];
-            foreach ($serverFiles as $sFile) {
-                if (!in_array($sFile, $usedFiles)) {
-                    $orphanFiles[] = $sFile;
-                }
-            }
-
-            $deletedCount = 0;
-            if (!empty($orphanFiles)) {
-                $deleteFilesRes = $client->post($deleteUrl, [
+                // 2. Ask remote server to list all existing files in this year's folder
+                $scanRes = $client->post($deleteUrl, [
                     'json' => [
-                        'path'  => $targetPath,
-                        'files' => $orphanFiles
+                        'action' => 'scan_files',
+                        'path'   => $targetPath
                     ],
                     'headers' => [
                         'Content-Type' => 'application/json',
@@ -515,8 +541,33 @@ class ConAdminPaAgreement extends BaseController
                     ],
                     'http_errors' => false
                 ]);
-                $delData = json_decode($deleteFilesRes->getBody(), true);
-                $deletedCount = count($delData['deleted'] ?? $orphanFiles);
+
+                $scanData = json_decode($scanRes->getBody(), true);
+                $serverFiles = $scanData['files'] ?? [];
+
+                // 3. Find orphan files
+                $orphanFiles = [];
+                foreach ($serverFiles as $sFile) {
+                    if (!in_array($sFile, $usedFiles)) {
+                        $orphanFiles[] = $sFile;
+                    }
+                }
+
+                if (!empty($orphanFiles)) {
+                    $deleteFilesRes = $client->post($deleteUrl, [
+                        'json' => [
+                            'path'  => $targetPath,
+                            'files' => $orphanFiles
+                        ],
+                        'headers' => [
+                            'Content-Type' => 'application/json',
+                            'X-Auth-Token' => $token
+                        ],
+                        'http_errors' => false
+                    ]);
+                    $delData = json_decode($deleteFilesRes->getBody(), true);
+                    $totalDeletedCount += count($delData['deleted'] ?? $orphanFiles);
+                }
             }
 
             // 4. Also clean temporary chunks
@@ -532,13 +583,13 @@ class ConAdminPaAgreement extends BaseController
                 'http_errors' => false
             ]);
 
-            $msg = $deletedCount > 0 
-                ? "ล้างไฟล์ขยะที่ไม่พบในฐานข้อมูลสำเร็จ ({$deletedCount} ไฟล์)" 
+            $msg = $totalDeletedCount > 0 
+                ? "ล้างไฟล์ขยะที่ไม่พบในฐานข้อมูลสำเร็จ ({$totalDeletedCount} ไฟล์)" 
                 : "ไม่พบไฟล์ขยะตกค้างในระบบ (ข้อมูลตรงกับฐานข้อมูลแล้ว)";
 
             return $this->response->setJSON([
                 'status'        => 'success',
-                'deleted_count' => $deletedCount,
+                'deleted_count' => $totalDeletedCount,
                 'message'       => $msg
             ]);
         } catch (\Exception $e) {

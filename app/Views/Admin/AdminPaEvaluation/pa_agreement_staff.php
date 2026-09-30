@@ -809,38 +809,57 @@
                                                 </span>
                                             <?php endif; ?>
                                         </td>
-                                        <!-- จัดการอัปโหลดไฟล์ PA1 -->
+                                        <!-- จัดการไฟล์ -->
                                         <td class="text-center pe-4">
-                                            <div class="d-flex justify-content-center align-items-center gap-1">
-                                                <?php if ($hasPa1): ?>
-                                                    <button type="button" 
-                                                            class="btn btn-action-round bg-label-info text-info btn-open-upload-modal" 
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bx bx-cog me-1"></i> จัดการไฟล์
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm" style="border-radius: 12px; font-size: 0.85rem; min-width: 250px;">
+                                                    <li><h6 class="dropdown-header fw-bold text-primary">อัปโหลดไฟล์</h6></li>
+                                                    <li>
+                                                        <a class="dropdown-item btn-open-upload-modal py-2" href="javascript:void(0);" 
                                                             data-teacher-id="<?= esc($t['pers_id']) ?>" 
                                                             data-teacher-name="<?= esc($fullName) ?>" 
-                                                            data-has-file="1" 
-                                                            data-file-name="<?= esc($pa1Name) ?>" 
-                                                            data-bs-toggle="tooltip"
-                                                            title="อัปโหลดไฟล์ PA1 ใหม่แทนที่">
-                                                        <i class="bx bx-upload"></i>
-                                                    </button>
-                                                    <button type="button" 
-                                                            class="btn btn-action-round bg-label-danger text-danger btn-delete-pa" 
+                                                            data-file-type="presentation"
+                                                            data-has-file="<?= $hasPresFile ? '1' : '0' ?>"
+                                                            data-file-name="<?= esc($presFileName) ?>"
+                                                            data-pres-link="<?= esc($rawPresLink) ?>">
+                                                            <i class="bx bx-slideshow me-2 text-rose"></i> 1. สื่อนำเสนอ (ไฟล์ / ลิงก์)
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item btn-open-upload-modal py-2" href="javascript:void(0);" 
+                                                            data-teacher-id="<?= esc($t['pers_id']) ?>" 
+                                                            data-teacher-name="<?= esc($fullName) ?>" 
+                                                            data-file-type="lesson_plan"
+                                                            data-has-file="<?= $hasPlan ? '1' : '0' ?>"
+                                                            data-file-name="<?= esc($planName) ?>">
+                                                            <i class="bx bx-book-open me-2 text-success"></i> 2. แผนการจัดการเรียนรู้ (PDF)
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item btn-open-upload-modal py-2" href="javascript:void(0);" 
+                                                            data-teacher-id="<?= esc($t['pers_id']) ?>" 
+                                                            data-teacher-name="<?= esc($fullName) ?>" 
+                                                            data-file-type="pa1"
+                                                            data-has-file="<?= $hasPa1 ? '1' : '0' ?>"
+                                                            data-file-name="<?= esc($pa1Name) ?>">
+                                                            <i class="bx bxs-file-pdf me-2 text-primary"></i> 3. ข้อตกลง PA1 (PDF)
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header fw-bold text-danger">ลบข้อมูล</h6></li>
+                                                    <li>
+                                                        <a class="dropdown-item btn-delete-pa text-danger py-2" href="javascript:void(0);" 
                                                             data-pa-id="<?= esc($paId) ?>" 
                                                             data-teacher-id="<?= esc($t['pers_id']) ?>" 
-                                                            data-teacher-name="<?= esc($fullName) ?>" 
-                                                            data-bs-toggle="tooltip"
-                                                            title="ลบไฟล์ PA1">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
-                                                <?php else: ?>
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-primary rounded-pill px-3 py-1 btn-open-upload-modal shadow-sm fw-bold" 
-                                                            data-teacher-id="<?= esc($t['pers_id']) ?>" 
-                                                            data-teacher-name="<?= esc($fullName) ?>" 
-                                                            data-has-file="0">
-                                                        <i class="bx bx-cloud-upload me-1"></i> อัปโหลด
-                                                    </button>
-                                                <?php endif; ?>
+                                                            data-teacher-name="<?= esc($fullName) ?>"
+                                                            data-file-type="all">
+                                                            <i class="bx bx-trash me-2"></i> ลบข้อมูลการส่งงานทั้งหมด
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>
@@ -985,6 +1004,11 @@
                     </div>
                 </div>
 
+                <div id="presentationLinkContainer" class="d-none mt-3 border-top pt-3">
+                    <label class="form-label fw-bold text-dark small"><i class="bx bx-link me-1"></i> หรือแนบเป็นลิงก์ผลงาน (เช่น Canva, Google Drive)</label>
+                    <input type="url" class="form-control" id="modalPresentationLink" placeholder="https://...">
+                </div>
+
                 <div class="progress mt-3 d-none" id="modalProgress" style="height: 10px; border-radius: 8px;">
                     <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated fw-bold num-font" role="progressbar" style="width: 0%; font-size: 0.7rem;"></div>
                 </div>
@@ -1123,6 +1147,7 @@
         const year = '<?= $fiscal_year ?>';
         const CHUNK_SIZE = 512 * 1024; // 512KB per chunk
         let currentTargetTeacherId = null;
+        let currentFileType = 'pa1';
         let selectedFile = null;
 
         // Animated Counters
@@ -1296,8 +1321,49 @@
             currentTargetTeacherId = $(this).data('teacher-id');
             const teacherName = $(this).data('teacher-name');
             const hasFile = $(this).data('has-file');
+            currentFileType = $(this).data('file-type') || 'pa1';
+            const presLink = $(this).data('pres-link') || '';
 
             $('#modalTeacherName').text(teacherName);
+            
+            if (currentFileType === 'presentation') {
+                $('#presentationLinkContainer').removeClass('d-none');
+                $('#modalPresentationLink').val(presLink);
+                if (presLink) {
+                    $('#modalSubmitBtn').prop('disabled', false);
+                }
+            } else {
+                $('#presentationLinkContainer').addClass('d-none');
+                $('#modalPresentationLink').val('');
+            }
+            
+            let titleText = '';
+            let iconClass = '';
+            let fileAccept = '.pdf';
+            let fileDesc = 'ลากและวางไฟล์ PDF ที่นี่';
+            
+            if (currentFileType === 'presentation') {
+                titleText = 'อัปโหลดสื่อนำเสนอผลงาน';
+                iconClass = 'bx bx-slideshow text-warning';
+                fileAccept = '.pdf,.ppt,.pptx,.mp4';
+                fileDesc = 'ลากและวางไฟล์ PDF, PPTX, MP4 ที่นี่';
+            } else if (currentFileType === 'lesson_plan') {
+                titleText = 'อัปโหลดแผนการจัดการเรียนรู้';
+                iconClass = 'bx bx-book-open text-warning';
+                fileAccept = '.pdf';
+                fileDesc = 'ลากและวางไฟล์ PDF แผนการสอนที่นี่';
+            } else {
+                titleText = 'อัปโหลดไฟล์ข้อตกลง PA (PA1)';
+                iconClass = 'bx bx-cloud-upload text-warning';
+                fileAccept = '.pdf';
+                fileDesc = 'ลากและวางไฟล์ PDF ข้อตกลง PA ที่นี่';
+            }
+            
+            $('#uploadModalTitle').html(`<i class="${iconClass} fs-4"></i> ${titleText}`);
+            $('#modalFileInput').attr('accept', fileAccept);
+            $('#modalDropzone .fw-bold').text(fileDesc);
+            $('#modalDropzone .x-small').text(currentFileType === 'presentation' ? 'หรือคลิกเพื่อเลือกไฟล์ (สูงสุด 200MB)' : 'หรือคลิกเพื่อเลือกไฟล์ (PDF สูงสุด 20MB)');
+
             if (hasFile == 1) {
                 $('#existingFileAlert').removeClass('d-none');
             } else {
@@ -1314,8 +1380,22 @@
             $('#modalFileIndicator').addClass('d-none');
             $('#modalDropzone').show();
             $('#modalProgress').addClass('d-none').find('.progress-bar').css('width', '0%').text('0%');
-            $('#modalSubmitBtn').prop('disabled', true).html('<i class="bx bx-save me-1"></i> บันทึกไฟล์ PA');
+            
+            // if we are opening presentation and it already has a link, keep submit button enabled.
+            if (currentFileType === 'presentation' && $('#modalPresentationLink').val().trim() !== '') {
+                $('#modalSubmitBtn').prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูล');
+            } else {
+                $('#modalSubmitBtn').prop('disabled', true).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูล');
+            }
         }
+
+        $('#modalPresentationLink').on('input', function() {
+            if ($(this).val().trim() !== '' || selectedFile) {
+                $('#modalSubmitBtn').prop('disabled', false);
+            } else {
+                $('#modalSubmitBtn').prop('disabled', true);
+            }
+        });
 
         // Dropzone & File Selection
         const dropzone = $('#modalDropzone');
@@ -1340,12 +1420,23 @@
         });
 
         function handleSelectedFile(file) {
-            if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
-                Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกเฉพาะไฟล์ PDF เท่านั้น', 'warning');
+            let validExt = false;
+            let ext = file.name.split('.').pop().toLowerCase();
+            
+            if (currentFileType === 'presentation') {
+                if (['pdf', 'ppt', 'pptx', 'mp4'].includes(ext)) validExt = true;
+            } else {
+                if (ext === 'pdf') validExt = true;
+            }
+
+            if (!validExt) {
+                Swal.fire('ข้อผิดพลาด', 'ประเภทไฟล์ไม่รองรับ', 'warning');
                 return;
             }
-            if (file.size > 20 * 1024 * 1024) {
-                Swal.fire('ข้อผิดพลาด', 'ขนาดไฟล์ต้องไม่เกิน 20MB', 'warning');
+            
+            const maxSize = currentFileType === 'presentation' ? 200 : 20;
+            if (file.size > maxSize * 1024 * 1024) {
+                Swal.fire('ข้อผิดพลาด', `ขนาดไฟล์ต้องไม่เกิน ${maxSize}MB`, 'warning');
                 return;
             }
 
@@ -1363,8 +1454,10 @@
         async function uploadChunked(file, teacherId) {
             const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             const timestamp = Math.floor(Date.now() / 1000);
-            const targetFilename = `PA_${year}_${teacherId}_${timestamp}.pdf`;
-            const targetPath = `personnel/teacher/pa_agreement/${year}/pa1`;
+            
+            let ext = file.name.split('.').pop().toLowerCase();
+            const targetFilename = `PA_${year}_${teacherId}_${currentFileType}_${timestamp}.${ext}`;
+            const targetPath = `personnel/teacher/pa_agreement/${year}/${currentFileType}`;
 
             $('#modalProgress').removeClass('d-none');
             const progressBar = $('#modalProgress').find('.progress-bar');
@@ -1409,13 +1502,18 @@
 
         // Submit Upload
         $('#modalSubmitBtn').on('click', async function() {
-            if (!selectedFile || !currentTargetTeacherId) return;
+            const linkVal = $('#modalPresentationLink').val()?.trim() || '';
+            if (!selectedFile && !linkVal && currentFileType === 'presentation') return;
+            if (!selectedFile && currentFileType !== 'presentation') return;
 
             const btn = $(this);
-            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> กำลังอัปโหลด...');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> กำลังบันทึก...');
 
             try {
-                const uploadedFilename = await uploadChunked(selectedFile, currentTargetTeacherId);
+                let uploadedFilename = '';
+                if (selectedFile) {
+                    uploadedFilename = await uploadChunked(selectedFile, currentTargetTeacherId);
+                }
 
                 $.ajax({
                     url: '<?= base_url('Admin/PaAgreement/save-file') ?>',
@@ -1423,7 +1521,9 @@
                     data: {
                         teacher_id: currentTargetTeacherId,
                         pa_year: year,
-                        uploaded_pa1_filename: uploadedFilename
+                        uploaded_filename: uploadedFilename,
+                        file_type: currentFileType,
+                        presentation_link: linkVal
                     },
                     dataType: 'json',
                     success: function(res) {
@@ -1431,17 +1531,17 @@
                             Swal.fire({ icon: 'success', title: 'สำเร็จ', text: res.message, timer: 1500, showConfirmButton: false })
                                 .then(() => location.reload());
                         } else {
-                            btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกไฟล์ PA');
+                            btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูล');
                             Swal.fire('ผิดพลาด', res.message, 'error');
                         }
                     },
                     error: function() {
-                        btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกไฟล์ PA');
+                        btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูล');
                         Swal.fire('ผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
                     }
                 });
             } catch (err) {
-                btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกไฟล์ PA');
+                btn.prop('disabled', false).html('<i class="bx bx-save me-1"></i> บันทึกข้อมูล');
                 $('#modalProgress').addClass('d-none');
                 Swal.fire('ผิดพลาด', err.message, 'error');
             }
@@ -1452,10 +1552,11 @@
             const paId = $(this).data('pa-id');
             const teacherId = $(this).data('teacher-id');
             const teacherName = $(this).data('teacher-name');
+            const fileType = $(this).data('file-type') || 'all';
 
             Swal.fire({
-                title: 'ยืนยันการลบไฟล์ PA?',
-                text: `คุณต้องการลบไฟล์บันทึกข้อตกลง PA ของ "${teacherName}" ประจำปีงบประมาณ พ.ศ. ${year} ใช่หรือไม่?`,
+                title: 'ยืนยันการลบ?',
+                text: `คุณต้องการลบข้อมูลการส่งงานทั้งหมดของ "${teacherName}" ประจำปีงบประมาณ พ.ศ. ${year} ใช่หรือไม่?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -1467,7 +1568,7 @@
                     $.ajax({
                         url: '<?= base_url('Admin/PaAgreement/delete-file') ?>',
                         type: 'POST',
-                        data: { pa_id: paId, teacher_id: teacherId, pa_year: year },
+                        data: { pa_id: paId, teacher_id: teacherId, pa_year: year, file_type: fileType },
                         dataType: 'json',
                         success: function(res) {
                             if (res.status === 'success') {
