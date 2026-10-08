@@ -153,22 +153,42 @@ class ConLogin extends BaseController
                                     
                                     $evalQuery = $DB_PA->table('tb_evaluators')->groupStart();
                                     $evalQuery->where('e_Username', $email);
+                                    $emailPrefix = explode('@', $email)[0];
+                                    if (!empty($emailPrefix)) {
+                                        $evalQuery->orWhere('e_Username', $emailPrefix);
+                                    }
                                     if (!empty($User['pers_username'])) {
                                         $evalQuery->orWhere('e_Username', $User['pers_username']);
                                     }
                                     if (!empty($User['pers_id'])) {
-                                        $evalQuery->orWhere('e_id', $User['pers_id']);
+                                        $evalQuery->orWhere('e_id', $User['pers_id'])
+                                                  ->orWhere('e_id', 'e_' . $User['pers_id']);
+                                    }
+                                    if (!empty($User['pers_firstname']) && !empty($User['pers_lastname'])) {
+                                        $evalQuery->orGroupStart()
+                                            ->where('e_first_name', trim($User['pers_firstname']))
+                                            ->where('e_last_name', trim($User['pers_lastname']))
+                                        ->groupEnd();
                                     }
                                     $evalQuery->groupEnd();
-                                    $evalRow = $evalQuery->get()->getRowArray();
+                                    $matchedEvalRows = $evalQuery->get()->getResultArray();
+                                    $matchedEIds = array_column($matchedEvalRows, 'e_id');
 
-                                    $possibleAssessorIds = array_filter([$User['pers_id'], $evalRow['e_id'] ?? null]);
+                                    $possibleAssessorIds = array_unique(array_filter(array_merge(
+                                        [$User['pers_id'] ?? null, !empty($User['pers_id']) ? 'e_' . $User['pers_id'] : null],
+                                        $matchedEIds
+                                    )));
                                     $hasScope = !empty($possibleAssessorIds) && $DB_PA->table('tb_assessor_scope')->whereIn('assessor_e_id', $possibleAssessorIds)->countAllResults() > 0;
                                     
-                                    $isAdmin = in_array($userStatus, ["superadmin", "admin", "manager", "adminpersonnel", "managerpersonnel"]);
-                                    $hasPaRole = isset($User2['admin_rloes_nanetype']) && str_contains($User2['admin_rloes_nanetype'], 'งานประเมิน pa');
+                                    $isAdmin = in_array(strtolower((string)$userStatus), ["superadmin", "admin", "manager", "adminpersonnel", "managerpersonnel", "administrator"]);
+                                    $hasPaRole = isset($User2['admin_rloes_nanetype']) && (
+                                        stripos($User2['admin_rloes_nanetype'], 'งานประเมิน') !== false
+                                        || stripos($User2['admin_rloes_nanetype'], 'admin') !== false
+                                        || stripos($User2['admin_rloes_nanetype'], 'superadmin') !== false
+                                        || stripos($User2['admin_rloes_nanetype'], 'ผู้ดูแลระบบ') !== false
+                                    );
 
-                                    if ($evalRow || $hasScope || $isAdmin || $hasPaRole) {
+                                    if (!empty($matchedEvalRows) || $hasScope || $isAdmin || $hasPaRole) {
                                         if (filter_var($ret, FILTER_VALIDATE_URL)) {
                                             return redirect()->to($ret);
                                         }
@@ -345,7 +365,15 @@ class ConLogin extends BaseController
                 $hasRole = false;
                 if ($role === 'assessor' && $loggedInStatus === 'assessor') {
                     $hasRole = true;
-                } elseif ($role === 'admin' && isset($userRoles['admin_rloes_nanetype']) && str_contains($userRoles['admin_rloes_nanetype'], 'งานประเมิน pa')) {
+                } elseif ($role === 'admin' && (
+                    in_array(strtolower((string)$loggedInStatus), ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel', 'administrator'])
+                    || (isset($userRoles['admin_rloes_nanetype']) && (
+                        stripos($userRoles['admin_rloes_nanetype'], 'งานประเมิน') !== false
+                        || stripos($userRoles['admin_rloes_nanetype'], 'admin') !== false
+                        || stripos($userRoles['admin_rloes_nanetype'], 'superadmin') !== false
+                        || stripos($userRoles['admin_rloes_nanetype'], 'ผู้ดูแลระบบ') !== false
+                    ))
+                )) {
                     $hasRole = true;
                 }
 

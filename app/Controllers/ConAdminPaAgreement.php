@@ -130,6 +130,15 @@ class ConAdminPaAgreement extends BaseController
                 $availableYears[] = (int)$y['pa_year'];
             }
         }
+        $evaYearsInDb = $this->db->table('tb_teacher_evaluation')
+            ->select('eva_year')
+            ->distinct()
+            ->get()->getResultArray();
+        foreach ($evaYearsInDb as $y) {
+            if (!in_array((int)$y['eva_year'], $availableYears) && (int)$y['eva_year'] > 2500) {
+                $availableYears[] = (int)$y['eva_year'];
+            }
+        }
         rsort($availableYears);
 
         // Fetch Positions and Learning Groups for Filters
@@ -169,6 +178,37 @@ class ConAdminPaAgreement extends BaseController
         foreach ($paAgreements as $pa) {
             $paMap[$pa['pa_teacher_id']] = $pa;
         }
+
+        // Fallback: ดึงจาก tb_teacher_evaluation สำหรับคุณครูที่ยังไม่มีใน tb_teacher_pa_agreement
+        try {
+            $evaRows = $this->db->table('tb_teacher_evaluation')
+                ->groupStart()
+                    ->where('eva_year', $fiscalYear)
+                    ->orWhere('eva_year', (string)$fiscalYear)
+                ->groupEnd()
+                ->orderBy('eva_round', 'DESC')
+                ->get()->getResultArray();
+            foreach ($evaRows as $erow) {
+                $tId = $erow['eva_teacher_id'];
+                if (!isset($paMap[$tId]) && (!empty($erow['eva_file']) || !empty($erow['eva_canva_link']))) {
+                    $paMap[$tId] = [
+                        'pa_id' => 'eva_' . $erow['eva_id'],
+                        'pa_teacher_id' => $tId,
+                        'pa_year' => $erow['eva_year'],
+                        'pa_presentation_link' => $erow['eva_canva_link'] ?? '',
+                        'pa_file_presentation' => null,
+                        'pa_file_lesson_plan' => null,
+                        'pa_file_pa1' => $erow['eva_file'] ?? '',
+                        'pa_file_pa1_source' => 'evaluation',
+                        'pa_round' => $erow['eva_round'] ?? 1,
+                        'pa_status' => $erow['eva_status'] ?? 'submitted',
+                        'pa_comment' => $erow['eva_comment'] ?? '',
+                        'pa_created_at' => $erow['eva_created_at'] ?? null,
+                        'pa_updated_at' => $erow['eva_updated_at'] ?? null,
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {}
 
         // Stats Counter & Grouping by Learning Area
         $totalTeachers = count($teachers);
@@ -299,6 +339,7 @@ class ConAdminPaAgreement extends BaseController
         $data['has_pres_count'] = $hasPresCount;
         $data['has_plan_count'] = $hasPlanCount;
         $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement') ?: 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/';
+        $data['eva_upload_baseurl'] = env('upload.server.baseurl.evaluation') ?: 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/';
 
         return view('Admin/AdminPaEvaluation/pa_agreement_staff', $data);
     }

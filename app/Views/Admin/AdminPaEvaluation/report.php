@@ -395,7 +395,10 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light border-top p-3">
+            <div class="modal-footer bg-light border-top p-3 d-flex justify-content-between align-items-center">
+                <div id="modalFooterLeftAction">
+                    <!-- Left action button (Delete evaluation score) populated dynamically -->
+                </div>
                 <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ปิด</button>
             </div>
         </div>
@@ -454,9 +457,14 @@ $(document).ready(function() {
 
             const modalTitle = scoreModal.querySelector('.modal-title');
             const modalBody = scoreModal.querySelector('#scoreDetailsContainer');
+            const modalFooterLeft = scoreModal.querySelector('#modalFooterLeftAction');
 
             modalTitle.innerHTML = '<i class="bx bx-file-find fs-4"></i> ผลการประเมินของ ' + personName + ' <span class="badge bg-white text-primary ms-2">ผู้ประเมิน: ' + evaluatorName + '</span> <span class="badge bg-white text-dark ms-1">ปีการศึกษา พ.ศ. ' + fiscalYear + '</span>';
             modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted fw-bold">กำลังโหลดข้อมูลผลคะแนน...</p></div>';
+            
+            if (modalFooterLeft) {
+                modalFooterLeft.innerHTML = '<button type="button" class="btn btn-outline-danger btn-delete-evaluation-score rounded-pill fw-bold shadow-xs px-3" data-person-id="' + personId + '" data-evaluator-id="' + evaluatorId + '" data-person-name="' + personName + '" data-evaluator-name="' + evaluatorName + '" data-fiscal-year="' + fiscalYear + '"><i class="bx bx-trash me-1"></i> ลบคะแนนผลการประเมิน (ให้ประเมินใหม่)</button>';
+            }
 
             const url = `<?= site_url('Admin/PaEvaluation/Scores/') ?>${personId}/${evaluatorId}/${fiscalYear}`;
 
@@ -469,6 +477,12 @@ $(document).ready(function() {
                 })
                 .then(html => {
                     modalBody.innerHTML = html;
+                    const innerBtn = modalBody.querySelector('.btn-delete-evaluation-score');
+                    if (innerBtn && modalFooterLeft) {
+                        const esId = innerBtn.getAttribute('data-es-id') || '';
+                        const evId = innerBtn.getAttribute('data-ev-id') || '';
+                        modalFooterLeft.innerHTML = '<button type="button" class="btn btn-outline-danger btn-delete-evaluation-score rounded-pill fw-bold shadow-xs px-3" data-es-id="' + esId + '" data-ev-id="' + evId + '" data-person-id="' + personId + '" data-evaluator-id="' + evaluatorId + '" data-person-name="' + personName + '" data-evaluator-name="' + evaluatorName + '" data-fiscal-year="' + fiscalYear + '"><i class="bx bx-trash me-1"></i> ลบคะแนนผลการประเมิน (ให้ประเมินใหม่)</button>';
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching evaluation scores:', error);
@@ -476,6 +490,85 @@ $(document).ready(function() {
                 });
         });
     }
+
+    // Handle AJAX Delete Evaluation Score
+    $(document).on('click', '.btn-delete-evaluation-score', function(e) {
+        e.preventDefault();
+        const btn = $(this);
+        const esId = btn.data('es-id') || '';
+        const evId = btn.data('ev-id') || '';
+        const personId = btn.data('person-id');
+        const evaluatorId = btn.data('evaluator-id');
+        const personName = btn.data('person-name') || 'ครูผู้รับการประเมิน';
+        const evaluatorName = btn.data('evaluator-name') || 'กรรมการผู้ประเมิน';
+        const fiscalYear = btn.data('fiscal-year') || '';
+
+        Swal.fire({
+            title: 'ยืนยันลบคะแนนผลการประเมิน?',
+            html: `คุณต้องการลบผลคะแนนของ <b>${personName}</b><br>ที่ประเมินโดย <b>${evaluatorName}</b> ใช่หรือไม่?<br><div class="alert alert-warning border text-start mt-3 mb-0 p-2 small"><i class="bx bx-info-circle me-1"></i><b>ผลลัพธ์:</b> คะแนนชุดนี้จะถูกลบออกจากระบบ และกรรมการท่านนี้จะสามารถเข้าประเมินใหม่อีกครั้งได้ทันที</div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="bx bx-trash me-1"></i> ยืนยันลบคะแนน',
+            cancelButtonText: 'ยกเลิก',
+            focusCancel: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'กำลังลบคะแนน...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '<?= base_url('Admin/PaEvaluation/deleteScore') ?>',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        es_id: esId,
+                        ev_id: evId,
+                        person_id: personId,
+                        evaluator_id: evaluatorId,
+                        fiscal_year: fiscalYear
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            $('#evaluationScoreModal').modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ลบคะแนนสำเร็จ!',
+                                text: res.message || 'ลบคะแนนเรียบร้อยแล้ว กรรมการสามารถเข้าทำแบบประเมินใหม่ได้ทันที',
+                                confirmButtonText: 'ตกลง',
+                                confirmButtonColor: '#0284c7'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ไม่สามารถลบคะแนนได้',
+                                text: res.message || 'เกิดข้อผิดพลาดในการลบคะแนน',
+                                confirmButtonColor: '#dc2626'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, err) {
+                        console.error('Delete score error:', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+                            text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    }
+                });
+            }
+        });
+    });
 });
 </script>
 <?= $this->endSection() ?>

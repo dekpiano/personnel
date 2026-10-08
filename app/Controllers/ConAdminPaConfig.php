@@ -279,6 +279,13 @@ class ConAdminPaConfig extends BaseController
             }
         }
 
+        // Build alias map for evaluators sharing the same name/username
+        $evaluator_aliases = [];
+        foreach ($all_evaluators as $e) {
+            $eKey = trim($e['e_first_name']) . '_' . trim($e['e_last_name']);
+            $evaluator_aliases[$eKey][] = $e['e_id'];
+        }
+
         // 4. For each teacher, determine their assigned evaluators and their status
         $final_personnel_data = [];
         foreach ($personnel_with_names as $person) {
@@ -306,8 +313,6 @@ class ConAdminPaConfig extends BaseController
                         $is_match = true;
                     }
                 }
-                // หมายเหตุ: หาก scope_pers_id, scope_posi_id, scope_lear_id เป็น NULL ทั้งหมด 
-                // แสดงว่าผู้ประเมินยังไม่ได้ถูกผูกกับครูคนใด จึงไม่จับคู่ ($is_match = false)
 
                 if ($is_match && !empty($scope['assessor_e_id'])) {
                     $assigned_evaluator_ids[$scope['assessor_e_id']] = true;
@@ -317,9 +322,20 @@ class ConAdminPaConfig extends BaseController
             $person['evaluators_info'] = [];
             foreach (array_keys($assigned_evaluator_ids) as $e_id) {
                 if (isset($evaluators_map[$e_id])) {
-                    $has_evaluated = isset($submitted_evals[$person['pers_id']][$e_id]);
+                    $evObj = $evaluators_map[$e_id];
+                    $eKey = trim($evObj['e_first_name']) . '_' . trim($evObj['e_last_name']);
+                    $siblingIds = $evaluator_aliases[$eKey] ?? [$e_id];
+
+                    $has_evaluated = false;
+                    foreach ($siblingIds as $sId) {
+                        if (isset($submitted_evals[$person['pers_id']][$sId])) {
+                            $has_evaluated = true;
+                            break;
+                        }
+                    }
+
                     $person['evaluators_info'][] = [
-                        'name' => $evaluators_map[$e_id]['e_first_name'] . ' ' . $evaluators_map[$e_id]['e_last_name'],
+                        'name' => $evObj['e_first_name'] . ' ' . $evObj['e_last_name'],
                         'id' => $e_id,
                         'has_evaluated' => $has_evaluated
                     ];
@@ -434,14 +450,164 @@ class ConAdminPaConfig extends BaseController
             $calculatedScoresMap[$rubricItemId] = $calculatedScore;
         }
 
+        $personRow = $db_default->table('tb_personnel')->where('pers_id', $personId)->get()->getRowArray();
+        $evalRow = $db_pa_evaluation->table('tb_evaluators')->where('e_id', $evaluatorId)->get()->getRowArray();
+
+        $data['personId'] = $personId;
+        $data['evaluatorId'] = $evaluatorId;
+        $data['fiscal_year_be'] = $fiscal_year_be;
+        $data['personName'] = $personRow ? (($personRow['pers_prefix'] ?? '') . $personRow['pers_firstname'] . ' ' . $personRow['pers_lastname']) : 'บุคลากร';
+        $data['evaluatorName'] = $evalRow ? ($evalRow['e_first_name'] . ' ' . $evalRow['e_last_name']) : 'กรรมการผู้ประเมิน';
+
         $data['evaluation_data'] = [
             'rubric_items' => $rubricItems,
             'item_scores' => $itemScoresMap,
             'calculated_scores' => $calculatedScoresMap,
             'summary' => $evaluatorScoreSummary,
+            'person_id' => $personId,
+            'evaluator_id' => $evaluatorId,
+            'fiscal_year' => $fiscal_year_be,
+            'person_name' => $data['personName'],
+            'evaluator_name' => $data['evaluatorName'],
         ];
 
         return view('Admin/AdminPaEvaluation/score_details_modal', $data);
+    }
+
+    public function deleteEvaluationScore()
+    {
+        $session = session();
+        if (!$session->get('logged_in')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง'
+            ]);
+        }
+
+        $userStatus = strtolower((string)$session->get('status'));
+        $userRoles = (string)$session->get('rloes');
+        $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel']) 
+                          || str_contains($userRoles, 'งานประเมิน pa');
+
+        if (!$isSuperOrAdmin) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'คุณไม่มีสิทธิ์ในการลบผลการประเมินนี้'
+            ]);
+        }
+
+        $es_id = $this->request->getPost('es_id');
+        $ev_id = $this->request->getPost('ev_id');
+        $evaluatorId = $this->request->getPost('evaluator_id');
+        $personId = $this->request->getPost('person_id');
+        $fiscal_year = $this->request->getPost('fiscal_year');
+
+        $db_pa = \Config\Database::connect('pa_evaluation');
+
+        try {
+            $db_pa->transStart();
+
+            // 1. ตรวจสอบ score record ที่จะลบ (ค้นหาหลายระดับอย่างยืดหยุ่น)
+            $scoreRow = null;
+            if (!empty($es_id)) {
+                $scoreRow = $db_pa->table('tb_evaluator_scores')->where('es_id', $es_id)->get()->getRowArray();
+            }
+
+            if (!$scoreRow && !empty($ev_id) && !empty($evaluatorId)) {
+                $scoreRow = $db_pa->table('tb_evaluator_scores')->where('ev_id', $ev_id)->where('e_id', $evaluatorId)->get()->getRowArray();
+            }
+
+            // หากยังไม่พบ ให้ค้นหาจาก personId, fiscal_year, และ evaluatorId (รวมทั้ง alias ของ evaluator)
+            if (!$scoreRow && !empty($personId)) {
+                $fiscal_year_be = !empty($fiscal_year) ? (int)$fiscal_year : 2569;
+                $fiscal_year_ad = $fiscal_year_be - 543;
+
+                $evalRow = $db_pa->table('tb_evaluations')
+                                 ->where('t_id', $personId)
+                                 ->groupStart()
+                                     ->where('ev_fiscal_year', $fiscal_year_be)
+                                     ->orWhere('ev_fiscal_year', (string)$fiscal_year_be)
+                                     ->orWhere('ev_fiscal_year', $fiscal_year_ad)
+                                     ->orWhere('ev_fiscal_year', (string)$fiscal_year_ad)
+                                 ->groupEnd()
+                                 ->orderBy('ev_id', 'DESC')
+                                 ->get()->getRowArray();
+
+                if ($evalRow) {
+                    $targetEvId = $evalRow['ev_id'];
+                    
+                    // รวบรวม e_id ที่เป็นไปได้ทั้งหมดของ evaluator ท่านนี้
+                    $possibleEIds = array_filter([$evaluatorId]);
+                    if (!empty($evaluatorId)) {
+                        $targetEval = $db_pa->table('tb_evaluators')->where('e_id', $evaluatorId)->get()->getRowArray();
+                        if ($targetEval) {
+                            $siblings = $db_pa->table('tb_evaluators')
+                                              ->where('e_first_name', $targetEval['e_first_name'])
+                                              ->where('e_last_name', $targetEval['e_last_name'])
+                                              ->get()->getResultArray();
+                            foreach ($siblings as $sib) {
+                                $possibleEIds[] = $sib['e_id'];
+                            }
+                        }
+                    }
+                    $possibleEIds = array_values(array_unique(array_filter($possibleEIds)));
+
+                    if (!empty($possibleEIds)) {
+                        $scoreRow = $db_pa->table('tb_evaluator_scores')
+                                          ->where('ev_id', $targetEvId)
+                                          ->whereIn('e_id', $possibleEIds)
+                                          ->get()->getRowArray();
+                    } else {
+                        $scoreRow = $db_pa->table('tb_evaluator_scores')
+                                          ->where('ev_id', $targetEvId)
+                                          ->get()->getRowArray();
+                    }
+                }
+            }
+
+            if (!$scoreRow) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'ไม่พบข้อมูลคะแนนการประเมินที่ต้องการลบ (อาจถูกลบไปแล้ว)'
+                ]);
+            }
+
+            $targetEsId = $scoreRow['es_id'];
+            $targetEvId = $scoreRow['ev_id'];
+
+            // 2. ลบ item scores
+            $db_pa->table('tb_item_scores')->where('es_id', $targetEsId)->delete();
+
+            // 3. ลบ evaluator score
+            $db_pa->table('tb_evaluator_scores')->where('es_id', $targetEsId)->delete();
+
+            // 4. ตรวจสอบว่ายังมี evaluator scores อื่นใน ev_id นี้หรือไม่
+            $remainingScoresCount = $db_pa->table('tb_evaluator_scores')->where('ev_id', $targetEvId)->countAllResults();
+            if ($remainingScoresCount === 0) {
+                $db_pa->table('tb_evaluations')->where('ev_id', $targetEvId)->delete();
+            }
+
+            $db_pa->transComplete();
+
+            if ($db_pa->transStatus() === false) {
+                throw new \Exception('เกิดข้อผิดพลาดระหว่างลบคะแนนในฐานข้อมูล');
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'ลบคะแนนผลการประเมินเรียบร้อยแล้ว กรรมการสามารถเข้าประเมินใหม่ได้ทันที',
+                'person_id' => $personId,
+                'evaluator_id' => $evaluatorId,
+                'fiscal_year' => $fiscal_year
+            ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', '[deleteEvaluationScore] ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function saveScope()
@@ -642,14 +808,25 @@ class ConAdminPaConfig extends BaseController
             $username = !empty($person['pers_username']) ? $person['pers_username'] : strtolower($person['pers_firstname']);
             $evaluatorsTable = $db_pa_evaluation->table('tb_evaluators');
 
-            // Check if evaluator account already exists in tb_evaluators
-            $existingEvaluator = $evaluatorsTable->where('e_Username', $username)->get()->getRowArray();
+            // Check if evaluator account already exists in tb_evaluators (by pers_id, username, email, or name)
+            $existingEvaluator = $evaluatorsTable
+                ->groupStart()
+                    ->where('e_id', $school_pers_id)
+                    ->orWhere('e_id', 'e_' . $school_pers_id)
+                    ->orWhere('e_Username', $username)
+                    ->orWhere('e_Username', $person['pers_username'] ?? '')
+                    ->orGroupStart()
+                        ->where('e_first_name', trim($person['pers_firstname']))
+                        ->where('e_last_name', trim($person['pers_lastname']))
+                    ->groupEnd()
+                ->groupEnd()
+                ->get()->getRowArray();
 
             if ($existingEvaluator) {
                 $e_id = $existingEvaluator['e_id'];
             } else {
                 // Create evaluator account from personnel info
-                $e_id = uniqid('e');
+                $e_id = 'e_' . $person['pers_id'];
                 $password = !empty($person['pers_password']) ? $person['pers_password'] : password_hash('123456', PASSWORD_DEFAULT);
                 if (strlen($password) < 40) {
                     $password = password_hash($password, PASSWORD_DEFAULT);

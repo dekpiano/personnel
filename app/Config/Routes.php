@@ -186,6 +186,7 @@ $routes->post('Admin/PaConfig/deleteRubricItem', 'ConAdminPaConfig::deleteRubric
 $routes->get('Admin/PaReport', 'ConAdminPaConfig::report');
 $routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2');
 $routes->get('Admin/PaEvaluation/Scores/(:segment)/(:segment)/(:segment)', 'ConAdminPaConfig::getScores/$1/$2/$3');
+$routes->post('Admin/PaEvaluation/deleteScore', 'ConAdminPaConfig::deleteEvaluationScore');
 $routes->get('Admin/TeacherEvaluation', 'ConAdminTeacherEvaluation::index');
 $routes->post('Admin/TeacherEvaluation/saveConfig', 'ConAdminTeacherEvaluation::saveConfig');
 

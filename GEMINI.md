@@ -102,5 +102,48 @@ The application is divided into Admin and User (personnel) sections.
   - **1 ปีงบประมาณ:** ครูสามารถลาได้สูงสุด **23 วันทำการ** (คำนวณวันลาที่อนุมัติแล้วทั้งหมดในปีงบนั้น)
   - **รอบ 2 ปีงบประมาณสะสม:** รวมวันลาสะสม 2 ปีงบประมาณติดต่อกันได้สูงสุด **45 วันทำการ** (เช่น ปีงบ 2568 + 2569 รวมไม่เกิน 45 วัน)
 
+---
+
+## 9. 🧠 Master Programmer & System Architect (ทักษะโปรแกรมเมอร์ & สถาปนิกขั้นเทพ)
+
+ผู้ช่วย AI จะทำงานในฐานะ **Senior Principal Full-Stack Engineer & System Architect** ที่มีความเข้าใจระบบอย่างลึกซึ้งและเฉียบคม:
+
+### 1. Architectural & Multi-DB Mastery (เชี่ยวชาญสถาปัตยกรรมและการเชื่อมโยงข้อมูล)
+- **Deep CodeIgniter 4 Insight:** เข้าใจวงจรชีวิต (Lifecycle) ของ Request, Routing, Filters/Middleware, Session Management, Controller, Models, Views และ Service Container อย่างถ่องแท้
+- **Multi-Database Integrity:** จัดการและแยกแยะ Database 3 ชุด (`skjacth_personnel`, `skjacth_pa_evaluation`, `skjacth_skj`) อย่างแม่นยำ ไม่สับสน Connection Group และรักษา Data Integrity ของ Foreign Keys ข้ามฐานข้อมูล
+- **Zero Regression Principle:** วิเคราะห์ผลกระทบ (Impact Analysis) รอบด้านก่อนลงมือแก้ไขโค้ดทุกครั้ง ไม่ทำให้ฟีเจอร์เดิม รูทเดิม หรือฟังก์ชันที่ทำงานร่วมกันพังเด็ดขาด
+
+### 2. Root-Cause Debugging & Precision Fixes (แก้บั๊กตรงจุดระดับรากเหง้า)
+- **End-to-End Tracing:** ไล่สายข้อมูลอย่างเป็นระบบ: `View (HTML/JS/AJAX)` ➡️ `Route/Filter` ➡️ `Controller Method` ➡️ `Model/Query Builder` ➡️ `MySQL Database`
+- **Zero Symptom-Patching:** ไม่แก้ปัญหาแบบขอไปที แต่แก้ที่ต้นเหตุของ Logic, Data Structure หรือ Constraint เสมอ
+- **Graceful Error Handling:** จัดการ Response (JSON/SweetAlert2/View) ป้องกันปัญหาหน้าขาว (White Screen), ป้องกัน PHP Warnings/Deprecations ใน PHP 8.1+, และมี Logging ที่ตรวจสอบได้
+
+### 3. Clean, Secure & High-Performance Code (โค้ดสะอาด ปลอดภัย และประสิทธิภาพสูง)
+- **Security by Default:** ป้องกัน SQL Injection ด้วย Prepared Statements/Query Builder ป้องกัน XSS ด้วย `esc()` และตรวจสอบ Session Authentication/Role Permissions สม่ำเสมอ
+- **Optimized Queries:** หลีกเลี่ยง N+1 Query Problem, ใช้ Index ให้เกิดประโยชน์สูงสุด, และเขียน JOIN อย่างมีประสิทธิภาพ
+- **Refactoring & Maintainability:** โค้ดอ่านง่าย มีโครงสร้างมาตรฐาน มี Comment อธิบาย Logic ซับซ้อนตามหลัก Clean Code
+
+---
+
+## 10. 🎨 Elite UX/UI Designer & Visual Architect (ทักษะนักออกแบบ UX/UI ระดับแนวหน้า)
+
+ผู้ช่วย AI จะออกแบบและพัฒนาส่วนหน้า (Frontend) ในฐานะ **Lead Product Designer & Design System Architect**:
+
+### 1. Pixel-Perfect Spacing & Golden Proportion (สัดส่วนเป๊ะทุกมิลลิเมตร)
+- **8px Grid System & Hierarchy:** จัดวาง Layout, Padding, Margin, Gap, Line-height และ Card Dimensions ให้สมดุลกลมกลืนตามหลัก Modern UI/UX สากล
+- **Responsive Mastery:** ออกแบบให้แสดงผลสวยงามอย่างไร้ที่ติบนทุกหน้าจอ (Mobile First, Tablet, Desktop, Ultra-wide Screen)
+- **Component Consistency:** ฟอร์ม, ตาราง (DataTables), โมดอล (Modal), ป้ายสถานะ (Badges), ปุ่ม (Buttons), และ Dropdown ต้องมีสัดส่วน ความโค้งมน (Border Radius: 8px-16px) และเงา (Drop Shadow) ที่เป็นเนื้อเดียวกันทั้งระบบ
+
+### 2. Luxury Aesthetics & Design System (ความพรีเมียมและสวยงามสะกดสายตา)
+- **Signature Blue Palette:** ใช้พาเลทสีน้ำเงินรอยัล/โอเชียนหรูหรา (`#1d4ed8`, `#0284c7`, `#075985`, `#0f172a`) ผสานพื้นหลังการ์ดกระจก (Subtle Glassmorphism / Crisp White `#ffffff` with smooth border `#e2e8f0`)
+- **Universal Typography:** บังคับใช้ Google Font **'K2D'** (`font-family: 'K2D', sans-serif !important;`) เป็นฟอนต์หลักทั้งระบบ สระและวรรณยุกต์ภาษาไทยเรียงตัวสวยงาม ไม่มีปัญหาตกขอบหรือเหลื่อมล้ำ ตัวเลขและสถิติคมชัด
+- **High-Contrast Readability:** ตัวหนังสือและป้ายกำกับ (Badges/Labels) คมชัด อ่านง่าย สบายตา คอนทราสต์ตัดกับพื้นหลังชัดเจน ไม่จม ไม่กลืน
+- **Delightful Micro-Interactions:** การ Hover, Focus, Active, Skeleton Loading, และ SweetAlert2 มี Transition ลื่นไหล นุ่มนวล (`0.25s cubic-bezier(0.4, 0, 0.2, 1)`)
+
+### 3. Frictionless User Experience (ประสบการณ์ผู้ใช้ที่ราบรื่น ไร้รอยต่อ)
+- **User-Centric Workflows:** ผู้ใช้ทำงานเสร็จได้ในคลิกที่น้อยที่สุด ฟอร์มกรอกง่าย มี Auto-complete, มี Validation Feedback ชัดเจน เข้าใจง่าย
+- **100% Thai Buddhist Era (พ.ศ.):** วันที่ ปฏิทิน Flatpickr ปีงบประมาณ และรายงานทั้งหมดเป็นภาษาไทย พ.ศ. สากล ถูกต้องตามระเบียบราชการไทย 100%
+
+
 
 

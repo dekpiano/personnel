@@ -28,47 +28,19 @@ class ConUserPaEvaluation extends BaseController
             return redirect()->to(base_url('pa-login?return_to=pa-personnel'));
         }
 
+        $personnel = [];
+        $available_fiscal_years = [2569, 2568, 2567];
+        $latest_fiscal_year = 2569;
+        $selected_fiscal_year = $this->request->getGet('fiscal_year');
+        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $latest_fiscal_year;
+        $fiscal_year_ad = $fiscal_year_be - 543;
+
         try {
             $db_personnel = \Config\Database::connect('personnel');
             $db_skj = \Config\Database::connect('skj');
             $db_pa_evaluation = \Config\Database::connect('pa_evaluation');
 
-            $builder = $db_personnel->table('tb_personnel');
-
-            // Perform joins with tables from the second database
-            $builder->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left');
-            $builder->join($db_skj->getDatabase() . '.tb_learning', 'tb_learning.lear_id = tb_personnel.pers_learning', 'left');
-
-            $builder->where('tb_personnel.pers_status', "กำลังใช้งาน");
-            $builder->notLike('tb_position.posi_name', 'ช่วยปฏิบัติงาน');
-            $builder->notLike('tb_position.posi_name', 'ช่วยปฏิบัติการสอน');
-            $builder->notLike('tb_position.posi_name', 'ช่วยสอน');
-            $builder->notLike('tb_position.posi_name', 'ช่วยราชการ');
-
-            // --- Start Assessor Scope Filtering ---
-            $loggedInUserId = $session->get('id'); // Get the id of the logged-in user
-            $loggedInPersId = $session->get('pers_id');
-            $loggedInEmail  = $session->get('email');
-
-            $possibleAssessorIds = array_filter([$loggedInUserId, $loggedInPersId]);
-
-            // Look up matching evaluator record in tb_evaluators by id or username/email
-            if (!empty($loggedInEmail) || !empty($loggedInUserId)) {
-                $evalQuery = $db_pa_evaluation->table('tb_evaluators');
-                if (!empty($loggedInUserId)) {
-                    $evalQuery->orWhere('e_id', $loggedInUserId);
-                }
-                if (!empty($loggedInEmail)) {
-                    $evalQuery->orWhere('e_Username', $loggedInEmail);
-                }
-                $evalRow = $evalQuery->get()->getRowArray();
-                if ($evalRow) {
-                    $possibleAssessorIds[] = $evalRow['e_id'];
-                }
-            }
-            $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
-
-            // 1. ดึงปีงบประมาณที่มีข้อมูลส่งข้อตกลง PA จริงจาก tb_teacher_pa_agreement
+            // 1. ดึงปีงบประมาณที่มีข้อมูลจาก tb_teacher_pa_agreement, tb_teacher_evaluation และ tb_evaluations
             $db_years = [];
             try {
                 $agreementYears = $db_personnel->table('tb_teacher_pa_agreement')
@@ -86,33 +58,159 @@ class ConUserPaEvaluation extends BaseController
                         $db_years[] = $yr + 543;
                     }
                 }
+
+                $teacherEvalYears = $db_personnel->table('tb_teacher_evaluation')
+                    ->select('eva_year')
+                    ->distinct()
+                    ->where('eva_year IS NOT NULL')
+                    ->where('eva_year !=', '')
+                    ->where('eva_year !=', '0')
+                    ->get()->getResultArray();
+                foreach ($teacherEvalYears as $ty) {
+                    $yr = (int)($ty['eva_year'] ?? 0);
+                    if ($yr > 2500) {
+                        $db_years[] = $yr;
+                    } elseif ($yr > 2000) {
+                        $db_years[] = $yr + 543;
+                    }
+                }
+
+                $evalYears = $db_pa_evaluation->table('tb_evaluations')
+                    ->select('ev_fiscal_year')
+                    ->distinct()
+                    ->where('ev_fiscal_year IS NOT NULL')
+                    ->where('ev_fiscal_year !=', '')
+                    ->where('ev_fiscal_year !=', '0')
+                    ->get()->getResultArray();
+                foreach ($evalYears as $ey) {
+                    $yr = (int)($ey['ev_fiscal_year'] ?? 0);
+                    if ($yr > 2500) {
+                        $db_years[] = $yr;
+                    } elseif ($yr > 2000) {
+                        $db_years[] = $yr + 543;
+                    }
+                }
             } catch (\Throwable $e) {
-                log_message('error', '[paPersonnelList] Fetch pa_year failed: ' . $e->getMessage());
+                log_message('error', '[paPersonnelList] Fetch years failed: ' . $e->getMessage());
             }
 
             $db_years = array_values(array_unique(array_filter($db_years)));
             rsort($db_years);
 
-            // ปีงบประมาณล่าสุดที่มีข้อมูลการส่งข้อตกลง PA จริง (เช่น 2569)
-            $latest_fiscal_year = !empty($db_years) ? $db_years[0] : 2569;
+            if (!empty($db_years)) {
+                $latest_fiscal_year = $db_years[0];
+                foreach ($db_years as $dy) {
+                    if (!in_array($dy, $available_fiscal_years)) {
+                        $available_fiscal_years[] = $dy;
+                    }
+                }
+                rsort($available_fiscal_years);
+                if (empty($selected_fiscal_year)) {
+                    $fiscal_year_be = $latest_fiscal_year;
+                    $fiscal_year_ad = $fiscal_year_be - 543;
+                }
+            }
 
-            // รวบรวมปีที่เปิดให้เลือกใน Dropdown (ปีที่มีข้อมูลจริง + ปีย้อนหลัง)
-            $available_fiscal_years = $db_years;
-            if (!in_array(2569, $available_fiscal_years)) {
-                $available_fiscal_years[] = 2569;
-            }
-            if (!in_array(2568, $available_fiscal_years)) {
-                $available_fiscal_years[] = 2568;
-            }
-            if (!in_array(2567, $available_fiscal_years)) {
-                $available_fiscal_years[] = 2567;
-            }
-            rsort($available_fiscal_years);
+            $builder = $db_personnel->table('tb_personnel');
 
-            // รับค่าจาก URL หรือใช้ปีล่าสุดที่มีข้อมูลจริง (2569) เป็นค่าเริ่มต้น
-            $selected_fiscal_year = $this->request->getGet('fiscal_year');
-            $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $latest_fiscal_year;
-            $fiscal_year_ad = $fiscal_year_be - 543;
+            // Perform joins with tables from the second database
+            $builder->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left');
+            $builder->join($db_skj->getDatabase() . '.tb_learning', 'tb_learning.lear_id = tb_personnel.pers_learning', 'left');
+
+            $builder->where('tb_personnel.pers_status', "กำลังใช้งาน");
+
+            // กรองเฉพาะ ครู ข้าราชการ, รอง ผอ. และ ผอ. (ผู้บริหารสถานศึกษา)
+            $builder->groupStart()
+                ->whereIn('tb_position.posi_id', ['posi_001', 'posi_002', 'posi_003', 'posi_004', 'posi_005'])
+                ->orWhereIn('tb_position.posi_name', ['ครู', 'ครูผู้ช่วย', 'ผู้อำนวยการสถานศึกษา', 'รองผู้อำนวยการสถานศึกษา', 'ผู้อำนวยการ', 'รองผู้อำนวยการ'])
+                ->orGroupStart()
+                    ->groupStart()
+                        ->like('tb_position.posi_name', 'ครู')
+                        ->orLike('tb_position.posi_name', 'ผู้อำนวยการ')
+                        ->orLike('tb_position.posi_name', 'รองผู้อำนวยการ')
+                    ->groupEnd()
+                    ->notLike('tb_position.posi_name', 'ช่วยปฏิบัติการสอน')
+                    ->notLike('tb_position.posi_name', 'ช่วยปฏิบัติงาน')
+                    ->notLike('tb_position.posi_name', 'ช่วยสอน')
+                    ->notLike('tb_position.posi_name', 'ช่วยราชการ')
+                    ->notLike('tb_position.posi_name', 'พนักงาน')
+                    ->notLike('tb_position.posi_name', 'ผู้กำกับ')
+                ->groupEnd()
+            ->groupEnd();
+
+            // --- Start Assessor Scope Filtering ---
+            $loggedInUserId = $session->get('id'); // Get the id of the logged-in user
+            $loggedInPersId = $session->get('pers_id') ?: $loggedInUserId;
+            $loggedInEmail  = $session->get('email');
+
+            // ดึงข้อมูลครู/บุคลากรที่กำลังล็อกอิน เพื่อนำชื่อ-นามสกุล และ username มาค้นหาผู้ประเมินให้ครอบคลุม
+            $loggedPerson = null;
+            if (!empty($loggedInPersId) || !empty($loggedInUserId) || !empty($loggedInEmail)) {
+                $pQuery = $db_personnel->table('tb_personnel');
+                if (!empty($loggedInPersId)) {
+                    $pQuery->orWhere('pers_id', $loggedInPersId);
+                }
+                if (!empty($loggedInUserId)) {
+                    $pQuery->orWhere('pers_id', $loggedInUserId)->orWhere('pers_username', $loggedInUserId);
+                }
+                if (!empty($loggedInEmail)) {
+                    $pQuery->orWhere('pers_username', $loggedInEmail);
+                }
+                $loggedPerson = $pQuery->get()->getRowArray();
+            }
+
+            $possibleAssessorIds = array_filter([$loggedInUserId, $loggedInPersId, !empty($loggedInPersId) ? 'e_' . $loggedInPersId : null]);
+
+            // ค้นหาผู้ประเมินใน tb_evaluators ทั้งหมดที่ตรงกับผู้ใช้นี้ (รองรับกรณีชื่อซ้ำ / มีหลาย e_id / บันทึกด้วย username หรือ email)
+            $hasEvalConditions = false;
+            $evalQuery = $db_pa_evaluation->table('tb_evaluators')->groupStart();
+            if (!empty($loggedInUserId)) {
+                $evalQuery->orWhere('e_id', $loggedInUserId)->orWhere('e_Username', $loggedInUserId);
+                $hasEvalConditions = true;
+            }
+            if (!empty($loggedInPersId)) {
+                $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_id', 'e_' . $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+                $hasEvalConditions = true;
+            }
+            if (!empty($loggedInEmail)) {
+                $evalQuery->orWhere('e_Username', $loggedInEmail);
+                $hasEvalConditions = true;
+                $emailPrefix = explode('@', $loggedInEmail)[0];
+                if (!empty($emailPrefix)) {
+                    $evalQuery->orWhere('e_Username', $emailPrefix);
+                }
+            }
+            if (!empty($loggedPerson)) {
+                if (!empty($loggedPerson['pers_username'])) {
+                    $evalQuery->orWhere('e_Username', $loggedPerson['pers_username']);
+                    $hasEvalConditions = true;
+                }
+                if (!empty($loggedPerson['pers_firstname']) && !empty($loggedPerson['pers_lastname'])) {
+                    $evalQuery->orGroupStart()
+                        ->where('e_first_name', trim($loggedPerson['pers_firstname']))
+                        ->where('e_last_name', trim($loggedPerson['pers_lastname']))
+                    ->groupEnd();
+                    $hasEvalConditions = true;
+                }
+            }
+            $evalQuery->groupEnd();
+            $matchedEvaluators = $hasEvalConditions ? $evalQuery->get()->getResultArray() : [];
+
+            foreach ($matchedEvaluators as $evRow) {
+                if (!empty($evRow['e_id'])) {
+                    $possibleAssessorIds[] = $evRow['e_id'];
+                }
+            }
+            $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
+
+            // Identify Superadmin / Admin / Manager / งานประเมิน PA
+            $userStatus = strtolower((string)$session->get('status'));
+            $userRoles  = (string)$session->get('rloes');
+            $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel', 'administrator']) 
+                              || stripos($userRoles, 'งานประเมิน') !== false
+                              || stripos($userRoles, 'admin') !== false
+                              || stripos($userRoles, 'superadmin') !== false
+                              || stripos($userRoles, 'ผู้ดูแลระบบ') !== false;
 
             // Fetch scopes for the logged-in assessor filtered by selected fiscal year
             $assessorScopes = [];
@@ -138,37 +236,34 @@ class ConUserPaEvaluation extends BaseController
                 }
             }
 
-            if (!empty($assessorScopes)) {
-                // Build dynamic WHERE OR conditions based on assessor scopes
-                $builder->groupStart();
-                foreach ($assessorScopes as $scope) {
-                    $builder->orGroupStart();
-                    if (!empty($scope['scope_pers_id'])) {
-                        $builder->where('tb_personnel.pers_id', $scope['scope_pers_id']);
-                    } else {
-                        if ($scope['scope_posi_id'] !== null) {
-                            $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
+            // ถ้าเป็น Admin / Superadmin / ผู้ดูแลระบบ ให้มองเห็นบุคลากรทั้งหมด (ไม่จำกัดด้วย scope)
+            // ถ้าเป็นกรรมการประเมินทั่วไป ให้กรองเฉพาะครูในขอบเขตการประเมิน (scope) ของตนเอง
+            if (!$isSuperOrAdmin) {
+                if (!empty($assessorScopes)) {
+                    // Build dynamic WHERE OR conditions based on assessor scopes
+                    $builder->groupStart();
+                    foreach ($assessorScopes as $scope) {
+                        $builder->orGroupStart();
+                        if (!empty($scope['scope_pers_id'])) {
+                            $builder->where('tb_personnel.pers_id', $scope['scope_pers_id']);
+                        } else {
+                            if ($scope['scope_posi_id'] !== null) {
+                                $builder->where('tb_personnel.pers_position', $scope['scope_posi_id']);
+                            }
+                            if ($scope['scope_lear_id'] !== null) {
+                                $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
+                            }
                         }
-                        if ($scope['scope_lear_id'] !== null) {
-                            $builder->where('tb_personnel.pers_learning', $scope['scope_lear_id']);
-                        }
+                        $builder->groupEnd();
                     }
                     $builder->groupEnd();
-                }
-                $builder->groupEnd();
-            } else {
-                // If no specific scope is defined for the assessor in this fiscal year:
-                // Superadmin, Admin, and Manager can view all personnel for testing & evaluation oversight.
-                $userStatus = strtolower((string)$session->get('status'));
-                $userRoles = (string)$session->get('rloes');
-                $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel']) 
-                                  || str_contains($userRoles, 'งานประเมิน pa');
-
-                if (!$isSuperOrAdmin) {
+                } else {
                     $builder->where('1=0'); 
                 }
             }
-            // --- End Assessor Scope Filtering ---
+            $builder->orderBy('tb_position.posi_id', 'ASC')
+                    ->orderBy('tb_personnel.pers_learning', 'ASC')
+                    ->orderBy('tb_personnel.pers_firstname', 'ASC');
 
             $query = $builder->get();
             $personnel = $query ? $query->getResultArray() : [];
@@ -187,12 +282,45 @@ class ConUserPaEvaluation extends BaseController
                 foreach ($agreementRows as $arow) {
                     $paAgreements[$arow['pa_teacher_id']] = $arow;
                 }
+
+                // Fallback: หากคุณครูคนใดยังไม่มีใน tb_teacher_pa_agreement ให้ดึงจาก tb_teacher_evaluation
+                $evaRows = $db_personnel->table('tb_teacher_evaluation')
+                                        ->groupStart()
+                                            ->where('eva_year', $fiscal_year_be)
+                                            ->orWhere('eva_year', (string)$fiscal_year_be)
+                                            ->orWhere('eva_year', $fiscal_year_ad)
+                                            ->orWhere('eva_year', (string)$fiscal_year_ad)
+                                        ->groupEnd()
+                                        ->orderBy('eva_round', 'DESC')
+                                        ->get()->getResultArray();
+                foreach ($evaRows as $erow) {
+                    $tId = $erow['eva_teacher_id'];
+                    if (!isset($paAgreements[$tId]) && (!empty($erow['eva_file']) || !empty($erow['eva_canva_link']))) {
+                        $paAgreements[$tId] = [
+                            'pa_id' => 'eva_' . $erow['eva_id'],
+                            'pa_teacher_id' => $tId,
+                            'pa_year' => $erow['eva_year'],
+                            'pa_presentation_link' => $erow['eva_canva_link'] ?? '',
+                            'pa_file_presentation' => null,
+                            'pa_file_lesson_plan' => null,
+                            'pa_file_pa1' => $erow['eva_file'] ?? '',
+                            'pa_file_pa1_source' => 'evaluation',
+                            'pa_round' => $erow['eva_round'] ?? 1,
+                            'pa_status' => $erow['eva_status'] ?? 'submitted',
+                            'pa_comment' => $erow['eva_comment'] ?? '',
+                            'pa_created_at' => $erow['eva_created_at'] ?? null,
+                            'pa_updated_at' => $erow['eva_updated_at'] ?? null,
+                        ];
+                    }
+                }
             } catch (\Throwable $e) {
                 log_message('error', '[paPersonnelList] Fetch PA agreement failed: ' . $e->getMessage());
             }
 
             foreach ($personnel as &$p) {
                 $evaluationExists = false;
+                $evaluatorCount = 0;
+                $evaluatedByMe = false;
                 try {
                     $evalQuery = $db_pa_evaluation->table('tb_evaluator_scores')
                                                   ->join('tb_evaluations', 'tb_evaluations.ev_id = tb_evaluator_scores.ev_id')
@@ -203,14 +331,32 @@ class ConUserPaEvaluation extends BaseController
                                                       ->orWhere('tb_evaluations.ev_fiscal_year', $fiscal_year_ad)
                                                       ->orWhere('tb_evaluations.ev_fiscal_year', (string)$fiscal_year_ad)
                                                   ->groupEnd();
-                    if (!$isSuperOrAdmin) {
-                        $evalQuery->whereIn('tb_evaluator_scores.e_id', $possibleAssessorIds);
+                    
+                    $allEvaluatorScores = $evalQuery->get()->getResultArray();
+                    $evaluatorCount = count($allEvaluatorScores);
+                    
+                    if (!empty($possibleAssessorIds)) {
+                        foreach ($allEvaluatorScores as $sc) {
+                            if (in_array($sc['e_id'], $possibleAssessorIds)) {
+                                $evaluatedByMe = true;
+                                break;
+                            }
+                        }
                     }
-                    $evaluationExists = $evalQuery->countAllResults() > 0;
+
+                    // สำหรับ Admin / Superadmin: หากมีผลการประเมินในระบบ ให้แสดงว่าประเมินแล้ว
+                    // สำหรับ กรรมการทั่วไป: แสดงว่าประเมินแล้ว เมื่อตนเองได้ทำการประเมินแล้ว
+                    if ($isSuperOrAdmin) {
+                        $evaluationExists = ($evaluatorCount > 0);
+                    } else {
+                        $evaluationExists = $evaluatedByMe;
+                    }
                 } catch (\Throwable $e) {
                     log_message('error', '[paPersonnelList] Check evaluation exists failed: ' . $e->getMessage());
                 }
                 $p['has_pa_evaluation'] = $evaluationExists;
+                $p['evaluator_count'] = $evaluatorCount;
+                $p['evaluated_by_me'] = $evaluatedByMe;
                 $p['pa_agreement'] = $paAgreements[$p['pers_id']] ?? null;
             }
             unset($p);
@@ -230,6 +376,7 @@ class ConUserPaEvaluation extends BaseController
         $data['available_fiscal_years'] = $available_fiscal_years;
         $data['latest_fiscal_year'] = $latest_fiscal_year;
         $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/');
+        $data['eva_upload_baseurl'] = env('upload.server.baseurl.evaluation', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/');
 
         return view('User/UserPA/PaPersonnelList', $data);
     }
@@ -269,6 +416,16 @@ class ConUserPaEvaluation extends BaseController
                 if (!empty($latestRow['pa_year'])) {
                     $yVal = (int)$latestRow['pa_year'];
                     $latestDbYear = ($yVal > 2500) ? $yVal : ($yVal + 543);
+                } else {
+                    $latestEva = $database->table('tb_teacher_evaluation')
+                        ->select('eva_year')
+                        ->where('eva_teacher_id', $personId)
+                        ->orderBy('eva_year', 'DESC')
+                        ->get()->getRowArray();
+                    if (!empty($latestEva['eva_year'])) {
+                        $yVal = (int)$latestEva['eva_year'];
+                        $latestDbYear = ($yVal > 2500) ? $yVal : ($yVal + 543);
+                    }
                 }
             } catch (\Throwable $e) {}
 
@@ -276,7 +433,7 @@ class ConUserPaEvaluation extends BaseController
         }
         $fiscal_year_ad = $fiscal_year_be - 543;
 
-        // Fetch PA Agreement from tb_teacher_pa_agreement
+        // Fetch PA Agreement from tb_teacher_pa_agreement with fallback to tb_teacher_evaluation
         $paAgreement = null;
         try {
             $paAgreement = $database->table('tb_teacher_pa_agreement')
@@ -289,6 +446,36 @@ class ConUserPaEvaluation extends BaseController
                                    ->groupEnd()
                                    ->orderBy('pa_id', 'DESC')
                                    ->get()->getRowArray();
+
+            if (empty($paAgreement) || (empty($paAgreement['pa_file_pa1']) && empty($paAgreement['pa_file_lesson_plan']) && empty($paAgreement['pa_file_presentation']) && empty($paAgreement['pa_presentation_link']))) {
+                $evaRow = $database->table('tb_teacher_evaluation')
+                                   ->where('eva_teacher_id', $personId)
+                                   ->groupStart()
+                                       ->where('eva_year', $fiscal_year_be)
+                                       ->orWhere('eva_year', (string)$fiscal_year_be)
+                                       ->orWhere('eva_year', $fiscal_year_ad)
+                                       ->orWhere('eva_year', (string)$fiscal_year_ad)
+                                   ->groupEnd()
+                                   ->orderBy('eva_round', 'DESC')
+                                   ->get()->getRowArray();
+                if (!empty($evaRow) && (!empty($evaRow['eva_file']) || !empty($evaRow['eva_canva_link']))) {
+                    $paAgreement = [
+                        'pa_id' => 'eva_' . $evaRow['eva_id'],
+                        'pa_teacher_id' => $personId,
+                        'pa_year' => $evaRow['eva_year'],
+                        'pa_presentation_link' => $evaRow['eva_canva_link'] ?? '',
+                        'pa_file_presentation' => null,
+                        'pa_file_lesson_plan' => null,
+                        'pa_file_pa1' => $evaRow['eva_file'] ?? '',
+                        'pa_file_pa1_source' => 'evaluation',
+                        'pa_round' => $evaRow['eva_round'] ?? 1,
+                        'pa_status' => $evaRow['eva_status'] ?? 'submitted',
+                        'pa_comment' => $evaRow['eva_comment'] ?? '',
+                        'pa_created_at' => $evaRow['eva_created_at'] ?? null,
+                        'pa_updated_at' => $evaRow['eva_updated_at'] ?? null,
+                    ];
+                }
+            }
         } catch (\Throwable $e) {
             log_message('error', '[paForm] Fetch PA Agreement failed: ' . $e->getMessage());
         }
@@ -346,53 +533,96 @@ class ConUserPaEvaluation extends BaseController
         $loggedInEmail  = $session->get('email');
         $userStatus     = strtolower((string)$session->get('status'));
         $userRoles      = (string)$session->get('rloes');
-        $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel']) 
-                          || str_contains($userRoles, 'งานประเมิน pa');
+        $isSuperOrAdmin = in_array($userStatus, ['superadmin', 'admin', 'manager', 'adminpersonnel', 'managerpersonnel', 'administrator']) 
+                          || stripos($userRoles, 'งานประเมิน') !== false
+                          || stripos($userRoles, 'admin') !== false
+                          || stripos($userRoles, 'superadmin') !== false
+                          || stripos($userRoles, 'ผู้ดูแลระบบ') !== false;
 
-        // 1. Look up matching evaluator record in tb_evaluators
-        $loggedInEvaluator = null;
-        if (!empty($loggedInUserId) || !empty($loggedInPersId) || !empty($loggedInEmail)) {
-            $evalQuery = $db_pa_evaluation->table('tb_evaluators');
-            $evalQuery->groupStart();
-            if (!empty($loggedInUserId)) {
-                $evalQuery->orWhere('e_id', $loggedInUserId)->orWhere('e_Username', $loggedInUserId);
-            }
+        // 1. Look up all matching evaluator records in tb_evaluators for the current user
+        $loggedPerson = null;
+        if (!empty($loggedInPersId) || !empty($loggedInUserId) || !empty($loggedInEmail)) {
+            $pQuery = $database->table('tb_personnel')
+                               ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left');
             if (!empty($loggedInPersId)) {
-                $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+                $pQuery->orWhere('pers_id', $loggedInPersId);
+            }
+            if (!empty($loggedInUserId)) {
+                $pQuery->orWhere('pers_id', $loggedInUserId)->orWhere('pers_username', $loggedInUserId);
             }
             if (!empty($loggedInEmail)) {
-                $evalQuery->orWhere('e_Username', $loggedInEmail);
+                $pQuery->orWhere('pers_username', $loggedInEmail);
             }
-            $evalQuery->groupEnd();
-            $loggedInEvaluator = $evalQuery->get()->getRowArray();
+            $loggedPerson = $pQuery->get()->getRowArray();
         }
 
+        $myEvaluatorRecords = [];
+        $myEvaluatorIds = array_filter([$loggedInUserId, $loggedInPersId, !empty($loggedInPersId) ? 'e_' . $loggedInPersId : null]);
+
+        $hasEvalConditions = false;
+        $evalQuery = $db_pa_evaluation->table('tb_evaluators')->groupStart();
+        if (!empty($loggedInUserId)) {
+            $evalQuery->orWhere('e_id', $loggedInUserId)->orWhere('e_Username', $loggedInUserId);
+            $hasEvalConditions = true;
+        }
+        if (!empty($loggedInPersId)) {
+            $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_id', 'e_' . $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+            $hasEvalConditions = true;
+        }
+        if (!empty($loggedInEmail)) {
+            $evalQuery->orWhere('e_Username', $loggedInEmail);
+            $hasEvalConditions = true;
+            $emailPrefix = explode('@', $loggedInEmail)[0];
+            if (!empty($emailPrefix)) {
+                $evalQuery->orWhere('e_Username', $emailPrefix);
+            }
+        }
+        if (!empty($loggedPerson)) {
+            if (!empty($loggedPerson['pers_username'])) {
+                $evalQuery->orWhere('e_Username', $loggedPerson['pers_username']);
+                $hasEvalConditions = true;
+            }
+            if (!empty($loggedPerson['pers_firstname']) && !empty($loggedPerson['pers_lastname'])) {
+                $evalQuery->orGroupStart()
+                    ->where('e_first_name', trim($loggedPerson['pers_firstname']))
+                    ->where('e_last_name', trim($loggedPerson['pers_lastname']))
+                ->groupEnd();
+                $hasEvalConditions = true;
+            }
+        }
+        $evalQuery->groupEnd();
+        $myEvaluatorRecords = $hasEvalConditions ? $evalQuery->get()->getResultArray() : [];
+        foreach ($myEvaluatorRecords as $me) {
+            if (!empty($me['e_id'])) {
+                $myEvaluatorIds[] = $me['e_id'];
+            }
+        }
+        $myEvaluatorIds = array_values(array_unique(array_filter($myEvaluatorIds)));
+        $loggedInEvaluator = !empty($myEvaluatorRecords) ? $myEvaluatorRecords[0] : null;
+
         // If admin/superadmin has no evaluator account, link/create one so they can evaluate as admin
-        if ($isSuperOrAdmin && !$loggedInEvaluator && !empty($loggedInPersId)) {
-            $adminPerson = $database->table('tb_personnel')
-                                    ->join($db_skj->getDatabase() . '.tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
-                                    ->where('pers_id', $loggedInPersId)
-                                    ->get()->getRowArray();
-            if ($adminPerson) {
-                $e_id = 'e_' . $adminPerson['pers_id'];
-                $username = !empty($adminPerson['pers_username']) ? $adminPerson['pers_username'] : strtolower($adminPerson['pers_firstname']);
-                $existingByUsername = $db_pa_evaluation->table('tb_evaluators')->where('e_Username', $username)->get()->getRowArray();
-                if ($existingByUsername) {
-                    $loggedInEvaluator = $existingByUsername;
-                } else {
-                    $newEvaluatorData = [
-                        'e_id' => $e_id,
-                        'e_first_name' => $adminPerson['pers_firstname'],
-                        'e_last_name' => $adminPerson['pers_lastname'],
-                        'e_position' => $adminPerson['posi_name'] ?? 'ผู้ดูแลระบบ / ผู้ประเมิน',
-                        'e_academic_standing' => !empty($adminPerson['pers_academic']) ? $adminPerson['pers_academic'] : 'ไม่มีวิทยฐานะ',
-                        'e_organization' => 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์',
-                        'e_Username' => $username,
-                        'e_Password' => password_hash('123456', PASSWORD_DEFAULT),
-                    ];
-                    $db_pa_evaluation->table('tb_evaluators')->insert($newEvaluatorData);
-                    $loggedInEvaluator = $newEvaluatorData;
-                }
+        if ($isSuperOrAdmin && !$loggedInEvaluator && !empty($loggedPerson)) {
+            $e_id = 'e_' . $loggedPerson['pers_id'];
+            $username = !empty($loggedPerson['pers_username']) ? $loggedPerson['pers_username'] : strtolower($loggedPerson['pers_firstname']);
+            $existingByUsername = $db_pa_evaluation->table('tb_evaluators')->where('e_Username', $username)->get()->getRowArray();
+            if ($existingByUsername) {
+                $loggedInEvaluator = $existingByUsername;
+            } else {
+                $newEvaluatorData = [
+                    'e_id' => $e_id,
+                    'e_first_name' => $loggedPerson['pers_firstname'],
+                    'e_last_name' => $loggedPerson['pers_lastname'],
+                    'e_position' => $loggedPerson['posi_name'] ?? 'ผู้ดูแลระบบ / ผู้ประเมิน',
+                    'e_academic_standing' => !empty($loggedPerson['pers_academic']) ? $loggedPerson['pers_academic'] : 'ไม่มีวิทยฐานะ',
+                    'e_organization' => 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์',
+                    'e_Username' => $username,
+                    'e_Password' => password_hash('123456', PASSWORD_DEFAULT),
+                ];
+                $db_pa_evaluation->table('tb_evaluators')->insert($newEvaluatorData);
+                $loggedInEvaluator = $newEvaluatorData;
+            }
+            if (!in_array($loggedInEvaluator['e_id'], $myEvaluatorIds)) {
+                $myEvaluatorIds[] = $loggedInEvaluator['e_id'];
             }
         }
 
@@ -437,12 +667,24 @@ class ConUserPaEvaluation extends BaseController
         }
         $assignedEvaluatorIds = array_values(array_unique(array_filter($assignedEvaluatorIds)));
 
-        // 4. Determine selected active evaluator
+        // 4. Determine selected active evaluator (รองรับการตรวจจับข้ามทุก alias ID ของผู้ใช้ที่ล็อกอิน)
         $requestedEvalId = $this->request->getGet('evaluator_id');
         $evaluator = null;
 
+        // ตรวจหาว่ามี ID ใดของผู้ใช้นี้ถูกมอบหมายใน scope หรือไม่
+        $assignedMatchForUser = null;
+        foreach ($myEvaluatorIds as $meId) {
+            if (in_array($meId, $assignedEvaluatorIds) && isset($allEvaluatorsMap[$meId])) {
+                $assignedMatchForUser = $allEvaluatorsMap[$meId];
+                break;
+            }
+        }
+
         if (!empty($requestedEvalId) && isset($allEvaluatorsMap[$requestedEvalId])) {
             $evaluator = $allEvaluatorsMap[$requestedEvalId];
+        } elseif ($assignedMatchForUser) {
+            // ผู้ใช้ล็อกอินมีสิทธิ์ตรงตาม scope (แม้จะมีหลาย e_id ในฐานข้อมูล)
+            $evaluator = $assignedMatchForUser;
         } elseif ($loggedInEvaluator && in_array($loggedInEvaluator['e_id'], $assignedEvaluatorIds)) {
             // Logged-in user is one of the assigned evaluators for this teacher
             $evaluator = $loggedInEvaluator;
@@ -552,6 +794,7 @@ class ConUserPaEvaluation extends BaseController
         $data['availableEvaluators'] = $availableEvaluators;
         $data['selected_evaluator_id'] = $evaluator['e_id'] ?? null;
         $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/');
+        $data['eva_upload_baseurl'] = env('upload.server.baseurl.evaluation', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/');
 
         return view('User/UserPA/PaForm', $data);
     }
@@ -598,19 +841,55 @@ class ConUserPaEvaluation extends BaseController
             $loggedInEmail  = $session->get('email');
 
             // หากไม่ได้รับ evaluator_id จากฟอร์ม ให้สืบค้นจากผู้ใช้งานที่ล็อกอินอยู่
+            $loggedPerson = null;
+            if (!empty($loggedInPersId) || !empty($loggedInUserId) || !empty($loggedInEmail)) {
+                $pQuery = $db_personnel->table('tb_personnel');
+                if (!empty($loggedInPersId)) {
+                    $pQuery->orWhere('pers_id', $loggedInPersId);
+                }
+                if (!empty($loggedInUserId)) {
+                    $pQuery->orWhere('pers_id', $loggedInUserId)->orWhere('pers_username', $loggedInUserId);
+                }
+                if (!empty($loggedInEmail)) {
+                    $pQuery->orWhere('pers_username', $loggedInEmail);
+                }
+                $loggedPerson = $pQuery->get()->getRowArray();
+            }
+
             if (empty($evaluatorId)) {
+                $hasEvalConditions = false;
                 $evalQuery = $db->table('tb_evaluators')->groupStart();
                 if (!empty($loggedInUserId)) {
                     $evalQuery->orWhere('e_id', $loggedInUserId)->orWhere('e_Username', $loggedInUserId);
+                    $hasEvalConditions = true;
                 }
                 if (!empty($loggedInPersId)) {
-                    $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+                    $evalQuery->orWhere('e_id', $loggedInPersId)->orWhere('e_id', 'e_' . $loggedInPersId)->orWhere('e_Username', $loggedInPersId);
+                    $hasEvalConditions = true;
                 }
                 if (!empty($loggedInEmail)) {
                     $evalQuery->orWhere('e_Username', $loggedInEmail);
+                    $hasEvalConditions = true;
+                    $emailPrefix = explode('@', $loggedInEmail)[0];
+                    if (!empty($emailPrefix)) {
+                        $evalQuery->orWhere('e_Username', $emailPrefix);
+                    }
+                }
+                if (!empty($loggedPerson)) {
+                    if (!empty($loggedPerson['pers_username'])) {
+                        $evalQuery->orWhere('e_Username', $loggedPerson['pers_username']);
+                        $hasEvalConditions = true;
+                    }
+                    if (!empty($loggedPerson['pers_firstname']) && !empty($loggedPerson['pers_lastname'])) {
+                        $evalQuery->orGroupStart()
+                            ->where('e_first_name', trim($loggedPerson['pers_firstname']))
+                            ->where('e_last_name', trim($loggedPerson['pers_lastname']))
+                        ->groupEnd();
+                        $hasEvalConditions = true;
+                    }
                 }
                 $evalQuery->groupEnd();
-                $foundEv = $evalQuery->get()->getRowArray();
+                $foundEv = $hasEvalConditions ? $evalQuery->get()->getRowArray() : null;
                 if ($foundEv) {
                     $evaluatorId = $foundEv['e_id'];
                 }
@@ -628,9 +907,21 @@ class ConUserPaEvaluation extends BaseController
                         $personData = $db_personnel->table('tb_personnel')->where('pers_id', $evaluatorId)->get()->getRowArray();
                         if ($personData) {
                             $uName = !empty($personData['pers_username']) ? $personData['pers_username'] : strtolower($personData['pers_firstname']);
-                            $existingByUsername = $db->table('tb_evaluators')->where('e_Username', $uName)->get()->getRowArray();
-                            if ($existingByUsername) {
-                                $evaluatorId = $existingByUsername['e_id'];
+                            
+                            // ค้นหาว่ามีอยู่แล้วด้วยชื่อหรือ username หรือไม่
+                            $existingMatch = $db->table('tb_evaluators')
+                                                ->groupStart()
+                                                    ->where('e_Username', $uName)
+                                                    ->orWhere('e_id', 'e_' . $personData['pers_id'])
+                                                    ->orWhere('e_id', $personData['pers_id'])
+                                                    ->orGroupStart()
+                                                        ->where('e_first_name', trim($personData['pers_firstname']))
+                                                        ->where('e_last_name', trim($personData['pers_lastname']))
+                                                    ->groupEnd()
+                                                ->groupEnd()
+                                                ->get()->getRowArray();
+                            if ($existingMatch) {
+                                $evaluatorId = $existingMatch['e_id'];
                             } else {
                                 $newEid = 'e_' . $personData['pers_id'];
                                 $db->table('tb_evaluators')->insert([

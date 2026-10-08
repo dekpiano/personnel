@@ -21,6 +21,34 @@ $formatPaScore = static function ($value, int $decimals = 2): string {
     </div>
 <?php else: ?>
 
+    <!-- Top Action Bar (ซ้ายมือ: ปุ่มลบคะแนนผลการประเมินเพื่อให้ประเมินใหม่) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center p-2 px-3 rounded-3 border mb-3" style="background: #fdf2f2; border-color: #fecaca !important;">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-danger btn-delete-evaluation-score rounded-pill fw-bold shadow-sm px-3"
+                data-es-id="<?= esc($summary['es_id']) ?>"
+                data-ev-id="<?= esc($summary['ev_id']) ?>"
+                data-person-id="<?= esc($evaluation_data['person_id'] ?? '') ?>"
+                data-evaluator-id="<?= esc($evaluation_data['evaluator_id'] ?? '') ?>"
+                data-fiscal-year="<?= esc($evaluation_data['fiscal_year'] ?? '') ?>"
+                data-person-name="<?= esc($evaluation_data['person_name'] ?? '') ?>"
+                data-evaluator-name="<?= esc($evaluation_data['evaluator_name'] ?? '') ?>"
+                style="background-color: #dc2626; border-color: #dc2626;">
+                <i class="bx bx-trash me-1"></i> ลบคะแนนผลการประเมิน (ให้ประเมินใหม่)
+            </button>
+            <span class="text-danger small fw-semibold d-none d-md-inline">
+                <i class="bx bx-info-circle me-1"></i>ลบผลคะแนนเพื่อเปิดสิทธิ์ให้กรรมการประเมินใหม่อีกครั้ง
+            </span>
+        </div>
+        <div class="text-muted small mt-2 mt-md-0">
+            <span class="badge bg-label-primary fw-bold px-2 py-1">
+                <i class="bx bx-calendar me-1"></i>ปีการศึกษา พ.ศ. <?= esc($evaluation_data['fiscal_year'] ?? '') ?>
+            </span>
+            <span class="badge bg-label-success fw-bold px-2 py-1 ms-1">
+                <i class="bx bx-check-circle me-1"></i>บันทึกผลแล้ว
+            </span>
+        </div>
+    </div>
+
     <!-- Nav Tabs Header -->
     <ul class="nav nav-tabs nav-fill mb-3" id="scoreModalTabs" role="tablist">
         <li class="nav-item" role="presentation">

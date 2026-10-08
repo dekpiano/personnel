@@ -692,7 +692,11 @@
                                             $presType = 'empty';
                                         }
 
-                                        $pa1Url  = $hasPa1 ? ($pa_upload_baseurl . $fiscal_year . '/pa1/' . $pa1Name) : '';
+                                        $isEvaSource = ($agreement['pa_file_pa1_source'] ?? '') === 'evaluation';
+                                        $evaRound = $agreement['pa_round'] ?? 1;
+                                        $evaUploadBaseUrl = $eva_upload_baseurl ?? 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/';
+
+                                        $pa1Url  = $hasPa1 ? ($isEvaSource ? ($evaUploadBaseUrl . $fiscal_year . '/' . $evaRound . '/' . $pa1Name) : ($pa_upload_baseurl . $fiscal_year . '/pa1/' . $pa1Name)) : '';
                                         $planUrl = $hasPlan ? ($pa_upload_baseurl . $fiscal_year . '/lesson_plan/' . $planName) : '';
 
                                         $fullName = trim(($t['pers_prefix'] ?? '') . $t['pers_firstname'] . ' ' . $t['pers_lastname']);

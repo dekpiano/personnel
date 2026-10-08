@@ -41,6 +41,7 @@
     <div class="card-body p-4">
         <form action="<?= base_url('user/pa-evaluation/save'); ?>" method="post">
             <input type="hidden" name="person_id" value="<?= esc($person['pers_id']); ?>">
+            <input type="hidden" name="evaluator_id" value="<?= esc($evaluator['e_id'] ?? ''); ?>">
 
             <?php if (empty($rubricItems)): ?>
             <div class="alert alert-danger text-center my-4" role="alert">
@@ -49,18 +50,40 @@
             </div>
             <?php else: ?>
 
-            <!-- Period Setup Row -->
-            <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
-                <div class="col-md-6">
+            <!-- Evaluator & Period Setup Row -->
+            <div class="row g-3 mb-4 p-3 rounded-3 border" style="background: #f8fafc;">
+                <div class="col-md-4">
                     <label for="evaluationPeriod" class="form-label fw-bold text-dark fs-6"><i class="bx bx-calendar me-1 text-primary"></i>รอบการประเมิน</label>
                     <select id="evaluationPeriod" name="evaluationPeriod" class="form-select border shadow-none bg-white text-dark fw-bold">
                         <option value="1" selected>รอบการประเมิน (1 ตุลาคม <?= (($fiscal_year_be ?? 2569) - 1) ?> - 30 กันยายน <?= ($fiscal_year_be ?? 2569) ?>)</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีงบประมาณประจำแบบประเมิน</label>
+                <div class="col-md-3">
+                    <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีงบประมาณ</label>
                     <input type="text" class="form-control border shadow-none bg-white fw-bold text-dark fs-6" id="academicYear" name="academicYear"
                         placeholder="ระบุปีงบประมาณ" value="<?= esc($fiscal_year_be ?? 2569); ?>" readonly>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-dark fs-6"><i class="bx bx-user-check me-1 text-primary"></i>กรรมการผู้ประเมิน</label>
+                    <?php if ($isSuperOrAdmin && !empty($availableEvaluators) && count($availableEvaluators) > 1): ?>
+                        <select class="form-select border shadow-none bg-white text-dark fw-bold" onchange="location = this.value;">
+                            <?php foreach ($availableEvaluators as $ev): ?>
+                                <option value="<?= base_url('pa-form/' . $person['pers_id'] . '?fiscal_year=' . $fiscal_year_be . '&evaluator_id=' . $ev['e_id']); ?>" <?= ($evaluator['e_id'] ?? '') === $ev['e_id'] ? 'selected' : ''; ?>>
+                                    <?= esc($ev['e_first_name'] . ' ' . $ev['e_last_name']); ?> 
+                                    (<?= esc($ev['e_position'] ?: 'กรรมการ'); ?>)
+                                    <?= !empty($ev['has_evaluated']) ? ' [ประเมินแล้ว]' : ' [ยังไม่ประเมิน]'; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <div class="form-control border bg-white d-flex align-items-center justify-content-between">
+                            <span class="fw-bold text-dark">
+                                <i class="bx bx-check-shield text-success me-1"></i>
+                                <?= esc(($evaluator['e_first_name'] ?? 'ไม่ระบุ') . ' ' . ($evaluator['e_last_name'] ?? '')); ?>
+                            </span>
+                            <span class="badge bg-label-primary"><?= esc($evaluator['e_position'] ?? 'กรรมการผู้ประเมิน'); ?></span>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -78,8 +101,12 @@
 
                 $has_any_agreement = $is_executive ? ($has_pres || $has_pa1) : ($has_pres || $has_plan || $has_pa1);
 
+                $is_eva_source = ($agreement['pa_file_pa1_source'] ?? '') === 'evaluation';
+                $eva_round = $agreement['pa_round'] ?? 1;
+                $eva_baseurl = $eva_upload_baseurl ?? 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/';
+
                 $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/lesson_plan/' . ($agreement['pa_file_lesson_plan'] ?? '')) : '';
-                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/pa1/' . ($agreement['pa_file_pa1'] ?? '')) : '';
+                $pa1_url  = $has_pa1 ? ($is_eva_source ? ($eva_baseurl . ($fiscal_year_be ?? 2569) . '/' . $eva_round . '/' . ($agreement['pa_file_pa1'] ?? '')) : ($pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/pa1/' . ($agreement['pa_file_pa1'] ?? ''))) : '';
                 $col_class = $is_executive ? 'col-md-6' : 'col-md-4';
             ?>
             <div class="card border border-primary-subtle shadow-sm mb-4" style="border-radius: 14px; background: #fbfdff;">

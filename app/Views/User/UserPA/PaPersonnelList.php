@@ -151,8 +151,12 @@
                                     }
                                 }
 
+                                $is_eva_source = ($agreement['pa_file_pa1_source'] ?? '') === 'evaluation';
+                                $eva_round = $agreement['pa_round'] ?? 1;
+                                $eva_baseurl = $eva_upload_baseurl ?? 'https://skj.nsnpao.go.th/uploads/personnel/teacher/evaluation/';
+
                                 $plan_url = $has_plan ? ($pa_upload_baseurl . $selected_year . '/lesson_plan/' . $agreement['pa_file_lesson_plan']) : '';
-                                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . $selected_year . '/pa1/' . $agreement['pa_file_pa1']) : '';
+                                $pa1_url  = $has_pa1 ? ($is_eva_source ? ($eva_baseurl . $selected_year . '/' . $eva_round . '/' . $agreement['pa_file_pa1']) : ($pa_upload_baseurl . $selected_year . '/pa1/' . $agreement['pa_file_pa1'])) : '';
                             ?>
                             <tr>
                                 <td class="text-center text-nowrap fw-semibold text-dark"><?= $index++; ?></td>
