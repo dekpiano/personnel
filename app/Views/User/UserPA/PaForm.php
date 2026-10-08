@@ -54,26 +54,33 @@
                 <div class="col-md-6">
                     <label for="evaluationPeriod" class="form-label fw-bold text-dark fs-6"><i class="bx bx-calendar me-1 text-primary"></i>รอบการประเมิน</label>
                     <select id="evaluationPeriod" name="evaluationPeriod" class="form-select border shadow-none bg-white text-dark fw-bold">
-                        <option value="1" selected>รอบการประเมิน (1 ตุลาคม <?= (($fiscal_year_be ?? (date('Y') + 543)) - 1) ?> - 30 กันยายน <?= ($fiscal_year_be ?? (date('Y') + 543)) ?>)</option>
+                        <option value="1" selected>รอบการประเมิน (1 ตุลาคม <?= (($fiscal_year_be ?? 2569) - 1) ?> - 30 กันยายน <?= ($fiscal_year_be ?? 2569) ?>)</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีการศึกษาประจำแบบประเมิน</label>
+                    <label for="academicYear" class="form-label fw-bold text-dark fs-6"><i class="bx bx-time me-1 text-primary"></i>ปีงบประมาณประจำแบบประเมิน</label>
                     <input type="text" class="form-control border shadow-none bg-white fw-bold text-dark fs-6" id="academicYear" name="academicYear"
-                        placeholder="ระบุปีการศึกษา" value="<?= esc($fiscal_year_be ?? (date('Y') + 543)); ?>" readonly>
+                        placeholder="ระบุปีงบประมาณ" value="<?= esc($fiscal_year_be ?? 2569); ?>" readonly>
                 </div>
             </div>
 
             <!-- PA Agreement Reference Documents Card -->
             <?php 
+                $is_executive = in_array($person['pers_position'] ?? '', ['posi_001', 'posi_002'])
+                    || (isset($person['posi_name']) && (str_contains($person['posi_name'], 'ผู้อำนวยการ') || str_contains($person['posi_name'], 'ผู้บริหาร')));
+
                 $agreement = $paAgreement ?? [];
                 $has_pres_file = !empty($agreement['pa_file_presentation']);
                 $has_pres_link = !empty($agreement['pa_presentation_link']);
                 $has_pres = $has_pres_file || $has_pres_link;
-                $has_plan = !empty($agreement['pa_file_lesson_plan']);
+                $has_plan = !$is_executive && !empty($agreement['pa_file_lesson_plan']);
                 $has_pa1  = !empty($agreement['pa_file_pa1']);
-                $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/lesson_plan/' . ($agreement['pa_file_lesson_plan'] ?? '')) : '';
-                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/pa1/' . ($agreement['pa_file_pa1'] ?? '')) : '';
+
+                $has_any_agreement = $is_executive ? ($has_pres || $has_pa1) : ($has_pres || $has_plan || $has_pa1);
+
+                $plan_url = $has_plan ? ($pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/lesson_plan/' . ($agreement['pa_file_lesson_plan'] ?? '')) : '';
+                $pa1_url  = $has_pa1 ? ($pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/pa1/' . ($agreement['pa_file_pa1'] ?? '')) : '';
+                $col_class = $is_executive ? 'col-md-6' : 'col-md-4';
             ?>
             <div class="card border border-primary-subtle shadow-sm mb-4" style="border-radius: 14px; background: #fbfdff;">
                 <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
@@ -85,13 +92,13 @@
                             เอกสารและสื่อนำเสนอผลการพัฒนางานตามข้อตกลง (PA) ของผู้รับการประเมิน
                         </h6>
                     </div>
-                    <span class="badge bg-label-primary rounded-pill px-3 py-1 fw-bold">ประจำปีการศึกษา <?= esc($fiscal_year_be ?? (date('Y') + 543)); ?></span>
+                    <span class="badge bg-label-primary rounded-pill px-3 py-1 fw-bold">ประจำปีงบประมาณ <?= esc($fiscal_year_be ?? 2569); ?></span>
                 </div>
                 <div class="card-body p-3">
-                    <?php if ($agreement && ($has_pres || $has_plan || $has_pa1)): ?>
+                    <?php if ($agreement && $has_any_agreement): ?>
                         <div class="row g-3">
                             <!-- 1. สื่อนำเสนอ -->
-                            <div class="col-md-4">
+                            <div class="<?= $col_class; ?>">
                                 <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
                                     <div class="d-flex align-items-start mb-2">
                                         <div class="avatar avatar-sm bg-primary text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
@@ -111,12 +118,12 @@
                                                 $is_file  = $has_pres_file || (bool) preg_match('#\.(pptx?|pdf|zip|rar|key|mp4|mov)$#i', $raw_pres);
                                                 
                                                 if ($has_pres_file) {
-                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/presentation/' . $pres_file_name;
+                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/presentation/' . $pres_file_name;
                                                 } elseif ($is_local) {
                                                     $pres_url = 'local';
                                                 } elseif ($is_file) {
                                                     $clean_name = basename(str_replace('\\', '/', $raw_pres));
-                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? date('Y')+543) . '/presentation/' . $clean_name;
+                                                    $pres_url = $pa_upload_baseurl . ($fiscal_year_be ?? 2569) . '/presentation/' . $clean_name;
                                                 } elseif (preg_match('#^https?://#i', $raw_pres)) {
                                                     $pres_url = $raw_pres;
                                                 } else {
@@ -124,7 +131,7 @@
                                                 }
                                             ?>
                                             <?php if ($is_local && !$has_pres_file): ?>
-                                                <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill fw-bold" onclick="Swal.fire('แจ้งเตือน', 'ครูระบุเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว ไม่สามารถเปิดออนไลน์ได้', 'warning')">
+                                                <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill fw-bold" onclick="Swal.fire('แจ้งเตือน', 'ระบุเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว ไม่สามารถเปิดออนไลน์ได้', 'warning')">
                                                     <i class="bx bx-error me-1"></i>ไฟล์ในเครื่องส่วนตัว
                                                 </button>
                                             <?php elseif ($is_file): ?>
@@ -143,8 +150,9 @@
                                 </div>
                             </div>
 
-                            <!-- 2. แผนการจัดการเรียนรู้ -->
-                            <div class="col-md-4">
+                            <!-- 2. แผนการจัดการเรียนรู้ (เฉพาะครูผู้สอน) -->
+                            <?php if (!$is_executive): ?>
+                            <div class="<?= $col_class; ?>">
                                 <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
                                     <div class="d-flex align-items-start mb-2">
                                         <div class="avatar avatar-sm bg-info text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
@@ -166,16 +174,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
 
                             <!-- 3. แบบข้อตกลง PA1 -->
-                            <div class="col-md-4">
+                            <div class="<?= $col_class; ?>">
                                 <div class="p-3 bg-white rounded-3 border h-100 d-flex flex-column justify-content-between shadow-xs">
                                     <div class="d-flex align-items-start mb-2">
                                         <div class="avatar avatar-sm bg-danger text-white rounded-3 d-flex align-items-center justify-content-center me-2 flex-shrink-0">
                                             <i class="bx bxs-file-pdf fs-5"></i>
                                         </div>
                                         <div>
-                                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">3. แบบข้อตกลง (PA1)</span>
+                                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;"><?= $is_executive ? '2. แบบข้อตกลง (PA1)' : '3. แบบข้อตกลง (PA1)'; ?></span>
                                             <small class="text-muted" style="font-size: 0.75rem;">บันทึกข้อตกลงการพัฒนางาน (PDF)</small>
                                         </div>
                                     </div>
@@ -194,7 +203,7 @@
                     <?php else: ?>
                         <div class="text-center py-3 text-muted">
                             <i class="bx bx-info-circle fs-4 d-block mb-1 text-secondary"></i>
-                            <span class="small">ผู้รับการประเมินยังไม่ได้ส่งเอกสารหรือสื่อนำเสนอในระบบบันทึกข้อมูลครู สำหรับปีการศึกษานี้</span>
+                            <span class="small">ผู้รับการประเมินยังไม่ได้ส่งเอกสารหรือสื่อนำเสนอในระบบบันทึกข้อมูลครู สำหรับปีงบประมาณนี้</span>
                         </div>
                     <?php endif; ?>
                 </div>

@@ -68,13 +68,50 @@ class ConUserPaEvaluation extends BaseController
             }
             $possibleAssessorIds = array_values(array_unique(array_filter($possibleAssessorIds)));
 
-            // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
-            $current_month = (int)date('m');
-            $current_year_ad = (int)date('Y');
-            $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+            // 1. ดึงปีงบประมาณที่มีข้อมูลส่งข้อตกลง PA จริงจาก tb_teacher_pa_agreement
+            $db_years = [];
+            try {
+                $agreementYears = $db_personnel->table('tb_teacher_pa_agreement')
+                    ->select('pa_year')
+                    ->distinct()
+                    ->where('pa_year IS NOT NULL')
+                    ->where('pa_year !=', '')
+                    ->where('pa_year !=', '0')
+                    ->get()->getResultArray();
+                foreach ($agreementYears as $dy) {
+                    $yr = (int)($dy['pa_year'] ?? 0);
+                    if ($yr > 2500) {
+                        $db_years[] = $yr;
+                    } elseif ($yr > 2000) {
+                        $db_years[] = $yr + 543;
+                    }
+                }
+            } catch (\Throwable $e) {
+                log_message('error', '[paPersonnelList] Fetch pa_year failed: ' . $e->getMessage());
+            }
 
+            $db_years = array_values(array_unique(array_filter($db_years)));
+            rsort($db_years);
+
+            // ปีงบประมาณล่าสุดที่มีข้อมูลการส่งข้อตกลง PA จริง (เช่น 2569)
+            $latest_fiscal_year = !empty($db_years) ? $db_years[0] : 2569;
+
+            // รวบรวมปีที่เปิดให้เลือกใน Dropdown (ปีที่มีข้อมูลจริง + ปีย้อนหลัง)
+            $available_fiscal_years = $db_years;
+            if (!in_array(2569, $available_fiscal_years)) {
+                $available_fiscal_years[] = 2569;
+            }
+            if (!in_array(2568, $available_fiscal_years)) {
+                $available_fiscal_years[] = 2568;
+            }
+            if (!in_array(2567, $available_fiscal_years)) {
+                $available_fiscal_years[] = 2567;
+            }
+            rsort($available_fiscal_years);
+
+            // รับค่าจาก URL หรือใช้ปีล่าสุดที่มีข้อมูลจริง (2569) เป็นค่าเริ่มต้น
             $selected_fiscal_year = $this->request->getGet('fiscal_year');
-            $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+            $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $latest_fiscal_year;
             $fiscal_year_ad = $fiscal_year_be - 543;
 
             // Fetch scopes for the logged-in assessor filtered by selected fiscal year
@@ -190,6 +227,8 @@ class ConUserPaEvaluation extends BaseController
         $data['UrlMenuSub'] = '';
         $data['personnel'] = $personnel;
         $data['selected_fiscal_year'] = $fiscal_year_be;
+        $data['available_fiscal_years'] = $available_fiscal_years;
+        $data['latest_fiscal_year'] = $latest_fiscal_year;
         $data['pa_upload_baseurl'] = env('upload.server.baseurl.pa_agreement', 'https://skj.nsnpao.go.th/uploads/personnel/teacher/pa_agreement/');
 
         return view('User/UserPA/PaPersonnelList', $data);
@@ -215,12 +254,26 @@ class ConUserPaEvaluation extends BaseController
             return redirect()->to('pa-personnel')->with('Error', 'ไม่พบข้อมูลบุคลากร');
         }
 
-        // คำนวณปีการศึกษาปัจจุบัน (รอบ ต.ค. - ก.ย.)
-        $current_month = (int)date('m');
-        $current_year_ad = (int)date('Y');
-        $current_fiscal_year_be = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
+        // ตรวจสอบปีงบประมาณล่าสุดจากฐานข้อมูลหากไม่ได้ระบุใน URL
         $selected_fiscal_year = $this->request->getGet('fiscal_year');
-        $fiscal_year_be = !empty($selected_fiscal_year) ? (int)$selected_fiscal_year : $current_fiscal_year_be;
+        if (!empty($selected_fiscal_year)) {
+            $fiscal_year_be = (int)$selected_fiscal_year;
+        } else {
+            $latestDbYear = null;
+            try {
+                $latestRow = $database->table('tb_teacher_pa_agreement')
+                    ->select('pa_year')
+                    ->where('pa_teacher_id', $personId)
+                    ->orderBy('pa_year', 'DESC')
+                    ->get()->getRowArray();
+                if (!empty($latestRow['pa_year'])) {
+                    $yVal = (int)$latestRow['pa_year'];
+                    $latestDbYear = ($yVal > 2500) ? $yVal : ($yVal + 543);
+                }
+            } catch (\Throwable $e) {}
+
+            $fiscal_year_be = $latestDbYear ?: 2569;
+        }
         $fiscal_year_ad = $fiscal_year_be - 543;
 
         // Fetch PA Agreement from tb_teacher_pa_agreement

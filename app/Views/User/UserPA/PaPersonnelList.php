@@ -13,10 +13,8 @@
         }
     }
 
-    $current_month = (int)date('m');
-    $current_year_ad = (int)date('Y');
-    $current_fiscal_year = ($current_month >= 10) ? $current_year_ad + 544 : $current_year_ad + 543;
-    $selected_year = isset($_GET['fiscal_year']) ? (int)$_GET['fiscal_year'] : $current_fiscal_year;
+    $years_list = !empty($available_fiscal_years) ? $available_fiscal_years : [2569, 2568, 2567];
+    $selected_year = isset($selected_fiscal_year) ? (int)$selected_fiscal_year : (isset($_GET['fiscal_year']) ? (int)$_GET['fiscal_year'] : ($latest_fiscal_year ?? 2569));
 ?>
 
 <!-- Header Banner -->
@@ -31,13 +29,13 @@
                 <p class="text-white mb-0 fs-6" style="opacity: 0.95;">เลือกรายชื่อบุคลากรในขอบเขตการประเมินของคุณเพื่อทำแบบประเมินผลการพัฒนางานตามข้อตกลง</p>
             </div>
             <div class="d-flex align-items-center bg-white p-2 rounded-3 shadow-sm border">
-                <label for="fiscalYearSelect" class="form-label mb-0 me-2 text-dark fs-6 fw-bold text-nowrap"><i class="bx bx-calendar me-1 text-primary"></i>ปีการศึกษา:</label>
+                <label for="fiscalYearSelect" class="form-label mb-0 me-2 text-dark fs-6 fw-bold text-nowrap"><i class="bx bx-calendar me-1 text-primary"></i>ปีงบประมาณ:</label>
                 <select id="fiscalYearSelect" class="form-select form-select-sm select2 border-0 shadow-none text-dark fw-bold" style="width: 130px; font-size: 0.95rem;" onchange="location = this.value;">
-                    <?php for ($y = $current_fiscal_year + 1; $y >= $current_fiscal_year - 3; $y--): ?>
+                    <?php foreach ($years_list as $y): ?>
                         <option value="<?= base_url('pa-personnel?fiscal_year=' . $y) ?>" <?= $selected_year == $y ? 'selected' : '' ?>>
                             <?= $y ?>
                         </option>
-                    <?php endfor; ?>
+                    <?php endforeach; ?>
                 </select>
             </div>
         </div>
@@ -90,7 +88,7 @@
 <!-- Main Table Card -->
 <div class="card border-0 shadow-sm" style="border-radius: 16px;">
     <div class="card-header border-0 d-flex justify-content-between align-items-center py-3" style="background: #025588; color: white; border-top-left-radius: 16px; border-top-right-radius: 16px;">
-        <h4 class="card-title mb-0 fw-bold text-white fs-5"><i class="bx bx-list-ol me-2 text-warning"></i>ตารางรายชื่อบุคลากรประจำปี <?= esc($selected_year); ?></h4>
+        <h4 class="card-title mb-0 fw-bold text-white fs-5"><i class="bx bx-list-ol me-2 text-warning"></i>ตารางรายชื่อบุคลากรประจำปีงบประมาณ <?= esc($selected_year); ?></h4>
         <span class="badge bg-white text-dark rounded-pill px-3 py-2 fs-6 fw-bold"><i class="bx bx-group me-1 text-primary"></i><?= $total_count; ?> รายการ</span>
     </div>
     <div class="card-body pt-3">
@@ -103,7 +101,7 @@
                         <th class="text-nowrap fw-bold text-dark" style="width: 120px;">กลุ่มสาระ</th>
                         <th class="text-nowrap fw-bold text-dark" style="width: 100px;">ตำแหน่ง</th>
                         <th class="text-nowrap fw-bold text-dark" style="width: 110px;">วิทยฐานะ</th>
-                        <th class="text-nowrap fw-bold text-dark text-center" style="width: 180px;">ข้อมูลข้อตกลง PA ของครู</th>
+                        <th class="text-nowrap fw-bold text-dark text-center" style="width: 180px;">ข้อมูลข้อตกลง PA</th>
                         <th class="text-nowrap fw-bold text-dark text-center" style="width: 110px;">สถานะประเมิน</th>
                         <th style="width: 120px;" class="text-center text-nowrap fw-bold text-dark">จัดการ</th>
                     </tr>
@@ -113,12 +111,17 @@
                         <?php $index = 1; ?>
                         <?php foreach ($personnel as $person): ?>
                             <?php 
+                                $is_executive = in_array($person['pers_position'] ?? '', ['posi_001', 'posi_002'])
+                                    || (isset($person['posi_name']) && (str_contains($person['posi_name'], 'ผู้อำนวยการ') || str_contains($person['posi_name'], 'ผู้บริหาร')));
+
                                 $agreement = $person['pa_agreement'] ?? null;
                                 $has_pres_file = !empty($agreement['pa_file_presentation']);
                                 $has_pres_link = !empty($agreement['pa_presentation_link']);
                                 $has_pres = $has_pres_file || $has_pres_link;
-                                $has_plan = !empty($agreement['pa_file_lesson_plan']);
+                                $has_plan = !$is_executive && !empty($agreement['pa_file_lesson_plan']);
                                 $has_pa1  = !empty($agreement['pa_file_pa1']);
+
+                                $has_any_doc = $is_executive ? ($has_pres || $has_pa1) : ($has_pres || $has_plan || $has_pa1);
                                 
                                 $pres_file_name = $agreement['pa_file_presentation'] ?? '';
                                 $raw_pres = trim($agreement['pa_presentation_link'] ?? '', " \t\n\r\0\x0B\"'");
@@ -184,13 +187,13 @@
                                         <?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?>
                                     </span>
                                 </td>
-                                <!-- คอลัมน์ข้อมูลข้อตกลง PA ของครู -->
+                                <!-- คอลัมน์ข้อมูลข้อตกลง PA -->
                                 <td class="text-center text-nowrap">
-                                    <?php if ($agreement && ($has_pres || $has_plan || $has_pa1)): ?>
+                                    <?php if ($agreement && $has_any_doc): ?>
                                         <div class="d-inline-flex align-items-center gap-1">
                                             <!-- สื่อนำเสนอ (รองรับทั้งลิงก์ออนไลน์ Canva/Drive และไฟล์ที่อัปโหลด) -->
                                             <?php if ($has_pres && $pres_type === 'local_file'): ?>
-                                                <button type="button" class="btn btn-xs btn-outline-warning px-2 py-1 rounded shadow-none text-dark" onclick="Swal.fire('แจ้งเตือน', 'ครูแนบเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว (<?= esc(addslashes($pres_display)) ?>)', 'warning')" title="ครูแนบเป็นพาธไฟล์ในเครื่อง" data-bs-toggle="tooltip">
+                                                <button type="button" class="btn btn-xs btn-outline-warning px-2 py-1 rounded shadow-none text-dark" onclick="Swal.fire('แจ้งเตือน', 'แนบเป็นพาธไฟล์ในเครื่องคอมพิวเตอร์ส่วนตัว (<?= esc(addslashes($pres_display)) ?>)', 'warning')" title="แนบเป็นพาธไฟล์ในเครื่อง" data-bs-toggle="tooltip">
                                                     <i class="bx bx-error fs-6 me-1 text-warning"></i>สื่อ (ในเครื่อง)
                                                 </button>
                                             <?php elseif ($has_pres && $pres_type === 'uploaded_file'): ?>
@@ -207,15 +210,17 @@
                                                 </span>
                                             <?php endif; ?>
 
-                                            <!-- แผนการสอน -->
-                                            <?php if ($has_plan): ?>
-                                                <a href="<?= esc($plan_url); ?>" target="_blank" class="btn btn-xs btn-outline-info px-2 py-1 rounded shadow-none" title="คลิกเพื่อดู/ดาวน์โหลดไฟล์แผนการสอน (PDF)" data-bs-toggle="tooltip">
-                                                    <i class="bx bx-book-open fs-6 me-1"></i>แผน
-                                                </a>
-                                            <?php else: ?>
-                                                <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบแผนการสอน" data-bs-toggle="tooltip">
-                                                    <i class="bx bx-book-open fs-6 me-1"></i>-
-                                                </span>
+                                            <!-- แผนการสอน (แสดงเฉพาะครูผู้สอน ไม่แสดงสำหรับผู้บริหาร) -->
+                                            <?php if (!$is_executive): ?>
+                                                <?php if ($has_plan): ?>
+                                                    <a href="<?= esc($plan_url); ?>" target="_blank" class="btn btn-xs btn-outline-info px-2 py-1 rounded shadow-none" title="คลิกเพื่อดู/ดาวน์โหลดไฟล์แผนการสอน (PDF)" data-bs-toggle="tooltip">
+                                                        <i class="bx bx-book-open fs-6 me-1"></i>แผน
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="btn btn-xs btn-light text-muted px-2 py-1 rounded border opacity-50" title="ยังไม่แนบแผนการสอน" data-bs-toggle="tooltip">
+                                                        <i class="bx bx-book-open fs-6 me-1"></i>-
+                                                    </span>
+                                                <?php endif; ?>
                                             <?php endif; ?>
 
                                             <!-- บันทึกข้อตกลง PA1 -->
@@ -234,6 +239,7 @@
                                                 data-name="<?= esc($person['pers_prefix'] . $person['pers_firstname'] . ' ' . $person['pers_lastname']); ?>"
                                                 data-posi="<?= esc($person['posi_name'] ?? '-'); ?>"
                                                 data-academic="<?= empty($person['pers_academic']) ? 'ไม่มีวิทยฐานะ' : esc($person['pers_academic']); ?>"
+                                                data-is-executive="<?= $is_executive ? '1' : '0'; ?>"
                                                 data-pres="<?= esc($pres_url); ?>"
                                                 data-pres-type="<?= esc($pres_type); ?>"
                                                 data-pres-name="<?= esc($pres_display); ?>"
@@ -302,7 +308,7 @@
                         </div>
                         <div class="text-end">
                             <span class="badge bg-label-secondary rounded-pill px-3 py-2">
-                                <i class="bx bx-calendar me-1"></i>ปีการศึกษา <?= esc($selected_year); ?>
+                                <i class="bx bx-calendar me-1"></i>ปีงบประมาณ <?= esc($selected_year); ?>
                             </span>
                             <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px;" id="modalUpdatedAt">-</div>
                         </div>
@@ -312,7 +318,7 @@
                 <!-- 3 Items List -->
                 <div class="row g-3">
                     <!-- 1. สื่อนำเสนอ -->
-                    <div class="col-12">
+                    <div class="col-12" id="modalPresContainer">
                         <div class="card border border-primary-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div class="d-flex align-items-center">
@@ -320,7 +326,7 @@
                                         <i class="bx bx-slideshow fs-3"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold text-dark mb-0">1. ลิงก์สื่อนำเสนอผลการพัฒนางานตามข้อตกลง (PA)</h6>
+                                        <h6 class="fw-bold text-dark mb-0"><span id="modalPresItemNum">1.</span> ลิงก์สื่อนำเสนอผลการพัฒนางานตามข้อตกลง (PA)</h6>
                                         <small class="text-muted">เช่น สื่อ Canva, PowerPoint Online, Google Slides</small>
                                         <div id="modalPresLinkText" class="text-truncate mt-1 text-primary small" style="max-width: 380px;">-</div>
                                     </div>
@@ -332,8 +338,8 @@
                         </div>
                     </div>
 
-                    <!-- 2. แผนการจัดการเรียนรู้ -->
-                    <div class="col-12">
+                    <!-- 2. แผนการจัดการเรียนรู้ (ซ่อนอัตโนมัติหากเป็นผู้บริหาร) -->
+                    <div class="col-12" id="modalPlanContainer">
                         <div class="card border border-info-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div class="d-flex align-items-center">
@@ -354,7 +360,7 @@
                     </div>
 
                     <!-- 3. บันทึกข้อตกลง PA1 -->
-                    <div class="col-12">
+                    <div class="col-12" id="modalPa1Container">
                         <div class="card border border-danger-subtle shadow-sm p-3 bg-white" style="border-radius: 12px;">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div class="d-flex align-items-center">
@@ -362,7 +368,7 @@
                                         <i class="bx bxs-file-pdf fs-3"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold text-dark mb-0">3. ไฟล์บันทึกข้อตกลงในการพัฒนางาน (PA1)</h6>
+                                        <h6 class="fw-bold text-dark mb-0"><span id="modalPa1ItemNum">3.</span> ไฟล์บันทึกข้อตกลงในการพัฒนางาน (PA1)</h6>
                                         <small class="text-muted">แบบข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง (PDF)</small>
                                         <div id="modalPa1FileText" class="text-truncate mt-1 text-secondary small" style="max-width: 380px;">-</div>
                                     </div>
@@ -413,6 +419,7 @@ $(document).ready(function() {
         const name = btn.data('name');
         const posi = btn.data('posi');
         const academic = btn.data('academic');
+        const isExecutive = btn.data('is-executive') == 1 || btn.data('is-executive') == '1';
         const pres = btn.data('pres');
         const presType = btn.data('pres-type');
         const plan = btn.data('plan');
@@ -425,6 +432,15 @@ $(document).ready(function() {
         $('#modalTeacherPosition').text(posi);
         $('#modalTeacherAcademic').text(academic);
         $('#modalUpdatedAt').text(updated ? ('อัปเดตล่าสุด: ' + updated) : '');
+
+        // Toggle Plan section for executive vs teacher
+        if (isExecutive) {
+            $('#modalPlanContainer').hide();
+            $('#modalPa1ItemNum').text('2.');
+        } else {
+            $('#modalPlanContainer').show();
+            $('#modalPa1ItemNum').text('3.');
+        }
 
         // Presentation
         if (presType === 'local_file') {
@@ -442,12 +458,14 @@ $(document).ready(function() {
         }
 
         // Lesson Plan
-        if (plan && plan.trim() !== '') {
-            $('#modalPlanFileText').html('<i class="bx bx-file me-1"></i>' + (planName || 'ไฟล์แผนการสอน'));
-            $('#modalPlanAction').html('<a href="' + plan + '" target="_blank" class="btn btn-info text-white rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-download me-1"></i>ดูไฟล์ PDF</a>');
-        } else {
-            $('#modalPlanFileText').text('ยังไม่มีการอัปโหลดไฟล์');
-            $('#modalPlanAction').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
+        if (!isExecutive) {
+            if (plan && plan.trim() !== '') {
+                $('#modalPlanFileText').html('<i class="bx bx-file me-1"></i>' + (planName || 'ไฟล์แผนการสอน'));
+                $('#modalPlanAction').html('<a href="' + plan + '" target="_blank" class="btn btn-info text-white rounded-pill btn-sm px-3 fw-bold"><i class="bx bx-download me-1"></i>ดูไฟล์ PDF</a>');
+            } else {
+                $('#modalPlanFileText').text('ยังไม่มีการอัปโหลดไฟล์');
+                $('#modalPlanAction').html('<span class="badge bg-light text-muted border">ยังไม่ส่ง</span>');
+            }
         }
 
         // PA1
