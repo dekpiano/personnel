@@ -144,6 +144,24 @@ The application is divided into Admin and User (personnel) sections.
 - **User-Centric Workflows:** ผู้ใช้ทำงานเสร็จได้ในคลิกที่น้อยที่สุด ฟอร์มกรอกง่าย มี Auto-complete, มี Validation Feedback ชัดเจน เข้าใจง่าย
 - **100% Thai Buddhist Era (พ.ศ.):** วันที่ ปฏิทิน Flatpickr ปีงบประมาณ และรายงานทั้งหมดเป็นภาษาไทย พ.ศ. สากล ถูกต้องตามระเบียบราชการไทย 100%
 
+---
+
+## 11. ⚡ Automatic Superpowers Skills Invocation (เรียกใช้ Superpowers อัตโนมัติทุกงาน)
+
+ทุกครั้งที่ผู้ใช้สั่งงาน ถามคำถาม หรือต้องการให้ เพิ่ม, แก้ไข, ลบข้อมูล หรือแก้ไขโค้ด ผู้ช่วย AI **ต้องเรียกใช้และปฏิบัติตาม Skill ใน Superpowers โดยอัตโนมัติเสมอ**:
+
+1. **`using-superpowers`**: ประเมินและเรียกใช้ Skill ที่ตรงกับงานก่อนเริ่มดำเนินการหรือตอบคำถามทุกครั้ง
+2. **สร้าง/เพิ่ม/แก้ไข ฟีเจอร์ หรือออกแบบโครงสร้างใหม่ (`brainstorming`, `writing-plans`)**:
+   - วิเคราะห์ความต้องการ ออกแบบวิธีแก้ปัญหา (Design doc / Approaches) และสอบถาม/ยืนยันก่อนลงมือแก้ไขจริง
+   - วางแผนขั้นตอนการทำงานแบบ Step-by-Step (TDD, YAGNI, DRY)
+3. **ตรวจสอบบั๊ก / แก้ปัญหาข้อผิดพลาด (`systematic-debugging`)**:
+   - ไล่สายข้อมูลอย่างเป็นระบบ (View -> Route -> Controller -> Model -> DB) สืบหาสาเหตุที่แท้จริง ไม่แก้แบบปะผุ
+4. **ลงมือแก้ไขและพัฒนา (`test-driven-development`, `executing-plans`)**:
+   - ปฏิบัติตามแผนอย่างเคร่งครัด อัปเดต Task checklist ตามจริง
+5. **ก่อนจบงานทุกครั้ง (`verification-before-completion`)**:
+   - ต้องทดสอบรันคำสั่ง ตรวจสอบฐานข้อมูล หรือตรวจสอบ HTTP Status Code ให้แน่ใจว่าสำเร็จจริงก่อนแจ้งจบงานเสมอ
+
+
 
 
 

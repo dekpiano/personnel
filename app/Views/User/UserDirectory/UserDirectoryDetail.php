@@ -411,14 +411,34 @@ function getInitials($name) {
                     <i class='bx bxs-contact'></i> ช่องทางติดต่อ
                 </h3>
                 
-                <?php if (!empty($teacher->pers_phone)): ?>
+                <?php 
+                    $isOwnerOrAdmin = (session()->get('logged_in') && (session()->get('id') == $teacher->pers_id || session()->get('admin') == 1));
+                    $isPermitted = (!empty($teacher->pers_show_phone) && $teacher->pers_show_phone == 1);
+                ?>
+                
+                <?php if (!empty($teacher->pers_phone) && ($isPermitted || $isOwnerOrAdmin)): ?>
                 <a href="tel:<?= esc($teacher->pers_phone) ?>" class="contact-card-link">
                     <div class="contact-icon-circle"><i class='bx bxs-phone'></i></div>
                     <div>
-                        <span class="contact-lab-text">โทรศัพท์</span>
+                        <span class="contact-lab-text">
+                            โทรศัพท์
+                            <?php if (!$isPermitted && $isOwnerOrAdmin): ?>
+                                <span class="badge bg-label-warning ms-1" style="font-size: 0.65rem;">เฉพาะคุณที่เห็น (ซ่อนจากสาธารณะ)</span>
+                            <?php endif; ?>
+                        </span>
                         <span class="contact-val-text"><?= esc($teacher->pers_phone) ?></span>
                     </div>
                 </a>
+                <?php elseif (!empty($teacher->pers_phone) && !$isPermitted): ?>
+                <div class="contact-card-link" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                    <div class="contact-icon-circle text-muted" style="background: #ffffff;"><i class='bx bx-lock-alt text-secondary'></i></div>
+                    <div>
+                        <span class="contact-lab-text">โทรศัพท์</span>
+                        <span class="contact-val-text text-muted" style="font-size: 0.85rem; font-weight: 500;">
+                            <i class='bx bx-shield-quarter me-1 text-warning'></i> ไม่ได้เปิดเผยเบอร์โทรศัพท์สู่สาธารณะ
+                        </span>
+                    </div>
+                </div>
                 <?php endif; ?>
 
                 <?php if (!empty($teacher->pers_facebook)): ?>
@@ -605,9 +625,15 @@ function getInitials($name) {
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-floating mb-3">
+                        <div class="form-floating mb-2">
                             <input type="tel" class="form-control" id="pers_phone" name="pers_phone" placeholder="เบอร์โทรศัพท์" value="<?= esc($teacher->pers_phone) ?>">
                             <label for="pers_phone">เบอร์โทรศัพท์</label>
+                        </div>
+                        <div class="form-check form-switch bg-white p-2 px-3 rounded-3 border">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" id="pers_show_phone" name="pers_show_phone" value="1" <?= (!empty($teacher->pers_show_phone) && $teacher->pers_show_phone == 1) ? 'checked' : '' ?>>
+                            <label class="form-check-label small fw-semibold text-secondary" for="pers_show_phone">
+                                <i class='bx bx-check-shield text-primary'></i> ยินยอมให้แสดงเบอร์โทรศัพท์ในทำเนียบสาธารณะ
+                            </label>
                         </div>
                     </div>
                     

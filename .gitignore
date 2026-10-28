@@ -46,3 +46,7 @@ uploads/*
 !uploads/index.html
 
 vendor/
+
+# Antigravity & Agents local customizations
+.agents/
+.superpowers/

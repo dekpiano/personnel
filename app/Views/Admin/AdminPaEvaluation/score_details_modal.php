@@ -13,6 +13,27 @@ $formatPaScore = static function ($value, int $decimals = 2): string {
         : ceil($number * $factor - 1e-9) / $factor;
     return number_format($truncated, $decimals, '.', ',');
 };
+// คำนวณผลรวมคะแนนจากรายการประเมินแต่ละข้อ (เพื่อความถูกต้องแม่นยำ ไม่ปัดเศษทศนิยม)
+$part1Calculated = 0.0;
+$part2Calculated = 0.0;
+$hasItemCalculatedScores = false;
+if (!empty($rubricItems) && !empty($calculatedScores)) {
+    foreach ($rubricItems as $item) {
+        $rId = $item['ri_id'] ?? '';
+        if (isset($calculatedScores[$rId])) {
+            $hasItemCalculatedScores = true;
+            if ((int)($item['ri_part'] ?? 0) === 1) {
+                $part1Calculated += (float)$calculatedScores[$rId];
+            } elseif ((int)($item['ri_part'] ?? 0) === 2) {
+                $part2Calculated += (float)$calculatedScores[$rId];
+            }
+        }
+    }
+}
+
+$finalPart1Score = $hasItemCalculatedScores ? $part1Calculated : (float)($summary['es_part1_score'] ?? 0);
+$finalPart2Score = $hasItemCalculatedScores ? $part2Calculated : (float)($summary['es_part2_score'] ?? 0);
+$finalTotalScore = $hasItemCalculatedScores ? ($part1Calculated + $part2Calculated) : (float)($summary['es_total_score'] ?? 0);
 ?>
 
 <?php if (empty($rubricItems) || empty($summary)): ?>
@@ -83,7 +104,7 @@ $formatPaScore = static function ($value, int $decimals = 2): string {
                         style="background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%); border-start: 4px solid #03c3ec !important;">
                         <div class="card-body p-3">
                             <span class="text-muted fw-semibold small d-block mb-1">รวมคะแนนส่วนที่ 1</span>
-                            <h3 class="fw-bold mb-0 text-primary"><?= $formatPaScore($summary['es_part1_score'] ?? 0) ?>
+                            <h3 class="fw-bold mb-0 text-primary"><?= $formatPaScore($finalPart1Score) ?>
                                 <span class="fs-6 text-muted fw-normal">/ 60.00</span></h3>
                         </div>
                     </div>
@@ -93,7 +114,7 @@ $formatPaScore = static function ($value, int $decimals = 2): string {
                         style="background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%); border-start: 4px solid #2e7d32 !important;">
                         <div class="card-body p-3">
                             <span class="text-muted fw-semibold small d-block mb-1">รวมคะแนนส่วนที่ 2</span>
-                            <h3 class="fw-bold mb-0 text-success"><?= $formatPaScore($summary['es_part2_score'] ?? 0) ?>
+                            <h3 class="fw-bold mb-0 text-success"><?= $formatPaScore($finalPart2Score) ?>
                                 <span class="fs-6 text-muted fw-normal">/ 40.00</span></h3>
                         </div>
                     </div>
@@ -103,7 +124,7 @@ $formatPaScore = static function ($value, int $decimals = 2): string {
                         style="background: linear-gradient(135deg, #03c3ec 0%, #0288d1 100%);">
                         <div class="card-body p-3">
                             <span class="text-white-50 fw-semibold small d-block mb-1">รวมคะแนนทั้งหมด</span>
-                            <h2 class="fw-bold mb-0 text-white"><?= $formatPaScore($summary['es_total_score'] ?? 0) ?>
+                            <h2 class="fw-bold mb-0 text-white"><?= $formatPaScore($finalTotalScore) ?>
                                 <span class="fs-6 text-white-50 fw-normal">/ 100.00</span></h2>
                         </div>
                     </div>

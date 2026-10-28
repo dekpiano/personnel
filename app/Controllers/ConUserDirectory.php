@@ -37,7 +37,7 @@ class ConUserDirectory extends BaseController
 
         // ดึงข้อมูลผู้บริหาร
         $data['Executive'] = $DBPers
-            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img, pers_academic, posi_name, pers_position, pers_groupleade')
+            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_nickname, pers_phone, pers_img, pers_academic, posi_name, pers_position, pers_groupleade')
             ->join('skjacth_skj.tb_position','skjacth_skj.tb_position.posi_id = skjacth_personnel.tb_personnel.pers_position')
             ->where('pers_status', "กำลังใช้งาน")
             ->where('pers_position <=', 'posi_002')
@@ -56,7 +56,7 @@ class ConUserDirectory extends BaseController
 
         // ดึงข้อมูลครูทั้งหมด (กรองเฉพาะครูที่กำลังใช้งาน)
         $data['AllTeachers'] = $DBPers
-            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img, pers_academic, posi_name, pers_learning, lear_namethai, pers_groupleade, pers_position')
+            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_nickname, pers_phone, pers_img, pers_academic, posi_name, pers_learning, lear_namethai, pers_groupleade, pers_position')
             ->join('skjacth_skj.tb_position','skjacth_skj.tb_position.posi_id = skjacth_personnel.tb_personnel.pers_position')
             ->join('skjacth_skj.tb_learning','skjacth_skj.tb_learning.lear_id = skjacth_personnel.tb_personnel.pers_learning', 'left')
             ->where('pers_status', "กำลังใช้งาน")
@@ -68,8 +68,9 @@ class ConUserDirectory extends BaseController
 
         // ดึงข้อมูลบุคลากรสนับสนุน
         $data['SupportStaff'] = $DBPers
-            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img, posi_name, pers_groupleade')
+            ->select('skjacth_personnel.tb_personnel.pers_id, pers_prefix, pers_firstname, pers_lastname, pers_nickname, pers_phone, pers_img, skjacth_skj.tb_position.posi_name, pers_groupleade, skjacth_personnel.tb_personnel.pers_position, skjacth_personnel.tb_personnel.pers_workother_id, skjacth_skj.tb_position_main.work_name')
             ->join('skjacth_skj.tb_position','skjacth_skj.tb_position.posi_id = skjacth_personnel.tb_personnel.pers_position')
+            ->join('skjacth_skj.tb_position_main', 'skjacth_skj.tb_position_main.work_id = skjacth_personnel.tb_personnel.pers_workother_id', 'left')
             ->where('pers_status', "กำลังใช้งาน")
             ->where('pers_position >=', 'posi_007')
             ->orderBy('pers_position', 'ASC')
@@ -170,6 +171,7 @@ class ConUserDirectory extends BaseController
             'pers_nickname'  => $this->request->getPost('pers_nickname'),
             'pers_britday'   => $this->request->getPost('pers_britday'),
             'pers_phone'     => $this->request->getPost('pers_phone'),
+            'pers_show_phone' => $this->request->getPost('pers_show_phone') ? 1 : 0,
             'pers_facebook'  => $this->request->getPost('pers_facebook'),
             'pers_line'      => $this->request->getPost('pers_line'),
             'pers_instagram' => $this->request->getPost('pers_instagram'),

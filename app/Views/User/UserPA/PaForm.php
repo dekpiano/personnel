@@ -449,22 +449,22 @@
                     <div class="col-md-4">
                         <div class="card border border-primary-subtle shadow-sm h-100 p-3 bg-white">
                             <span class="text-dark fs-6 fw-bold d-block mb-1">รวมคะแนนส่วนที่ 1</span>
-                            <h2 class="fw-bold text-dark mb-0"><span id="totalScore1"><?= isset($evaluatorScore['es_part1_score']) ? esc($evaluatorScore['es_part1_score']) : '0'; ?></span> <span class="fs-6 text-dark font-normal">/ 60.00</span></h2>
-                            <input type="hidden" name="totalScore1" value="<?= isset($evaluatorScore['es_part1_score']) ? esc($evaluatorScore['es_part1_score']) : '0'; ?>">
+                            <h2 class="fw-bold text-dark mb-0"><span id="totalScore1"><?= isset($evaluatorScore['es_part1_score']) ? number_format((float)$evaluatorScore['es_part1_score'], 2, '.', '') : '0.00'; ?></span> <span class="fs-6 text-dark font-normal">/ 60.00</span></h2>
+                            <input type="hidden" name="totalScore1" value="<?= isset($evaluatorScore['es_part1_score']) ? number_format((float)$evaluatorScore['es_part1_score'], 2, '.', '') : '0.00'; ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card border border-success-subtle shadow-sm h-100 p-3 bg-white">
                             <span class="text-dark fs-6 fw-bold d-block mb-1">รวมคะแนนส่วนที่ 2</span>
-                            <h2 class="fw-bold text-dark mb-0"><span id="totalScore2"><?= isset($evaluatorScore['es_part2_score']) ? esc($evaluatorScore['es_part2_score']) : '0'; ?></span> <span class="fs-6 text-dark font-normal">/ 40.00</span></h2>
-                            <input type="hidden" name="totalScore2" value="<?= isset($evaluatorScore['es_part2_score']) ? esc($evaluatorScore['es_part2_score']) : '0'; ?>">
+                            <h2 class="fw-bold text-dark mb-0"><span id="totalScore2"><?= isset($evaluatorScore['es_part2_score']) ? number_format((float)$evaluatorScore['es_part2_score'], 2, '.', '') : '0.00'; ?></span> <span class="fs-6 text-dark font-normal">/ 40.00</span></h2>
+                            <input type="hidden" name="totalScore2" value="<?= isset($evaluatorScore['es_part2_score']) ? number_format((float)$evaluatorScore['es_part2_score'], 2, '.', '') : '0.00'; ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm text-white h-100 p-3" style="background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #075985 100%); border-radius: 14px;">
                             <span class="text-white fs-6 fw-bold d-block mb-1">รวมคะแนนทั้งหมด</span>
-                            <h1 class="fw-bold text-white mb-0"><span id="totalScore"><?= isset($evaluatorScore['es_total_score']) ? esc($evaluatorScore['es_total_score']) : '0'; ?></span> <span class="fs-6 text-white font-normal">/ 100.00</span></h1>
-                            <input type="hidden" name="totalScore" value="<?= isset($evaluatorScore['es_total_score']) ? esc($evaluatorScore['es_total_score']) : '0'; ?>">
+                            <h1 class="fw-bold text-white mb-0"><span id="totalScore"><?= isset($evaluatorScore['es_total_score']) ? number_format((float)$evaluatorScore['es_total_score'], 2, '.', '') : '0.00'; ?></span> <span class="fs-6 text-white font-normal">/ 100.00</span></h1>
+                            <input type="hidden" name="totalScore" value="<?= isset($evaluatorScore['es_total_score']) ? number_format((float)$evaluatorScore['es_total_score'], 2, '.', '') : '0.00'; ?>">
                         </div>
                     </div>
                 </div>
@@ -488,7 +488,7 @@
                                 <select name="evaluator_id" id="evaluatorSelect" class="form-select border-start-0 py-2 fw-bold text-dark fs-6" onchange="changeEvaluator(this.value)">
                                     <?php foreach ($availableEvaluators as $ev): 
                                         $isSelected = ($evaluator && $evaluator['e_id'] === $ev['e_id']);
-                                        $evalStatus = $ev['has_evaluated'] ? (' [ประเมินแล้ว: ' . ($ev['score_info']['es_total_score'] ?? '') . ' คะแนน]') : ' [ยังไม่ประเมิน]';
+                                        $evalStatus = $ev['has_evaluated'] ? (' [ประเมินแล้ว: ' . number_format((float)($ev['score_info']['es_total_score'] ?? 0), 2) . ' คะแนน]') : ' [ยังไม่ประเมิน]';
                                         $assignLabel = !empty($ev['is_assigned']) ? '★ กรรมการที่ได้รับมอบหมาย - ' : '';
                                     ?>
                                         <option value="<?= esc($ev['e_id']); ?>" <?= $isSelected ? 'selected' : ''; ?>>
