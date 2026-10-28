@@ -129,7 +129,7 @@
             <div class="profile-upload-container mb-4">
                 <h6 class="fw-bold mb-4 text-muted small uppercase">รูปถ่ายบุคลากร</h6>
                 <div class="profile-preview-wrapper">
-                    <img class="profile-preview" id="output" src="<?= base_url('assets/img/avatars/1.png') ?>" alt="Preview">
+                    <img class="profile-preview" id="output" src="<?= base_url('assets/img/avatars/default_user.svg') ?>" alt="Preview">
                     <label for="pers_img" class="upload-overlay-btn">
                         <i class='bx bx-camera fs-5'></i>
                     </label>

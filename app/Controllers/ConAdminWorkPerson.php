@@ -55,6 +55,12 @@ class ConAdminWorkPerson extends BaseController
         ->groupBy('skjacth_skj.tb_position.posi_id, skjacth_skj.tb_position.posi_name')
         ->get()->getResult();
 
+        // ข้อมูลสำหรับระบบกู้คืนบุคลากรที่พ้นสภาพ (ลาออก / ย้าย / เกษียณ)
+        $data['countInactive'] = $DBPers->where('pers_status !=', 'กำลังใช้งาน')->countAllResults();
+        $data['allPositions'] = $DBPosi->get()->getResult();
+        $data['allLearnings'] = $DBLear->get()->getResult();
+        $data['allWorkOther'] = $DB_SKJ->table('tb_position_main')->get()->getResult();
+
         return view('Admin/AdminWorkPerson/AdminPersonMain', $data);
     }
 
@@ -864,8 +870,8 @@ class ConAdminWorkPerson extends BaseController
                 // Skip if it's a directory
                 if (is_dir($uploadPath . $file)) continue;
 
-                // If file is not in the list of used images, delete it
-                if (!in_array($file, $usedImageNames)) {
+                // If file is not in the list of used images and not a system default file, delete it
+                if (!in_array($file, $usedImageNames) && !in_array($file, ['default.png', 'default_user.svg', '.gitkeep', 'index.html'])) {
                     if (@unlink($uploadPath . $file)) {
                         $deletedCount++;
                     }
@@ -2243,5 +2249,108 @@ class ConAdminWorkPerson extends BaseController
         }
     }
 
+    /**
+     * ดึงข้อมูลบุคลากรที่พ้นสภาพ (ลาออก, ย้ายสถานศึกษา, เกษียรอายุ) สำหรับระบบกู้คืนข้อมูล
+     */
+    public function GetInactivePersonnel()
+    {
+        $session = session();
+        if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "manager"])){
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่มีสิทธิ์เข้าถึงส่วนนี้'])->setStatusCode(401);
+        }
+
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $DBPers = $DB_Personnel->table('tb_personnel');
+
+        $list = $DBPers->select('
+            skjacth_personnel.tb_personnel.pers_id,
+            skjacth_personnel.tb_personnel.pers_prefix,
+            skjacth_personnel.tb_personnel.pers_firstname,
+            skjacth_personnel.tb_personnel.pers_lastname,
+            skjacth_personnel.tb_personnel.pers_img,
+            skjacth_personnel.tb_personnel.pers_status,
+            skjacth_personnel.tb_personnel.pers_position,
+            skjacth_personnel.tb_personnel.pers_learning,
+            skjacth_personnel.tb_personnel.pers_academic,
+            skjacth_personnel.tb_personnel.pers_workother_id,
+            skjacth_personnel.tb_personnel.pers_phone,
+            skjacth_personnel.tb_personnel.pers_username,
+            skjacth_skj.tb_position.posi_name,
+            skjacth_skj.tb_learning.lear_namethai,
+            skjacth_skj.tb_position_main.work_name
+        ')
+        ->join('skjacth_skj.tb_position', 'skjacth_skj.tb_position.posi_id = skjacth_personnel.tb_personnel.pers_position', 'left')
+        ->join('skjacth_skj.tb_learning', 'skjacth_skj.tb_learning.lear_id = skjacth_personnel.tb_personnel.pers_learning', 'left')
+        ->join('skjacth_skj.tb_position_main', 'skjacth_skj.tb_position_main.work_id = skjacth_personnel.tb_personnel.pers_workother_id', 'left')
+        ->where('skjacth_personnel.tb_personnel.pers_status !=', 'กำลังใช้งาน')
+        ->orderBy('skjacth_personnel.tb_personnel.pers_id', 'DESC')
+        ->get()
+        ->getResult();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'total'  => count($list),
+            'data'   => $list
+        ]);
+    }
+
+    /**
+     * ดำเนินการกู้คืนข้อมูลบุคลากรกลับเข้าสู่สถานะ "กำลังใช้งาน"
+     */
+    public function RestorePersonnel()
+    {
+        $session = session();
+        if(!$session->get('username') || !in_array($session->get('status'), ["superadmin", "admin", "manager"])){
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่มีสิทธิ์เข้าถึงส่วนนี้'])->setStatusCode(401);
+        }
+
+        $pers_id = $this->request->getPost('pers_id');
+        if (empty($pers_id)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบรหัสบุคลากรที่ต้องการกู้คืน'])->setStatusCode(400);
+        }
+
+        $DB_Personnel = \Config\Database::connect('personnel');
+        $DBPers = $DB_Personnel->table('tb_personnel');
+
+        $pers = $DBPers->where('pers_id', $pers_id)->get()->getRow();
+        if (!$pers) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลบุคลากรในระบบ'])->setStatusCode(404);
+        }
+
+        $updateData = [
+            'pers_status' => $this->request->getPost('pers_status') ?: 'กำลังใช้งาน',
+        ];
+
+        // อัปเดตตำแหน่ง / กลุ่มสาระ / วิทยฐานะ ใหม่ หากมีการระบุ
+        if ($this->request->getPost('pers_position') !== null && $this->request->getPost('pers_position') !== '') {
+            $updateData['pers_position'] = $this->request->getPost('pers_position');
+        }
+        if ($this->request->getPost('pers_learning') !== null) {
+            $updateData['pers_learning'] = $this->request->getPost('pers_learning');
+        }
+        if ($this->request->getPost('pers_academic') !== null) {
+            $updateData['pers_academic'] = $this->request->getPost('pers_academic');
+        }
+        if ($this->request->getPost('pers_workother_id') !== null) {
+            $updateData['pers_workother_id'] = $this->request->getPost('pers_workother_id');
+        }
+
+        $success = $DBPers->where('pers_id', $pers_id)->update($updateData);
+
+        if ($success) {
+            return $this->response->setJSON([
+                'status'       => 'success',
+                'message'      => 'กู้คืนข้อมูลบุคลากรเรียบร้อยแล้ว',
+                'pers_id'      => $pers_id,
+                'pers_name'    => $pers->pers_prefix . $pers->pers_firstname . ' ' . $pers->pers_lastname,
+                'redirect_url' => base_url('Admin/WorkPerson/Personnel/Update/' . $pers_id)
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง'
+            ])->setStatusCode(500);
+        }
+    }
 }
 

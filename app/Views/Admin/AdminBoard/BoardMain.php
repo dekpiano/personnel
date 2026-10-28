@@ -114,7 +114,7 @@
                             </a>
                         </div>
                     </div>
-                    <img src="<?= !empty($m['board_img']) ? base_url('uploads/admin/Board/'.$m['board_img']) : base_url('assets/img/avatars/1.png') ?>" class="member-img">
+                    <img src="<?= !empty($m['board_img']) ? base_url('uploads/admin/Board/'.$m['board_img']) : base_url('assets/img/avatars/default_user.svg') ?>" class="member-img" onerror="this.onerror=null; this.src='<?= base_url('assets/img/avatars/default_user.svg') ?>';">
                     <span class="member-name"><?= $m['board_prefix'].$m['board_firstname'] ?></span>
                     <span class="member-pos text-truncate d-block" title="<?= $m['board_position'] ?>"><?= $m['board_position'] ?></span>
                 </div>
@@ -143,7 +143,7 @@
                             </a>
                         </div>
                     </div>
-                <img src="<?= !empty($m['board_img']) ? base_url('uploads/admin/Board/'.$m['board_img']) : base_url('assets/img/avatars/1.png') ?>" class="member-img">
+                <img src="<?= !empty($m['board_img']) ? base_url('uploads/admin/Board/'.$m['board_img']) : base_url('assets/img/avatars/default_user.svg') ?>" class="member-img" onerror="this.onerror=null; this.src='<?= base_url('assets/img/avatars/default_user.svg') ?>';">
                 <span class="member-name"><?= $m['board_prefix'].$m['board_firstname'] ?></span>
                 <span class="member-pos"><?= $m['board_position'] ?></span>
             </div>
@@ -199,7 +199,7 @@
                 <div class="row align-items-center mb-4">
                     <div class="col-md-4 text-center">
                          <div class="mb-3">
-                            <img id="preview-img" src="<?= base_url('assets/img/avatars/1.png') ?>" alt="preview" class="rounded shadow-sm" style="width: 120px; height: 160px; object-fit: cover;">
+                            <img id="preview-img" src="<?= base_url('assets/img/avatars/default_user.svg') ?>" alt="preview" class="rounded shadow-sm" style="width: 120px; height: 160px; object-fit: cover;">
                         </div>
                         <input type="file" name="board_img" id="board_img" class="form-control crop-target" accept="image/*" data-preview="preview-img">
                     </div>
@@ -381,7 +381,7 @@
         $('#boardForm')[0].reset();
         $('#board_id').val('');
         $('#board_img').removeData('cropped-blob');
-        $('#preview-img').attr('src', '<?= base_url('assets/img/avatars/1.png') ?>');
+        $('#preview-img').attr('src', '<?= base_url('assets/img/avatars/default_user.svg') ?>');
         $('#row_id_assign').val('0');
         $('#memberModalTitle').text('เพิ่มคณะกรรมการใหม่');
         $('#boardModal').modal('show');
@@ -399,7 +399,7 @@
             if (res.board_img) {
                 $('#preview-img').attr('src', '<?= base_url('uploads/admin/Board/') ?>/' + res.board_img);
             } else {
-                $('#preview-img').attr('src', '<?= base_url('assets/img/avatars/1.png') ?>');
+                $('#preview-img').attr('src', '<?= base_url('assets/img/avatars/default_user.svg') ?>');
             }
             $('#memberModalTitle').text('แก้ไขข้อมูลคณะกรรมการ');
             $('#boardModal').modal('show');

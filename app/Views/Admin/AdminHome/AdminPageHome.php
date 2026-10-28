@@ -882,7 +882,7 @@
                                 <?php foreach ($leavesToday as $l): ?>
                                     <div class="personnel-list-item">
                                         <?php if (!empty($l['pers_img'])): ?>
-                                            <img src="<?= base_url('uploads/personnel/' . $l['pers_img']) ?>" class="avatar-sm-custom" alt="Profile" onerror="this.src='https://placehold.co/80x80/e0f2fe/0369a1?text=SKJ';">
+                                            <img src="<?= base_url('uploads/personnel/' . $l['pers_img']) ?>" class="avatar-sm-custom" alt="Profile" onerror="this.onerror=null; this.src='<?= base_url('uploads/admin/Personnal/default.png') ?>';">
                                         <?php else: ?>
                                             <div class="avatar-fallback">
                                                 <?= mb_substr($l['pers_firstname'] ?? 'U', 0, 1, 'UTF-8') ?>
@@ -935,7 +935,7 @@
                             <?php foreach ($recentLeaves as $req): ?>
                                 <div class="personnel-list-item">
                                     <?php if (!empty($req['pers_img'])): ?>
-                                        <img src="<?= base_url('uploads/personnel/' . $req['pers_img']) ?>" class="avatar-sm-custom" alt="Profile" onerror="this.src='https://placehold.co/80x80/e0f2fe/0369a1?text=SKJ';">
+                                        <img src="<?= base_url('uploads/personnel/' . $req['pers_img']) ?>" class="avatar-sm-custom" alt="Profile" onerror="this.onerror=null; this.src='<?= base_url('uploads/admin/Personnal/default.png') ?>';">
                                     <?php else: ?>
                                         <div class="avatar-fallback">
                                             <?= mb_substr($req['pers_firstname'] ?? 'U', 0, 1, 'UTF-8') ?>

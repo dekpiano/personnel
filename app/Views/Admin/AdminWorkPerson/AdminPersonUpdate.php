@@ -172,7 +172,7 @@
             <div class="profile-img-header"></div>
             <div class="card-body pt-0">
                 <div class="profile-img-container">
-                    <img class="lozad profile-img-update" id="output" data-src="<?= base_url('uploads/admin/Personnal/' . ($Pers->pers_img ?: 'default.png')); ?>" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" loading="lazy" alt="Profile">
+                    <img class="lozad profile-img-update" id="output" data-src="<?= base_url('uploads/admin/Personnal/' . ($Pers->pers_img ?: 'default.png')); ?>" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src='<?= base_url('uploads/admin/Personnal/default.png') ?>';" loading="lazy" alt="Profile">
                     <form id="ChangeImgPersonnal" enctype="multipart/form-data">
                         <label for="pers_img_update" class="btn-change-photo">
                             <i class='bx bx-camera fs-5'></i>

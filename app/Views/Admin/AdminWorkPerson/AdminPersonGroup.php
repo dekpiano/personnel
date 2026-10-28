@@ -194,7 +194,7 @@
                             </div>
                             <div class="col-auto">
                                 <div class="teacher-img-wrapper">
-                                    <img class="lozad teacher-img" data-src="<?= base_url('uploads/admin/Personnal/' . ($v_Teacher->pers_img ?: 'default.png')) ?>" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" loading="lazy" alt="user-avatar"
+                                    <img class="lozad teacher-img" data-src="<?= base_url('uploads/admin/Personnal/' . ($v_Teacher->pers_img ?: 'default.png')) ?>" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src='<?= base_url('uploads/admin/Personnal/default.png') ?>';" loading="lazy" alt="user-avatar"
                                         height="90" width="90">
                                 </div>
                             </div>

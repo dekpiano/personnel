@@ -114,6 +114,8 @@ $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Get/(:any)', 'ConA
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Update/Alone', 'ConAdminWorkPerson::PersonnelUpdateAlone');
 
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Select/GetPositionData', 'ConAdminWorkPerson::GetPositionData');
+$routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/GetInactivePersonnel', 'ConAdminWorkPerson::GetInactivePersonnel');
+$routes->post('Admin/WorkPerson/Personnel/DB/Restore', 'ConAdminWorkPerson::RestorePersonnel');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/CleanupImages', 'ConAdminWorkPerson::CleanupImages');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Family/Add', 'ConAdminWorkPerson::PersonnelFamilyAdd');
 $routes->match(['get', 'post'],'Admin/WorkPerson/Personnel/DB/Family/Delete', 'ConAdminWorkPerson::PersonnelFamilyDelete');
